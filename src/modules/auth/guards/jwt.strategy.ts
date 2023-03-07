@@ -20,12 +20,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: { studentId: number }) {
     const { studentId } = payload
 
-    const user = this.userService.findOne({
-      studentId,
+    const user = await this.userService.findOne({
+      studentId
     })
 
     if (!user) {
-      throw new NotFoundException()
+      throw new NotFoundException('用户不存在')
     }
 
     return payload

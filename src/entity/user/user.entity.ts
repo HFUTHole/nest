@@ -1,6 +1,7 @@
-import { Column, Entity, Index, JoinTable, OneToMany } from 'typeorm'
-import { CommonEntity } from '@/common/entity/common.entity'
+import { Column, Entity, Index, OneToMany } from 'typeorm'
+import { AutoIncIdEntity } from '@/common/entity/common.entity'
 import { Hole } from '@/entity/hole/hole.entity'
+import { Exclude } from 'class-transformer'
 
 export enum Gender {
   Male = '男',
@@ -8,9 +9,10 @@ export enum Gender {
 }
 
 @Entity()
-export class User extends CommonEntity {
+export class User extends AutoIncIdEntity {
   @Index()
   @Column({ comment: '学号' })
+  @Exclude()
   studentId: number
 
   @Index()
@@ -18,9 +20,11 @@ export class User extends CommonEntity {
   username: string
 
   @Column({ comment: '密码' })
+  @Exclude()
   password: string
 
   @Column({ comment: '信息门户密码' })
+  @Exclude()
   hfutPassword: string
 
   @Column({
@@ -28,9 +32,9 @@ export class User extends CommonEntity {
     type: 'enum',
     enum: Gender,
   })
+  @Exclude()
   gender: Gender
 
-  @JoinTable()
-  @OneToMany((type) => Hole, (hole) => hole.user)
-  hole_list: Hole[]
+  @OneToMany(() => Hole, (hole) => hole.user, { cascade: true })
+  holes: Hole[]
 }

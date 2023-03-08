@@ -1,10 +1,11 @@
 import { User } from '@/entity/user/user.entity'
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, Index, ManyToMany, ManyToOne, OneToMany } from 'typeorm'
 import { Comment } from '@/entity/hole/comment.entity'
 import { AutoIncIdEntity } from '@/common/entity/common.entity'
 
 @Entity()
 export class Hole extends AutoIncIdEntity {
+  @Index()
   @Column({
     comment: '树洞文本内容',
   })
@@ -27,4 +28,7 @@ export class Hole extends AutoIncIdEntity {
 
   @ManyToOne(() => User, (user) => user.holes)
   user: User
+
+  @ManyToMany(() => User, (user) => user.favoriteHole)
+  favoriteUsers: User[]
 }

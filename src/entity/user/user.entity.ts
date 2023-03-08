@@ -1,7 +1,8 @@
-import { Column, Entity, Index, OneToMany } from 'typeorm'
+import { Column, Entity, Index, ManyToMany, OneToMany, JoinTable } from 'typeorm'
 import { AutoIncIdEntity } from '@/common/entity/common.entity'
 import { Hole } from '@/entity/hole/hole.entity'
 import { Exclude } from 'class-transformer'
+import { Comment } from '@/entity/hole/comment.entity'
 
 export enum Gender {
   Male = '男',
@@ -20,11 +21,9 @@ export class User extends AutoIncIdEntity {
   username: string
 
   @Column({ comment: '密码' })
-  @Exclude()
   password: string
 
   @Column({ comment: '信息门户密码' })
-  @Exclude()
   hfutPassword: string
 
   @Column({
@@ -32,9 +31,15 @@ export class User extends AutoIncIdEntity {
     type: 'enum',
     enum: Gender,
   })
-  @Exclude()
   gender: Gender
 
   @OneToMany(() => Hole, (hole) => hole.user, { cascade: true })
   holes: Hole[]
+
+  @OneToMany(() => Comment, (comment) => comment.user)
+  comments: Comment[]
+
+  @ManyToMany(() => Hole, (hole) => hole.favoriteUsers, { cascade: true })
+  @JoinTable()
+  favoriteHole: Hole[]
 }

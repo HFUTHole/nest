@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   PrimaryColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -16,6 +17,7 @@ export const snowflake = new SnowflakeIdv1({
 
 @Entity()
 export class CommonEntity {
+  @Index()
   @PrimaryColumn({
     type: 'bigint',
     unsigned: true,
@@ -45,9 +47,6 @@ export class CommonEntity {
   })
   @Timestamp()
   deleteAt: Date
-
-  @Column('boolean', { default: false, name: 'is_hidden', comment: '是否隐藏' })
-  isHidden: boolean
 }
 
 @Entity()

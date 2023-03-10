@@ -3,9 +3,9 @@ import { IsNumber, IsPositive } from 'class-validator'
 export class PaginateQuery {
   @IsPositive()
   @IsNumber()
-  limit = 10
+  limit: number = 10
 
   @IsPositive()
-  @IsNumber()
-  page = 1
+  @IsNumber({ allowNaN: false })
+  page: number = 1
 }

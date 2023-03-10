@@ -7,3 +7,5 @@ export class GetHoleDetailQuery {
   @IsNumber()
   id: number
 }
+
+export class DeleteHoleDto extends GetHoleDetailQuery {}

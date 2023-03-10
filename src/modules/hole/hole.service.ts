@@ -1,7 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { Hole } from '@/entity/hole/hole.entity'
-import { EntityManager, Repository } from 'typeorm'
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm'
 import { User } from '@/entity/user/user.entity'
 import { CreateHoleDto } from '@/modules/hole/dto/create.dto'
 import { IUser } from '@/app'
@@ -14,7 +14,9 @@ import {
   GetHoleCommentDto,
 } from '@/modules/hole/dto/comment.dto'
 import { Comment } from '@/entity/hole/comment.entity'
-import { GetHoleDetailQuery } from '@/modules/hole/dto/hole.dto'
+import { DeleteHoleDto, GetHoleDetailQuery } from '@/modules/hole/dto/hole.dto'
+import { Reply } from '@/entity/hole/reply.entity'
+import { GetRepliesQuery } from '@/modules/hole/dto/replies.dto'
 
 @Injectable()
 export class HoleService {
@@ -27,6 +29,9 @@ export class HoleService {
   @InjectRepository(Comment)
   private readonly commentRepo: Repository<Comment>
 
+  @InjectRepository(Reply)
+  private readonly replyRepo: Repository<Reply>
+
   @InjectEntityManager()
   private readonly manager: EntityManager
 
@@ -35,30 +40,15 @@ export class HoleService {
       relations: {
         user: true,
       },
-      select: {
-        user: {
-          id: true,
-          username: true,
-        },
-      },
     })
   }
+
+  async delete(body: DeleteHoleDto, reqUser: IUser) {}
 
   async getDetail(query: GetHoleDetailQuery) {
     return this.holeRepo.findOne({
       relations: {
         user: true,
-      },
-      select: {
-        id: true,
-        body: true,
-        favoriteCounts: true,
-        imgs: true,
-        createAt: true,
-        user: {
-          id: true,
-          username: true,
-        },
       },
       where: {
         id: query.id,
@@ -161,29 +151,59 @@ export class HoleService {
   }
 
   async getComment(dto: GetHoleCommentDto) {
-    const query = this.commentRepo
-      .createQueryBuilder('comment')
-      .leftJoinAndSelect('comment.hole', 'hole')
-      .where('hole.id = :id', { id: dto.id })
-      .setFindOptions({
-        relations: { user: true },
-        select: {
-          id: true,
-          createAt: true,
-          body: true,
-          favoriteCount: true,
-          user: {
-            id: true,
-            username: true,
+    return paginate<Comment>(
+      this.commentRepo,
+      {
+        limit: dto.limit,
+        page: dto.page,
+      },
+      {
+        relations: { user: true, replies: { user: true } },
+        order: {
+          createAt: 'asc',
+          replies: {
+            createAt: 'asc',
           },
         },
-      })
-
-    return paginate<Comment>(query, {
-      limit: dto.limit,
-      page: dto.page,
-    })
+        where: {
+          hole: { id: dto.id },
+        },
+      },
+    )
   }
 
-  async replyComment(dto: CreateCommentReplyDto, user: IUser) {}
+  async replyComment(dto: CreateCommentReplyDto, reqUser: IUser) {
+    const comment = await this.commentRepo.findOne({
+      where: { id: dto.commentId },
+    })
+
+    const user = await this.userRepo.findOne({
+      where: { studentId: reqUser.studentId },
+    })
+
+    const reply = this.replyRepo.create({
+      comment,
+      body: dto.body,
+      user,
+    })
+
+    await this.replyRepo.save(reply)
+
+    return createResponse('回复成功')
+  }
+
+  async getReplies(query: GetRepliesQuery, user: IUser) {
+    return paginate<Reply>(
+      this.replyRepo,
+      {
+        limit: query.limit,
+        page: query.page,
+      },
+      {
+        relations: {
+          user: true,
+        },
+      },
+    )
+  }
 }

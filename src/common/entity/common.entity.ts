@@ -36,6 +36,7 @@ export class CommonEntity {
     type: 'timestamp',
     comment: '更新时间',
     name: 'update_at',
+    select: false,
   })
   @Timestamp()
   updateAt: Date
@@ -44,6 +45,7 @@ export class CommonEntity {
     type: 'timestamp',
     comment: '删除时间',
     name: 'delete_at',
+    select: false,
   })
   @Timestamp()
   deleteAt: Date
@@ -66,6 +68,7 @@ export class AutoIncIdEntity {
     type: 'timestamp',
     comment: '更新时间',
     name: 'update_at',
+    select: false,
   })
   @Timestamp()
   updateAt: Date
@@ -74,10 +77,16 @@ export class AutoIncIdEntity {
     type: 'timestamp',
     comment: '删除时间',
     name: 'delete_at',
+    select: false,
   })
   @Timestamp()
   deleteAt: Date
 
-  @Column('boolean', { default: false, name: 'is_hidden', comment: '是否隐藏' })
+  @Column('boolean', {
+    default: false,
+    name: 'is_hidden',
+    comment: '是否隐藏',
+    select: false,
+  })
   isHidden: boolean
 }

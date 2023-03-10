@@ -21,5 +21,6 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': 'off',
     'no-extra-semi': 'error',
     'prettier/prettier': 'off',
+    '@typescript-eslint/no-inferrable-types': 'off',
   },
 }

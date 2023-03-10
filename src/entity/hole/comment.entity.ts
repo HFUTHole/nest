@@ -1,7 +1,8 @@
 import { CommonEntity } from '@/common/entity/common.entity'
-import { Column, Entity, ManyToOne } from 'typeorm'
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm'
 import { Hole } from '@/entity/hole/hole.entity'
 import { User } from '@/entity/user/user.entity'
+import { Reply } from '@/entity/hole/reply.entity'
 
 @Entity()
 export class Comment extends CommonEntity {
@@ -16,4 +17,7 @@ export class Comment extends CommonEntity {
 
   @ManyToOne(() => User, (user) => user.comments, { cascade: true })
   user: User
+
+  @OneToMany(() => Reply, (reply) => reply.comment)
+  replies: Reply[]
 }

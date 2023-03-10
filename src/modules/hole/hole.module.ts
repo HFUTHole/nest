@@ -9,10 +9,12 @@ import {
   IsCommentExistConstraint,
   IsHoleExistConstraint,
 } from '@/modules/hole/dto/utils.dto'
+import { Reply } from '@/entity/hole/reply.entity'
+import { RoleService } from '@/modules/role/role.service'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Hole, Comment])],
+  imports: [TypeOrmModule.forFeature([User, Hole, Comment, Reply])],
   controllers: [HoleController],
-  providers: [HoleService, IsHoleExistConstraint, IsCommentExistConstraint],
+  providers: [HoleService, IsHoleExistConstraint, IsCommentExistConstraint, RoleService],
 })
 export class HoleModule {}

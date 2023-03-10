@@ -4,7 +4,10 @@ import { User } from '@/entity/user/user.entity'
 import { Repository } from 'typeorm'
 import { UserService } from '@/modules/user/user.service'
 import { UserCreateDto } from '@/modules/user/dtos/user_create.dto'
+import { Roles } from '@/common/decorator/roles.decorator'
+import { Role } from '@/modules/role/role.constant'
 
+@Roles([Role.Admin])
 @Controller('user')
 export class UserController {
   @InjectRepository(User)

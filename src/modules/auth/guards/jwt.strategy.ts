@@ -3,11 +3,14 @@ import { PassportStrategy } from '@nestjs/passport'
 import { Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { UserService } from '@/modules/user/user.service'
 import { AppConfig } from '@/app.config'
+import { InjectRepository } from '@nestjs/typeorm'
+import { User } from '@/entity/user/user.entity'
+import { Repository } from 'typeorm'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  @Inject()
-  private readonly userService: UserService
+  @InjectRepository(User)
+  private readonly userRepo: Repository<User>
 
   constructor(private readonly config: AppConfig) {
     super({
@@ -20,8 +23,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: { studentId: number }) {
     const { studentId } = payload
 
-    const user = await this.userService.findOne({
-      studentId
+    const user = await this.userRepo.findOne({
+      where: { studentId },
     })
 
     if (!user) {

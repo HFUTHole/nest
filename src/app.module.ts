@@ -6,7 +6,8 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm'
 import { UserModule } from './modules/user/user.module'
 import { AuthModule } from './modules/auth/auth.module'
 import { CommonModule } from '@/common/common.module'
-import { HoleModule } from './modules/hole/hole.module';
+import { HoleModule } from './modules/hole/hole.module'
+import { RoleModule } from './modules/role/role.module'
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { HoleModule } from './modules/hole/hole.module';
     AuthModule,
     CommonModule,
     HoleModule,
+    RoleModule,
   ],
   providers: [],
   controllers: [],

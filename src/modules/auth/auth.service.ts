@@ -19,8 +19,9 @@ export class AuthService {
   constructor(private readonly jwtService: JwtService) {}
 
   async login(dto: LoginDto) {
-    const user = await this.userService.findOne({
-      studentId: dto.studentId,
+    const user = await this.userRepo.findOne({
+      where: { studentId: dto.studentId },
+      select: { password: true },
     })
 
     const isVerified = await verifyPassword(user.password, dto.password)

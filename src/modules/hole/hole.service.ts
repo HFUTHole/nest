@@ -1,7 +1,12 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { Hole } from '@/entity/hole/hole.entity'
-import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm'
+import { EntityManager, Repository } from 'typeorm'
 import { User } from '@/entity/user/user.entity'
 import { CreateHoleDto } from '@/modules/hole/dto/create.dto'
 import { IUser } from '@/app'
@@ -16,7 +21,7 @@ import {
 import { Comment } from '@/entity/hole/comment.entity'
 import { DeleteHoleDto, GetHoleDetailQuery } from '@/modules/hole/dto/hole.dto'
 import { Reply } from '@/entity/hole/reply.entity'
-import { GetRepliesQuery } from '@/modules/hole/dto/replies.dto'
+import { GetRepliesQuery, ReplyReplyDto } from '@/modules/hole/dto/replies.dto'
 
 @Injectable()
 export class HoleService {
@@ -43,7 +48,21 @@ export class HoleService {
     })
   }
 
-  async delete(body: DeleteHoleDto, reqUser: IUser) {}
+  async delete(body: DeleteHoleDto, reqUser: IUser) {
+    const hole = await this.holeRepo.findOne({
+      relations: { user: true },
+      where: { id: body.id },
+      select: { user: { studentId: true } },
+    })
+
+    if (hole.user.studentId !== reqUser.studentId) {
+      throw new ForbiddenException('这不是你的树洞哦')
+    }
+
+    await this.holeRepo.delete({ id: hole.id })
+
+    return createResponse('删除成功')
+  }
 
   async getDetail(query: GetHoleDetailQuery) {
     return this.holeRepo.findOne({
@@ -190,6 +209,10 @@ export class HoleService {
     await this.replyRepo.save(reply)
 
     return createResponse('回复成功')
+  }
+
+  async replyReply(dto: ReplyReplyDto, reqUser: IUser) {
+    return createResponse('成功')
   }
 
   async getReplies(query: GetRepliesQuery, user: IUser) {

@@ -7,3 +7,15 @@ export class GetRepliesQuery extends PaginateQuery {
   @IsString()
   id: string
 }
+
+export class ReplyReplyDto {
+  @IsCommentExist()
+  @IsString()
+  commentId: string
+
+  @IsString()
+  id: string
+
+  @IsString()
+  body: string
+}

@@ -1,14 +1,13 @@
 import { User } from '@/entity/user/user.entity'
-import { Column, Entity, Index, ManyToMany, ManyToOne, OneToMany } from 'typeorm'
+import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm'
 import { Comment } from '@/entity/hole/comment.entity'
 import { AutoIncIdEntity } from '@/common/entity/common.entity'
+import { Tags } from '@/entity/hole/tags.entity'
+import { Vote } from '@/entity/hole/vote.entity'
 
 @Entity()
 export class Hole extends AutoIncIdEntity {
-  @Index()
-  @Column({
-    comment: '树洞文本内容',
-  })
+  @Column('text', { comment: '文章' })
   body: string
 
   @Column({
@@ -31,4 +30,11 @@ export class Hole extends AutoIncIdEntity {
 
   @ManyToMany(() => User, (user) => user.favoriteHole)
   favoriteUsers: User[]
+
+  @ManyToMany(() => Tags, (tags) => tags.holes, { eager: true, cascade: true })
+  @JoinTable()
+  tags: Tags[]
+
+  @OneToMany(() => Vote, (vote) => vote.hole, { cascade: true })
+  votes: Vote[]
 }

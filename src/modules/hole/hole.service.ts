@@ -1,6 +1,7 @@
 import {
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
@@ -22,6 +23,11 @@ import { Comment } from '@/entity/hole/comment.entity'
 import { DeleteHoleDto, GetHoleDetailQuery } from '@/modules/hole/dto/hole.dto'
 import { Reply } from '@/entity/hole/reply.entity'
 import { GetRepliesQuery, ReplyReplyDto } from '@/modules/hole/dto/replies.dto'
+import { Tags } from '@/entity/hole/tags.entity'
+import { Vote, VoteType } from '@/entity/hole/vote.entity'
+import { PostVoteDto } from '@/modules/hole/dto/vote.dto'
+import { NotifyService } from '@/modules/notify/notify.service'
+import { NotifyEvent } from '@/entity/notify/notify.entity'
 
 @Injectable()
 export class HoleService {
@@ -37,15 +43,36 @@ export class HoleService {
   @InjectRepository(Reply)
   private readonly replyRepo: Repository<Reply>
 
+  @InjectRepository(Tags)
+  private readonly tagsRepo: Repository<Tags>
+
+  @InjectRepository(Vote)
+  private readonly voteRepo: Repository<Vote>
+
   @InjectEntityManager()
   private readonly manager: EntityManager
 
+  @Inject()
+  private readonly notifyService: NotifyService
+
   async getList(query: PaginateQuery) {
-    return paginate<Hole>(this.holeRepo, query, {
+    const data = await paginate<Hole>(this.holeRepo, query, {
       relations: {
         user: true,
+        votes: true,
       },
     })
+
+    // TODO 用sql解决，还是得多学学sql啊
+    ;(data.items as any) = data.items.map((item) => {
+      return {
+        ...item,
+        body: `${item.body.slice(1, 500)}...`,
+        totalCount: item.votes.reduce((prev, cur) => prev + cur.count, 0),
+      }
+    })
+
+    return data
   }
 
   async delete(body: DeleteHoleDto, reqUser: IUser) {
@@ -64,14 +91,89 @@ export class HoleService {
     return createResponse('删除成功')
   }
 
-  async getDetail(query: GetHoleDetailQuery) {
-    return this.holeRepo.findOne({
+  async getTags() {
+    return this.tagsRepo.find({
+      relations: {
+        holes: true,
+      },
+      where: { holes: { id: 5 } },
+    })
+  }
+
+  async vote(dto: PostVoteDto, reqUser: IUser) {
+    const hole = await this.holeRepo.findOne({
       relations: {
         user: true,
+        votes: { user: true },
+      },
+      select: {
+        user: { studentId: true },
+        votes: {
+          id: true,
+          user: { studentId: true },
+        },
+      },
+      where: { id: dto.id },
+    })
+
+    const votes = hole.votes.filter((vote) => dto.ids.includes(vote.id as string))
+
+    if (votes.length !== dto.ids.length) {
+      throw new ForbiddenException('参数错误')
+    }
+
+    const type: VoteType = votes[0].type
+
+    for (const vote of votes) {
+      const appendVotedUser = async () => {
+        const user = await this.userRepo.findOneBy({ studentId: reqUser.studentId })
+        vote.user.push(user)
+        vote.count++
+      }
+
+      if (type === VoteType.multiple) {
+        const isAlreadyVoted = Boolean(
+          vote.user.find((item) => item.studentId === reqUser.studentId),
+        )
+
+        if (!isAlreadyVoted) {
+          await appendVotedUser()
+        }
+      } else {
+        const isAlreadyVoted = Boolean(
+          votes.find((vote) =>
+            vote.user.find((user) => user.studentId === reqUser.studentId),
+          ),
+        )
+
+        if (isAlreadyVoted) {
+          throw new ConflictException('你已经投过票了')
+        } else {
+          await appendVotedUser()
+        }
+      }
+    }
+
+    await this.holeRepo.save(hole)
+
+    return createResponse('投票成功')
+  }
+
+  async getDetail(query: GetHoleDetailQuery) {
+    const data = await this.holeRepo.findOne({
+      relations: {
+        user: true,
+        votes: true,
       },
       where: {
         id: query.id,
       },
+    })
+
+    // TODO 用sql解决
+    return createResponse('获取树洞详情成功', {
+      ...data,
+      voteTotalCount: data.votes.reduce((prev, cur) => prev + cur.count, 0),
     })
   }
 
@@ -95,7 +197,13 @@ export class HoleService {
       throw new ConflictException('你已经点赞过了')
     }
 
-    const hole = await this.holeRepo.findOneBy({ id: dto.id })
+    const hole = await this.holeRepo.findOne({
+      relations: {
+        user: true,
+      },
+      select: { user: { studentId: true } },
+      where: { id: dto.id },
+    })
 
     await this.manager.transaction(async (transactionalEntityManager) => {
       await transactionalEntityManager
@@ -109,6 +217,13 @@ export class HoleService {
         .execute()
 
       user.favoriteHole.push(hole)
+
+      await this.notifyService.notify(
+        NotifyEvent.like,
+        '有一个人点赞了你的树洞',
+        reqUser.studentId,
+        transactionalEntityManager,
+      )
 
       await transactionalEntityManager.save(user)
     })
@@ -144,9 +259,25 @@ export class HoleService {
       where: { studentId: reqUser.studentId },
     })
 
+    const tags = dto.tags.map((tag) =>
+      this.tagsRepo.create({
+        body: tag,
+      }),
+    )
+
+    const votes = dto.votes.map((vote) =>
+      this.voteRepo.create({
+        option: vote,
+        type: dto.isMultipleVote ? VoteType.multiple : VoteType.single,
+      }),
+    )
+
     const hole = this.holeRepo.create({
       user,
-      ...dto,
+      body: dto.body,
+      imgs: dto.imgs,
+      tags,
+      votes,
     })
 
     await this.holeRepo.save(hole)
@@ -170,7 +301,7 @@ export class HoleService {
   }
 
   async getComment(dto: GetHoleCommentDto) {
-    return paginate<Comment>(
+    const data = await paginate<Comment>(
       this.commentRepo,
       {
         limit: dto.limit,
@@ -189,6 +320,8 @@ export class HoleService {
         },
       },
     )
+
+    return createResponse('获取评论成功', data)
   }
 
   async replyComment(dto: CreateCommentReplyDto, reqUser: IUser) {

@@ -36,7 +36,7 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    const isStudentIdExist = await this.userService.findOne({
+    const isStudentIdExist = await this.userRepo.findOneBy({
       studentId: dto.studentId,
     })
 
@@ -44,7 +44,7 @@ export class AuthService {
       throw new BadRequestException('该用户已注册')
     }
 
-    const isUsernameExist = await this.userService.findOne({
+    const isUsernameExist = await this.userRepo.findOneBy({
       username: dto.username,
     })
 

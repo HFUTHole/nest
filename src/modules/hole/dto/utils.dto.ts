@@ -5,6 +5,7 @@ import { Repository } from 'typeorm'
 import { createClassValidator } from '@/utils/create'
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { Comment } from '@/entity/hole/comment.entity'
+import { Vote } from '@/entity/hole/vote.entity'
 
 @ValidatorConstraint({ async: true })
 @Injectable()
@@ -43,6 +44,29 @@ export class IsCommentExistConstraint implements ValidatorConstraintInterface {
     return true
   }
 }
+
+@ValidatorConstraint({ async: true })
+@Injectable()
+export class IsVoteExistConstraint implements ValidatorConstraintInterface {
+  @InjectRepository(Vote)
+  private readonly voteRepo: Repository<Vote>
+
+  async validate(id: string) {
+    const hole = await this.voteRepo.findOne({
+      where: {
+        id,
+      },
+    })
+
+    if (!hole) {
+      throw new NotFoundException('投票不存在')
+    }
+
+    return true
+  }
+}
+
+export const IsVoteExist = createClassValidator(IsVoteExistConstraint)
 
 export const IsHoleExist = createClassValidator(IsHoleExistConstraint)
 

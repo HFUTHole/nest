@@ -5,6 +5,8 @@ import { Exclude } from 'class-transformer'
 import { Comment } from '@/entity/hole/comment.entity'
 import { Reply } from '@/entity/hole/reply.entity'
 import { Role } from '@/modules/role/role.constant'
+import { Vote } from '@/entity/hole/vote.entity'
+import { Notify } from '@/entity/notify/notify.entity'
 
 export enum Gender {
   Male = '男',
@@ -56,4 +58,10 @@ export class User extends AutoIncIdEntity {
   @ManyToMany(() => Hole, (hole) => hole.favoriteUsers, { cascade: true })
   @JoinTable()
   favoriteHole: Hole[]
+
+  @ManyToMany(() => Vote, (vote) => vote.user)
+  votes: Vote[]
+
+  @OneToMany(() => Notify, (notify) => notify.user)
+  notifications: Notify[]
 }

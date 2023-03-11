@@ -9,9 +9,10 @@ import {
   CreateCommentReplyDto,
   GetHoleCommentDto,
 } from '@/modules/hole/dto/comment.dto'
-import { DeleteHoleDto, GetHoleDetailQuery } from '@/modules/hole/dto/hole.dto'
+import { GetHoleDetailQuery } from '@/modules/hole/dto/hole.dto'
 import { GetRepliesQuery, ReplyReplyDto } from '@/modules/hole/dto/replies.dto'
 import { Roles } from '@/common/decorator/roles.decorator'
+import { PostVoteDto } from '@/modules/hole/dto/vote.dto'
 
 @Roles()
 @Controller('hole')
@@ -38,6 +39,16 @@ export class HoleController {
   // delete(@Body() body: DeleteHoleDto, @User() user: IUser) {
   //   return this.service.delete(body, user)
   // }
+
+  @Get('/tags')
+  getTags() {
+    return this.service.getTags()
+  }
+
+  @Post('/vote')
+  vote(@Body() dto: PostVoteDto, @User() user: IUser) {
+    return this.service.vote(dto, user)
+  }
 
   @Post('/like')
   likeHole(@Body() dto: GetHoleDetailQuery, @User() user: IUser) {

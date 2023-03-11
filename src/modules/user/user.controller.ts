@@ -1,39 +1,23 @@
-import { Body, Controller, Get, Inject, Post } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
-import { User } from '@/entity/user/user.entity'
-import { Repository } from 'typeorm'
+import { Controller, Get, Inject, Post, Query } from '@nestjs/common'
+
 import { UserService } from '@/modules/user/user.service'
-import { UserCreateDto } from '@/modules/user/dtos/user_create.dto'
 import { Roles } from '@/common/decorator/roles.decorator'
 import { Role } from '@/modules/role/role.constant'
+import { IUser } from '@/app'
+import { User } from '@/common/decorator/user.decorator'
+import { PaginateQuery } from '@/common/dtos/paginate.dto'
 
-@Roles([Role.Admin])
+@Roles()
 @Controller('user')
 export class UserController {
-  @InjectRepository(User)
-  private readonly userRepository: Repository<User>
-
   @Inject()
-  private readonly userService: UserService
+  private readonly service: UserService
 
-  @Get('info')
-  async getInfo() {
-    const user = await this.userRepository.find({
-      where: {
-        studentId: 2021217985,
-      },
-    })
-
-    return user
+  @Get('notify')
+  getNotifications(@Query() query: PaginateQuery, @User() user: IUser) {
+    return this.service.getNotifications(query, user)
   }
 
-  @Get('findAll')
-  findAll() {
-    return this.userService.findAll()
-  }
-
-  @Post('create')
-  create(@Body() dto: UserCreateDto) {
-    return this.userService.create(dto)
-  }
+  @Post('notify/read')
+  readNotify() {}
 }

@@ -8,6 +8,9 @@ import { AuthModule } from './modules/auth/auth.module'
 import { CommonModule } from '@/common/common.module'
 import { HoleModule } from './modules/hole/hole.module'
 import { RoleModule } from './modules/role/role.module'
+import { AppController } from '@/app.controller'
+import { AppService } from '@/app.service'
+import { NotifyModule } from './modules/notify/notify.module';
 
 @Module({
   imports: [
@@ -32,8 +35,9 @@ import { RoleModule } from './modules/role/role.module'
     CommonModule,
     HoleModule,
     RoleModule,
+    NotifyModule,
   ],
-  providers: [],
-  controllers: [],
+  providers: [AppService],
+  controllers: [AppController],
 })
 export class AppModule {}

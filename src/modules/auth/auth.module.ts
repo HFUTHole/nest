@@ -11,10 +11,12 @@ import { JwtModule } from '@nestjs/jwt'
 import { JwtStrategy } from '@/modules/auth/guards/jwt.strategy'
 import { AppConfig } from '@/app.config'
 import { JwtModuleOptions } from '@nestjs/jwt/dist/interfaces/jwt-module-options.interface'
+import { NotifyService } from '@/modules/notify/notify.service'
+import { Notify } from '@/entity/notify/notify.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Hole]),
+    TypeOrmModule.forFeature([User, Hole, Notify]),
     JwtModule.registerAsync({
       useFactory(config: AppConfig): JwtModuleOptions {
         return {
@@ -28,6 +30,13 @@ import { JwtModuleOptions } from '@nestjs/jwt/dist/interfaces/jwt-module-options
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserService, LocalStrategy, LocalAuthGuard, JwtStrategy],
+  providers: [
+    AuthService,
+    UserService,
+    LocalStrategy,
+    LocalAuthGuard,
+    JwtStrategy,
+    NotifyService,
+  ],
 })
 export class AuthModule {}

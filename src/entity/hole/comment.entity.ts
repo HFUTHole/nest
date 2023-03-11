@@ -6,7 +6,7 @@ import { Reply } from '@/entity/hole/reply.entity'
 
 @Entity()
 export class Comment extends CommonEntity {
-  @Column({ comment: '留言内容' })
+  @Column('text', { comment: '留言内容' })
   body: string
 
   @Column({ comment: '点赞数', default: 0 })

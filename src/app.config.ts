@@ -14,4 +14,9 @@ export class AppConfig {
   server: {
     port: number
   }
+
+  throttle: {
+    ttl: number
+    limit: number
+  }
 }

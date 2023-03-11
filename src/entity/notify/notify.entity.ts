@@ -10,8 +10,9 @@ export enum NotifyEvent {
 }
 
 export enum NotifyStatus {
-  read,
   unread,
+
+  read,
 }
 
 @Entity()

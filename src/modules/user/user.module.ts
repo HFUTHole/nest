@@ -6,10 +6,11 @@ import { User } from '@/entity/user/user.entity'
 import { Hole } from '@/entity/hole/hole.entity'
 import { Notify } from '@/entity/notify/notify.entity'
 import { NotifyService } from '@/modules/notify/notify.service'
+import { IsNotificationExistConstraint } from '@/modules/user/dtos/utils.dto'
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, Hole, Notify])],
   controllers: [UserController],
-  providers: [UserService, NotifyService],
+  providers: [UserService, NotifyService, IsNotificationExistConstraint],
 })
 export class UserModule {}

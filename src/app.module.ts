@@ -10,7 +10,8 @@ import { HoleModule } from './modules/hole/hole.module'
 import { RoleModule } from './modules/role/role.module'
 import { AppController } from '@/app.controller'
 import { AppService } from '@/app.service'
-import { NotifyModule } from './modules/notify/notify.module';
+import { NotifyModule } from './modules/notify/notify.module'
+import { ThrottlerModule } from '@nestjs/throttler'
 
 @Module({
   imports: [
@@ -26,6 +27,14 @@ import { NotifyModule } from './modules/notify/notify.module';
           logger: 'advanced-console',
           autoLoadEntities: true,
           synchronize: true,
+        }
+      },
+      inject: [AppConfig],
+    }),
+    ThrottlerModule.forRootAsync({
+      useFactory({ throttle }: AppConfig) {
+        return {
+          ...throttle,
         }
       },
       inject: [AppConfig],

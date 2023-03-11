@@ -10,6 +10,7 @@ import { JwtAuthGuard } from '@/modules/auth/guards/jwt.guard'
 import { RolesGuard } from '@/modules/role/role.guard'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { User } from '@/entity/user/user.entity'
+import { ThrottlerGuard } from '@nestjs/throttler'
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { User } from '@/entity/user/user.entity'
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
 export class CommonModule {}

@@ -72,7 +72,7 @@ export class NotifyService {
       throw new ConflictException('这条消息已经读过了')
     }
 
-    await this.notifyRepo.update({ id }, { status: NotifyStatus.unread })
+    await this.notifyRepo.update({ id }, { status: NotifyStatus.read })
 
     return true
   }

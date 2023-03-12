@@ -222,6 +222,7 @@ export class HoleService {
         NotifyEvent.like,
         '有一个人点赞了你的树洞',
         reqUser.studentId,
+        hole.id,
         transactionalEntityManager,
       )
 
@@ -286,7 +287,11 @@ export class HoleService {
   }
 
   async createComment(dto: CreateCommentDto, reqUser: IUser) {
-    const hole = await this.holeRepo.findOneBy({ id: dto.id })
+    const hole = await this.holeRepo.findOne({
+      relations: { user: true },
+      select: { user: { studentId: true } },
+      where: { id: dto.id },
+    })
     const user = await this.userRepo.findOneBy({ studentId: reqUser.studentId })
 
     const comment = this.commentRepo.create({
@@ -295,7 +300,16 @@ export class HoleService {
       user,
     })
 
-    await this.commentRepo.save(comment)
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      await transactionalEntityManager.getRepository(Comment).save(comment)
+      await this.notifyService.notify(
+        NotifyEvent.comment,
+        `有人评论了你的树洞#${hole.id}`,
+        hole.user.studentId,
+        hole.id,
+        transactionalEntityManager,
+      )
+    })
 
     return createResponse('留言成功')
   }
@@ -326,6 +340,8 @@ export class HoleService {
 
   async replyComment(dto: CreateCommentReplyDto, reqUser: IUser) {
     const comment = await this.commentRepo.findOne({
+      relations: { user: true },
+      select: { user: { studentId: true } },
       where: { id: dto.commentId },
     })
 
@@ -339,7 +355,16 @@ export class HoleService {
       user,
     })
 
-    await this.replyRepo.save(reply)
+    await this.manager.transaction(async (transactionalEntityManager) => {
+      await transactionalEntityManager.getRepository(Reply).save(reply)
+      await this.notifyService.notify(
+        NotifyEvent.reply,
+        `有人给你的评论#${comment.id}回复了哦`,
+        comment.user.studentId,
+        comment.id,
+        transactionalEntityManager,
+      )
+    })
 
     return createResponse('回复成功')
   }
@@ -349,7 +374,7 @@ export class HoleService {
   }
 
   async getReplies(query: GetRepliesQuery, user: IUser) {
-    return paginate<Reply>(
+    const data = paginate<Reply>(
       this.replyRepo,
       {
         limit: query.limit,
@@ -361,5 +386,7 @@ export class HoleService {
         },
       },
     )
+
+    return createResponse('获取回复成功', data)
   }
 }

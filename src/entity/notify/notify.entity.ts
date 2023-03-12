@@ -29,6 +29,11 @@ export class Notify extends CommonEntity {
   })
   message: string
 
+  @Column('text', {
+    comment: '目标事件的id，用于app跳转',
+  })
+  targetId: string | number
+
   @Column({
     type: 'enum',
     comment: '状态',

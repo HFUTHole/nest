@@ -18,6 +18,7 @@ export class NotifyService {
     event: NotifyEvent,
     message: string,
     studentId: number,
+    targetId: string | number,
     transactionManager?: EntityManager,
   ) {
     const user = await this.userRepo.findOneBy({ studentId })
@@ -25,6 +26,7 @@ export class NotifyService {
     const notify = this.notifyRepo.create({
       event,
       message,
+      targetId,
       user,
     })
 

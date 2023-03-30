@@ -13,14 +13,18 @@ import { CreateHoleDto } from '@/modules/hole/dto/create.dto'
 import { IUser } from '@/app'
 import { createResponse } from '@/utils/create'
 import { paginate } from 'nestjs-typeorm-paginate'
-import { PaginateQuery } from '@/common/dtos/paginate.dto'
 import {
   CreateCommentDto,
   CreateCommentReplyDto,
   GetHoleCommentDto,
 } from '@/modules/hole/dto/comment.dto'
 import { Comment } from '@/entity/hole/comment.entity'
-import { DeleteHoleDto, GetHoleDetailQuery } from '@/modules/hole/dto/hole.dto'
+import {
+  DeleteHoleDto,
+  GetHoleDetailQuery,
+  GetHoleListQuery,
+  HoleListMode,
+} from '@/modules/hole/dto/hole.dto'
 import { Reply } from '@/entity/hole/reply.entity'
 import { GetRepliesQuery, ReplyReplyDto } from '@/modules/hole/dto/replies.dto'
 import { Tags } from '@/entity/hole/tags.entity'
@@ -28,6 +32,8 @@ import { Vote, VoteType } from '@/entity/hole/vote.entity'
 import { PostVoteDto } from '@/modules/hole/dto/vote.dto'
 import { NotifyService } from '@/modules/notify/notify.service'
 import { NotifyEvent } from '@/entity/notify/notify.entity'
+import { AppConfig } from '@/app.config'
+import { getAvatarUrl } from '@/utils/user'
 
 @Injectable()
 export class HoleService {
@@ -55,20 +61,38 @@ export class HoleService {
   @Inject()
   private readonly notifyService: NotifyService
 
-  async getList(query: PaginateQuery) {
-    const data = await paginate<Hole>(this.holeRepo, query, {
+  constructor(private readonly appConfig: AppConfig) {}
+
+  async getList(query: GetHoleListQuery) {
+    let queryBuilder = this.holeRepo.createQueryBuilder('hole').setFindOptions({
       relations: {
         user: true,
         votes: true,
+        comments: true,
       },
     })
 
+    if (query.mode === HoleListMode.random) {
+      queryBuilder = queryBuilder
+        .addSelect('LOG10(hole.favoriteCounts + 2) * RAND() * 5', 'score')
+        .orderBy('score', 'DESC')
+    } else if (query.mode === HoleListMode.timeline) {
+      queryBuilder = queryBuilder.orderBy('hole.createAt', 'DESC')
+    }
+
+    const data = await paginate<Hole>(queryBuilder, query)
+
     // TODO 用sql解决，还是得多学学sql啊
     ;(data.items as any) = data.items.map((item) => {
+      if (!item.user.avatar) {
+        item.user.avatar = getAvatarUrl(this.appConfig, item.user)
+      }
       return {
         ...item,
-        body: `${item.body.slice(1, 500)}...`,
-        totalCount: item.votes.reduce((prev, cur) => prev + cur.count, 0),
+        comments: item.comments.slice(0, 2),
+        body: `${item.body.slice(0, 300)}${item.body.length > 300 ? '...' : ''}`,
+        commentsCount: item.comments.length,
+        voteTotalCount: item.votes.reduce((prev, cur) => prev + cur.count, 0),
       }
     })
 
@@ -283,7 +307,7 @@ export class HoleService {
 
     await this.holeRepo.save(hole)
 
-    return createResponse('创建树洞成功')
+    return createResponse('创建树洞成功', { id: hole.id })
   }
 
   async createComment(dto: CreateCommentDto, reqUser: IUser) {

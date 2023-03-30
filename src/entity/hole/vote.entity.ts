@@ -1,7 +1,15 @@
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne } from 'typeorm'
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+} from 'typeorm'
 import { CommonEntity } from '@/common/entity/common.entity'
 import { Hole } from '@/entity/hole/hole.entity'
 import { User } from '@/entity/user/user.entity'
+import { Timestamp } from '@/common/decorator/timestamp.decorator'
 
 export enum VoteType {
   single = 'single',
@@ -37,4 +45,11 @@ export class Vote extends CommonEntity {
   @ManyToMany(() => User, (user) => user.votes, { cascade: true })
   @JoinTable()
   user: User[]
+
+  // @CreateDateColumn({
+  //   type: 'timestamp',
+  //   comment: '投票结束时间',
+  // })
+  // @Timestamp()
+  // endTime: Date
 }

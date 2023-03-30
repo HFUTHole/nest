@@ -7,6 +7,8 @@ import { UserService } from '@/modules/user/user.service'
 import { createResponse } from '@/utils/create'
 import { JwtService } from '@nestjs/jwt'
 import { encryptPassword, verifyPassword } from '@/modules/auth/auth.utils'
+import { AppConfig } from '@/app.config'
+import { getAvatarUrl } from '@/utils/user'
 
 @Injectable()
 export class AuthService {
@@ -16,7 +18,10 @@ export class AuthService {
   @Inject()
   private readonly userService: UserService
 
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly appConfig: AppConfig,
+  ) {}
 
   async login(dto: LoginDto) {
     const user = await this.userRepo.findOne({
@@ -67,6 +72,8 @@ export class AuthService {
       password,
       gender: isHFUTPasswordVerified.gender,
     })
+
+    user.avatar = getAvatarUrl(this.appConfig, user)
 
     let token
     try {

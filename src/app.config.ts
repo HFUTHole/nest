@@ -19,4 +19,8 @@ export class AppConfig {
     ttl: number
     limit: number
   }
+
+  user: {
+    avatar: string
+  }
 }

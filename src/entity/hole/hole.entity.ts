@@ -1,5 +1,13 @@
 import { User } from '@/entity/user/user.entity'
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany } from 'typeorm'
+import {
+  Column,
+  Entity,
+  Index,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm'
 import { Comment } from '@/entity/hole/comment.entity'
 import { AutoIncIdEntity } from '@/common/entity/common.entity'
 import { Tags } from '@/entity/hole/tags.entity'
@@ -20,6 +28,7 @@ export class Hole extends AutoIncIdEntity {
     comment: '点赞数',
     default: 0,
   })
+  @Index()
   favoriteCounts: number
 
   @OneToMany(() => Comment, (comment) => comment.hole)

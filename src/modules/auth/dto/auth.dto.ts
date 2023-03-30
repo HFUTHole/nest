@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString, Length } from 'class-validator'
+import { IsString, Length } from 'class-validator'
 import { AuthDto } from '@/modules/auth/dto/studentId.dto'
 
 export class LoginDto extends AuthDto {}

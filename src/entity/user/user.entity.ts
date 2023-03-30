@@ -46,6 +46,11 @@ export class User extends AutoIncIdEntity {
   })
   role: Role
 
+  @Column({
+    comment: '头像',
+  })
+  avatar?: string
+
   @OneToMany(() => Hole, (hole) => hole.user, { cascade: true })
   holes: Hole[]
 

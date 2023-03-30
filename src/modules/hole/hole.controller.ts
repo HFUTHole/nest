@@ -9,7 +9,7 @@ import {
   CreateCommentReplyDto,
   GetHoleCommentDto,
 } from '@/modules/hole/dto/comment.dto'
-import { GetHoleDetailQuery } from '@/modules/hole/dto/hole.dto'
+import { GetHoleDetailQuery, GetHoleListQuery } from '@/modules/hole/dto/hole.dto'
 import { GetRepliesQuery, ReplyReplyDto } from '@/modules/hole/dto/replies.dto'
 import { Roles } from '@/common/decorator/roles.decorator'
 import { PostVoteDto } from '@/modules/hole/dto/vote.dto'
@@ -21,7 +21,7 @@ export class HoleController {
   private readonly service: HoleService
 
   @Get('/list')
-  getList(@Query() query: PaginateQuery) {
+  getList(@Query() query: GetHoleListQuery) {
     return this.service.getList(query)
   }
 

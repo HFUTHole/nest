@@ -18,7 +18,7 @@ export class CreateHoleDto {
 
   @IsArray()
   @IsOptional()
-  imgs?: string[]
+  imgs?: string[] = []
 
   @MaxLength(Limit.holeVoteOptionLength, {
     each: true,

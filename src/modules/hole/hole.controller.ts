@@ -26,8 +26,8 @@ export class HoleController {
   }
 
   @Get('/detail')
-  getDetail(@Query() query: GetHoleDetailQuery) {
-    return this.service.getDetail(query)
+  getDetail(@Query() query: GetHoleDetailQuery, @User() user: IUser) {
+    return this.service.getDetail(query, user)
   }
 
   @Post('/create')
@@ -56,7 +56,7 @@ export class HoleController {
   }
 
   @Delete('/like')
-  deleteHole(@Body() dto: GetHoleDetailQuery, @User() user: IUser) {
+  deleteLike(@Body() dto: GetHoleDetailQuery, @User() user: IUser) {
     return this.service.deleteLike(dto, user)
   }
 

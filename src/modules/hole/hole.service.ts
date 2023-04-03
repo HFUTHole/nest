@@ -80,7 +80,7 @@ export class HoleService {
       queryBuilder = queryBuilder.orderBy('hole.createAt', 'DESC')
     }
 
-    const data = await paginate<Hole>(queryBuilder, query)
+    const data = await paginate(queryBuilder, query)
 
     // TODO 用sql解决，还是得多学学sql啊
     ;(data.items as any) = data.items.map((item) => {
@@ -183,20 +183,31 @@ export class HoleService {
     return createResponse('投票成功')
   }
 
-  async getDetail(query: GetHoleDetailQuery) {
+  async getDetail(query: GetHoleDetailQuery, reqUser: IUser) {
     const data = await this.holeRepo.findOne({
       relations: {
         user: true,
         votes: true,
+        favoriteUsers: true,
       },
       where: {
         id: query.id,
       },
+      select: {
+        favoriteUsers: { studentId: true },
+      },
     })
+
+    const isLiked = !!data.favoriteUsers.find(
+      (item) => item.studentId === reqUser.studentId,
+    )
+
+    delete data.favoriteUsers
 
     // TODO 用sql解决
     return createResponse('获取树洞详情成功', {
       ...data,
+      isLiked,
       voteTotalCount: data.votes.reduce((prev, cur) => prev + cur.count, 0),
     })
   }
@@ -230,15 +241,7 @@ export class HoleService {
     })
 
     await this.manager.transaction(async (transactionalEntityManager) => {
-      await transactionalEntityManager
-        .getRepository(Hole)
-        .createQueryBuilder()
-        .update(Hole)
-        .set({
-          favoriteCounts: () => 'favoriteCounts + 1',
-        })
-        .where('id = :id', { id: dto.id })
-        .execute()
+      hole.favoriteCounts++
 
       user.favoriteHole.push(hole)
 
@@ -272,9 +275,15 @@ export class HoleService {
       throw new NotFoundException('你还没有点赞过哦')
     }
 
+    const hole = await this.holeRepo.findOne({ where: { id: dto.id } })
+
+    hole.favoriteCounts--
     user.favoriteHole.splice(isAlreadyLikedIndex, 1)
 
-    await this.userRepo.save(user)
+    await this.manager.transaction(async (transactionManager) => {
+      await transactionManager.getRepository(User).save(user)
+      await transactionManager.getRepository(Hole).save(hole)
+    })
 
     return createResponse('取消点赞成功')
   }

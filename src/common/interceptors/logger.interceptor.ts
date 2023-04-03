@@ -21,9 +21,9 @@ export class LoggerInterceptor implements NestInterceptor {
     const now = Date.now()
     const request = context.switchToHttp().getRequest() as Request
 
-    const logBaseInfo = `[${context.getClass().name}]${
-      context.getHandler().name
-    }: ${request.user?.studentId || request.body?.studentId}(${request.ip})`
+    const logBaseInfo = `[${context.getClass().name}]${context.getHandler().name}(${
+      request.url
+    }): ${request.user?.studentId || request.body?.studentId}(${request.ip})`
 
     return next.handle().pipe(
       tap(() => {

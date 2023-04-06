@@ -14,13 +14,20 @@ export class UserController {
   @Inject()
   private readonly service: UserService
 
+  @Roles([Role.Admin])
   @Get('notify')
   getNotifications(@Query() query: PaginateQuery, @User() user: IUser) {
     return this.service.getNotifications(query, user)
   }
 
+  @Roles([Role.Admin])
   @Post('notify/read')
   readNotify(@Body() dto: ReadNotifyDto, @User() user: IUser) {
     return this.service.readNotify(dto, user)
+  }
+
+  @Get('/profile')
+  getProfile(@User() user: IUser) {
+    return this.service.getProfile(user)
   }
 }

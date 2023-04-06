@@ -28,11 +28,6 @@ export class CreateCommentDto {
 }
 
 export class CreateCommentReplyDto {
-  @IsHoleExist()
-  @IsPositive()
-  @IsNumber()
-  id: number // 树洞id
-
   @IsCommentExist()
   @Length(15, 16)
   @IsString()

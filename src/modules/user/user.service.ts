@@ -27,4 +27,12 @@ export class UserService {
 
     return createResponse('阅读通知成功')
   }
+
+  async getProfile(reqUser: IUser) {
+    const data = await this.userRepository.findOneBy({
+      studentId: reqUser.studentId,
+    })
+
+    return createResponse('获取用户信息成功', data)
+  }
 }

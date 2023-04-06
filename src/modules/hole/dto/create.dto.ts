@@ -24,7 +24,9 @@ export class CreateHoleDto {
     each: true,
     message: `每个选项最长只能是${Limit.holeVoteOptionLength}个字符哦`,
   })
-  @ArrayMaxSize(5, { message: '最多只能创建五个标签哦' })
+  @ArrayMaxSize(Limit.holeTagsMaxLength, {
+    message: `最多只能创建${Limit.holeTagsMaxLength}个标签哦`,
+  })
   @IsArray()
   @IsOptional()
   tags: string[] = []

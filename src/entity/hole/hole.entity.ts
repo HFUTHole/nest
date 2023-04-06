@@ -15,6 +15,9 @@ import { Vote } from '@/entity/hole/vote.entity'
 
 @Entity()
 export class Hole extends AutoIncIdEntity {
+  @Index({
+    fulltext: true,
+  })
   @Column('text', { comment: '文章' })
   body: string
 

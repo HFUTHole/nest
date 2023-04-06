@@ -13,6 +13,7 @@ import { GetHoleDetailQuery, GetHoleListQuery } from '@/modules/hole/dto/hole.dt
 import { GetRepliesQuery, ReplyReplyDto } from '@/modules/hole/dto/replies.dto'
 import { Roles } from '@/common/decorator/roles.decorator'
 import { PostVoteDto } from '@/modules/hole/dto/vote.dto'
+import { SearchQuery } from '@/modules/hole/dto/search.dto'
 
 @Roles()
 @Controller('hole')
@@ -83,5 +84,10 @@ export class HoleController {
   @Get('/comment/reply')
   getReplies(@Query() query: GetRepliesQuery, @User() user: IUser) {
     return this.service.getReplies(query, user)
+  }
+
+  @Get('/search')
+  search(@Query() query: SearchQuery) {
+    return this.service.search(query)
   }
 }

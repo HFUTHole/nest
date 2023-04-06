@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { Hole } from '@/entity/hole/hole.entity'
-import { EntityManager, Repository } from 'typeorm'
+import { EntityManager, Like, Repository } from 'typeorm'
 import { User } from '@/entity/user/user.entity'
 import { CreateHoleDto } from '@/modules/hole/dto/create.dto'
 import { IUser } from '@/app'
@@ -34,6 +34,9 @@ import { NotifyService } from '@/modules/notify/notify.service'
 import { NotifyEvent } from '@/entity/notify/notify.entity'
 import { AppConfig } from '@/app.config'
 import { getAvatarUrl } from '@/utils/user'
+import { HoleDetailCommentMode } from '@/modules/hole/hole.constant'
+import { SearchQuery } from '@/modules/hole/dto/search.dto'
+import { resolvePaginationHoleData } from '@/modules/hole/hole.utils'
 
 @Injectable()
 export class HoleService {
@@ -83,18 +86,7 @@ export class HoleService {
     const data = await paginate(queryBuilder, query)
 
     // TODO 用sql解决，还是得多学学sql啊
-    ;(data.items as any) = data.items.map((item) => {
-      if (!item.user.avatar) {
-        item.user.avatar = getAvatarUrl(this.appConfig, item.user)
-      }
-      return {
-        ...item,
-        comments: item.comments.slice(0, 2),
-        body: `${item.body.slice(0, 300)}${item.body.length > 300 ? '...' : ''}`,
-        commentsCount: item.comments.length,
-        voteTotalCount: item.votes.reduce((prev, cur) => prev + cur.count, 0),
-      }
-    })
+    resolvePaginationHoleData(data, this.appConfig)
 
     return data
   }
@@ -348,6 +340,18 @@ export class HoleService {
   }
 
   async getComment(dto: GetHoleCommentDto) {
+    const hole = await this.holeRepo.findOne({
+      relations: {
+        user: true,
+      },
+      select: {
+        user: {
+          studentId: true,
+        },
+      },
+      where: { id: dto.id },
+    })
+
     const data = await paginate<Comment>(
       this.commentRepo,
       {
@@ -364,6 +368,9 @@ export class HoleService {
         },
         where: {
           hole: { id: dto.id },
+          ...(dto.mode === HoleDetailCommentMode.author && {
+            user: { studentId: hole.user.studentId },
+          }),
         },
       },
     )
@@ -421,5 +428,27 @@ export class HoleService {
     )
 
     return createResponse('获取回复成功', data)
+  }
+
+  async search(query: SearchQuery) {
+    const { keywords, ...paginationQuery } = query
+
+    const data = await paginate(this.holeRepo, paginationQuery, {
+      relations: {
+        user: true,
+        votes: true,
+        comments: true,
+      },
+      where: {
+        body: Like(`%${keywords}%`),
+      },
+      order: {
+        createAt: 'DESC',
+      },
+    })
+
+    resolvePaginationHoleData(data, this.appConfig)
+
+    return createResponse('查询成功', data)
   }
 }

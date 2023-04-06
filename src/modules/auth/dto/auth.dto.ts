@@ -1,5 +1,5 @@
-import { IsString, Length } from 'class-validator'
-import { AuthDto } from '@/modules/auth/dto/studentId.dto'
+import { IsNotEmpty, IsString, Length } from 'class-validator'
+import { AuthDto, StudentIdDto } from '@/modules/auth/dto/studentId.dto'
 
 export class LoginDto extends AuthDto {}
 
@@ -13,4 +13,17 @@ export class RegisterDto extends AuthDto {
   @IsString()
   @Length(6, 30)
   hfutPassword: string
+}
+
+export class ForgetPasswordDto extends StudentIdDto {
+  @IsString()
+  @Length(6, 30)
+  hfutPassword: string
+
+  @IsNotEmpty()
+  @Length(6, 20, {
+    message: '密码只能为6-20位长度',
+  })
+  @IsString()
+  password: string
 }

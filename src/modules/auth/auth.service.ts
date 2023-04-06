@@ -1,5 +1,10 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common'
-import { LoginDto, RegisterDto } from '@/modules/auth/dto/auth.dto'
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
+import { ForgetPasswordDto, LoginDto, RegisterDto } from '@/modules/auth/dto/auth.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Gender, User } from '@/entity/user/user.entity'
 import { Repository } from 'typeorm'
@@ -89,6 +94,31 @@ export class AuthService {
     }
 
     return createResponse('注册成功', { token })
+  }
+
+  async forget(dto: ForgetPasswordDto) {
+    const user = await this.userRepo.findOneBy({
+      studentId: dto.studentId,
+    })
+
+    if (!user) {
+      throw new NotFoundException('用户不存在')
+    }
+
+    const isHfutPasswordCorrect = await this.verifyHFUTPassword(dto.hfutPassword)
+
+    if (!isHfutPasswordCorrect) {
+      throw new BadRequestException('信息门户密码错误')
+    }
+
+    user.hfutPassword = await encryptPassword(dto.hfutPassword)
+    user.password = await encryptPassword(dto.password)
+
+    await this.userRepo.save(user)
+
+    const token = this.signToken(dto.studentId)
+
+    return createResponse('修改密码成功', { token })
   }
 
   async verifyHFUTPassword(password: string) {

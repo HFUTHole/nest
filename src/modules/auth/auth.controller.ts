@@ -1,5 +1,5 @@
 import { Body, Controller, Inject, Post, UseGuards } from '@nestjs/common'
-import { LoginDto, RegisterDto } from '@/modules/auth/dto/auth.dto'
+import { ForgetPasswordDto, LoginDto, RegisterDto } from '@/modules/auth/dto/auth.dto'
 import { AuthService } from '@/modules/auth/auth.service'
 import { Public } from '@/common/decorator/public.decorator'
 import { LocalAuthGuard } from '@/modules/auth/guards/lcoal-auth.guard'
@@ -19,5 +19,10 @@ export class AuthController {
   @Post('/register')
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto)
+  }
+
+  @Post('/forget')
+  forget(@Body() dto: ForgetPasswordDto) {
+    return this.authService.forget(dto)
   }
 }

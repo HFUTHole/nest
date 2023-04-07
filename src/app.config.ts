@@ -23,4 +23,8 @@ export class AppConfig {
   user: {
     avatar: string
   }
+
+  image: {
+    url: string
+  }
 }

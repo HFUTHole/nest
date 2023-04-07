@@ -1,5 +1,6 @@
 export const Limit = {
   holeBodyMaxLength: 4096,
+  holeMaxImgLength: 4,
   holeVoteMaxLength: 5,
   holeVoteOptionLength: 20,
   holeTagsMaxLength: 5,

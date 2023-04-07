@@ -8,6 +8,7 @@ import {
   MaxLength,
 } from 'class-validator'
 import { Limit } from '@/constants/limit'
+import { IsValidPostImgs } from '@/modules/hole/dto/utils.dto'
 
 export class CreateHoleDto {
   @MaxLength(Limit.holeBodyMaxLength, {
@@ -16,6 +17,10 @@ export class CreateHoleDto {
   @IsString()
   body: string
 
+  @IsValidPostImgs()
+  @ArrayMaxSize(Limit.holeMaxImgLength, {
+    message: `最多只能上传${Limit.holeMaxImgLength}张图片哦`,
+  })
   @IsArray()
   @IsOptional()
   imgs?: string[] = []

@@ -72,6 +72,11 @@ export class HoleService {
         votes: true,
         comments: { user: true },
       },
+      order: {
+        comments: {
+          createAt: 'ASC',
+        },
+      },
     })
 
     if (query.mode === HoleListMode.random) {
@@ -360,9 +365,9 @@ export class HoleService {
       {
         relations: { user: true, replies: { user: true } },
         order: {
-          createAt: 'desc',
+          createAt: 'ASC',
           replies: {
-            createAt: 'desc',
+            createAt: 'ASC',
           },
         },
         where: {

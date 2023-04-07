@@ -12,6 +12,7 @@ import { Comment } from '@/entity/hole/comment.entity'
 import { AutoIncIdEntity } from '@/common/entity/common.entity'
 import { Tags } from '@/entity/hole/tags.entity'
 import { Vote } from '@/entity/hole/vote.entity'
+import { Limit } from '@/constants/limit'
 
 @Entity()
 export class Hole extends AutoIncIdEntity {

@@ -19,7 +19,7 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
-    'no-extra-semi': 'error',
+    'no-extra-semi': 'off',
     'prettier/prettier': 'off',
     '@typescript-eslint/no-inferrable-types': 'off',
   },

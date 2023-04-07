@@ -11,6 +11,7 @@ export const resolvePaginationHoleData = (
     if (!item.user.avatar) {
       item.user.avatar = getAvatarUrl(config, item.user)
     }
+
     return {
       ...item,
       comments: item.comments.slice(0, 2),

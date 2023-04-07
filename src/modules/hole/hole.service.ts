@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { Hole } from '@/entity/hole/hole.entity'
-import { EntityManager, Like, Repository } from 'typeorm'
+import { EntityManager, FindManyOptions, Like, Repository } from 'typeorm'
 import { User } from '@/entity/user/user.entity'
 import { CreateHoleDto } from '@/modules/hole/dto/create.dto'
 import { IUser } from '@/app'
@@ -33,7 +33,6 @@ import { PostVoteDto } from '@/modules/hole/dto/vote.dto'
 import { NotifyService } from '@/modules/notify/notify.service'
 import { NotifyEvent } from '@/entity/notify/notify.entity'
 import { AppConfig } from '@/app.config'
-import { getAvatarUrl } from '@/utils/user'
 import { HoleDetailCommentMode } from '@/modules/hole/hole.constant'
 import { SearchQuery } from '@/modules/hole/dto/search.dto'
 import { resolvePaginationHoleData } from '@/modules/hole/hole.utils'
@@ -71,7 +70,7 @@ export class HoleService {
       relations: {
         user: true,
         votes: true,
-        comments: true,
+        comments: { user: true },
       },
     })
 
@@ -361,9 +360,9 @@ export class HoleService {
       {
         relations: { user: true, replies: { user: true } },
         order: {
-          createAt: 'asc',
+          createAt: 'desc',
           replies: {
-            createAt: 'asc',
+            createAt: 'desc',
           },
         },
         where: {
@@ -381,7 +380,6 @@ export class HoleService {
   async replyComment(dto: CreateCommentReplyDto, reqUser: IUser) {
     const comment = await this.commentRepo.findOne({
       relations: { user: true },
-      select: { user: { studentId: true } },
       where: { id: dto.commentId },
     })
 
@@ -433,19 +431,50 @@ export class HoleService {
   async search(query: SearchQuery) {
     const { keywords, ...paginationQuery } = query
 
-    const data = await paginate(this.holeRepo, paginationQuery, {
+    let searchOptions: FindManyOptions<Hole> = {
       relations: {
         user: true,
         votes: true,
-        comments: true,
-      },
-      where: {
-        body: Like(`%${keywords}%`),
+        comments: { user: true },
+        tags: true,
       },
       order: {
         createAt: 'DESC',
       },
-    })
+    }
+
+    if (keywords.startsWith('#')) {
+      const keyword = keywords.slice(1)
+      // hole id
+      if (!isNaN(Number(keyword))) {
+        searchOptions = {
+          ...searchOptions,
+          where: {
+            id: Number(keyword),
+          },
+        }
+      } else {
+        // hole tag
+        searchOptions = {
+          ...searchOptions,
+          where: {
+            tags: {
+              body: keyword,
+            },
+          },
+        }
+      }
+    } else {
+      // hole body
+      searchOptions = {
+        ...searchOptions,
+        where: {
+          body: Like(`%${keywords}%`),
+        },
+      }
+    }
+
+    const data = await paginate(this.holeRepo, paginationQuery, searchOptions)
 
     resolvePaginationHoleData(data, this.appConfig)
 

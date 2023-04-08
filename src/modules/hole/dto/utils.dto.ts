@@ -83,6 +83,10 @@ export class IsValidPostImgsConstraint {
   constructor(private readonly config: AppConfig) {}
 
   async validate(imgs: string[]) {
+    if (!imgs.length) {
+      return true
+    }
+
     try {
       await axios.post(`${this.config.image.url}/validate`, {
         imgs,

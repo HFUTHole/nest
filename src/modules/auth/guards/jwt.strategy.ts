@@ -1,7 +1,6 @@
 import { ExtractJwt, Strategy } from 'passport-jwt'
 import { PassportStrategy } from '@nestjs/passport'
-import { Inject, Injectable, NotFoundException } from '@nestjs/common'
-import { UserService } from '@/modules/user/user.service'
+import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { AppConfig } from '@/app.config'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '@/entity/user/user.entity'
@@ -28,7 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     })
 
     if (!user) {
-      throw new NotFoundException('用户不存在')
+      throw new UnauthorizedException('用户不存在')
     }
 
     return payload

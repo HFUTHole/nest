@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { MiddlewareConsumer, Module } from '@nestjs/common'
 import { format } from 'winston'
 import * as winston from 'winston'
 import * as DailyRotateFile from 'winston-daily-rotate-file'
@@ -11,6 +11,7 @@ import { RolesGuard } from '@/modules/role/role.guard'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { User } from '@/entity/user/user.entity'
 import { ThrottlerGuard } from '@nestjs/throttler'
+import { BlockForeignIpMiddleware } from '@/common/middleware/BlockForeignIp.middleware'
 
 @Module({
   imports: [
@@ -55,4 +56,8 @@ import { ThrottlerGuard } from '@nestjs/throttler'
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
-export class CommonModule {}
+export class CommonModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(BlockForeignIpMiddleware).forRoutes('*')
+  }
+}

@@ -1,7 +1,7 @@
 # compiled output
 /dist
 /node_modules
-
+ip2region.xdb
 # Logs
 logs
 *.log

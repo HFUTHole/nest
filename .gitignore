@@ -2,6 +2,7 @@
 /dist
 /node_modules
 ip2region.xdb
+.env.toml
 # Logs
 logs
 *.log

@@ -20,7 +20,7 @@ export class BlockForeignIpMiddleware implements NestMiddleware {
     const isForeignIp = await this.isForeignIp(ip)
     if (isForeignIp) {
       // 将IP加入黑名单
-      this.addToBlacklist(ip)
+      await this.addToBlacklist(ip)
 
       res.status(403).send('Forbidden')
       return
@@ -29,8 +29,10 @@ export class BlockForeignIpMiddleware implements NestMiddleware {
     next()
   }
 
-  private addToBlacklist(ip: string): void {
+  private async addToBlacklist(ip: string) {
     const command = `ipset add ${this.blacklistSetName} ${ip}`
+    const result = await this.Searcher.search(ip)
+    this.logger.log(`ip: ${ip} ${result.region} 已被加入黑名单`)
     exec(command)
   }
 

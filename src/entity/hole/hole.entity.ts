@@ -7,6 +7,7 @@ import {
   ManyToMany,
   ManyToOne,
   OneToMany,
+  OneToOne,
 } from 'typeorm'
 import { Comment } from '@/entity/hole/comment.entity'
 import { AutoIncIdEntity } from '@/common/entity/common.entity'
@@ -48,6 +49,6 @@ export class Hole extends AutoIncIdEntity {
   @JoinTable()
   tags: Tags[]
 
-  @OneToMany(() => Vote, (vote) => vote.hole, { cascade: true })
+  @OneToOne(() => Vote, (vote) => vote.hole, { cascade: true })
   votes: Vote[]
 }

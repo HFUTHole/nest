@@ -1,4 +1,12 @@
-import { Column, Entity, Index, ManyToMany, OneToMany, JoinTable } from 'typeorm'
+import {
+  Column,
+  Entity,
+  Index,
+  ManyToMany,
+  OneToMany,
+  JoinTable,
+  ManyToOne,
+} from 'typeorm'
 import { AutoIncIdEntity } from '@/common/entity/common.entity'
 import { Hole } from '@/entity/hole/hole.entity'
 import { Exclude } from 'class-transformer'
@@ -7,6 +15,7 @@ import { Reply } from '@/entity/hole/reply.entity'
 import { Role } from '@/modules/role/role.constant'
 import { Vote } from '@/entity/hole/vote.entity'
 import { Notify } from '@/entity/notify/notify.entity'
+import { VoteItem } from '@/entity/hole/VoteItem.entity'
 
 export enum Gender {
   Male = '男',
@@ -66,6 +75,9 @@ export class User extends AutoIncIdEntity {
 
   @ManyToMany(() => Vote, (vote) => vote.user)
   votes: Vote[]
+
+  @ManyToOne(() => VoteItem, (voteItem) => voteItem.user)
+  voteItems: VoteItem[]
 
   @OneToMany(() => Notify, (notify) => notify.user)
   notifications: Notify[]

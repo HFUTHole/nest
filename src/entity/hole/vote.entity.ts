@@ -4,12 +4,13 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
-  ManyToOne,
+  OneToMany,
+  OneToOne,
 } from 'typeorm'
 import { CommonEntity } from '@/common/entity/common.entity'
 import { Hole } from '@/entity/hole/hole.entity'
 import { User } from '@/entity/user/user.entity'
-import { Timestamp } from '@/common/decorator/timestamp.decorator'
+import { VoteItem } from '@/entity/hole/VoteItem.entity'
 
 export enum VoteType {
   single = 'single',
@@ -20,18 +21,6 @@ export enum VoteType {
 @Entity()
 export class Vote extends CommonEntity {
   @Column({
-    comment: '选项',
-    type: 'text',
-  })
-  option: string
-
-  @Column({
-    comment: '投票数',
-    default: 0,
-  })
-  count: number
-
-  @Column({
     comment: '类型',
     type: 'enum',
     enum: VoteType,
@@ -39,17 +28,19 @@ export class Vote extends CommonEntity {
   })
   type: VoteType
 
-  @ManyToOne(() => Hole, (hole) => hole.votes)
+  @CreateDateColumn({
+    type: 'timestamp',
+    comment: '投票结束时间',
+  })
+  endTime: Date
+
+  @OneToOne(() => Hole, (hole) => hole.votes)
   hole: Hole
 
   @ManyToMany(() => User, (user) => user.votes, { cascade: true })
   @JoinTable()
   user: User[]
 
-  // @CreateDateColumn({
-  //   type: 'timestamp',
-  //   comment: '投票结束时间',
-  // })
-  // @Timestamp()
-  // endTime: Date
+  @OneToMany(() => VoteItem, (voteItem) => voteItem.vote)
+  items: VoteItem[]
 }

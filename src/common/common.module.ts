@@ -56,8 +56,4 @@ import { BlockForeignIpMiddleware } from '@/common/middleware/BlockForeignIp.mid
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
-export class CommonModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(BlockForeignIpMiddleware).forRoutes('*')
-  }
-}
+export class CommonModule {}

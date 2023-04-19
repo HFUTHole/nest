@@ -17,7 +17,6 @@ export const resolvePaginationHoleData = (
       comments: item.comments.slice(0, 2),
       body: `${item.body.slice(0, 300)}${item.body.length > 300 ? '...' : ''}`,
       commentsCount: item.comments.length,
-      voteTotalCount: item.votes.reduce((prev, cur) => prev + cur.count, 0),
     }
   })
 }

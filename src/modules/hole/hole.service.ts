@@ -120,64 +120,7 @@ export class HoleService {
     })
   }
 
-  async vote(dto: PostVoteDto, reqUser: IUser) {
-    const hole = await this.holeRepo.findOne({
-      relations: {
-        user: true,
-        votes: { user: true },
-      },
-      select: {
-        user: { studentId: true },
-        votes: {
-          id: true,
-          user: { studentId: true },
-        },
-      },
-      where: { id: dto.id },
-    })
-
-    const votes = hole.votes.filter((vote) => dto.ids.includes(vote.id as string))
-
-    if (votes.length !== dto.ids.length) {
-      throw new ForbiddenException('参数错误')
-    }
-
-    const type: VoteType = votes[0].type
-
-    for (const vote of votes) {
-      const appendVotedUser = async () => {
-        const user = await this.userRepo.findOneBy({ studentId: reqUser.studentId })
-        vote.user.push(user)
-        vote.count++
-      }
-
-      if (type === VoteType.multiple) {
-        const isAlreadyVoted = Boolean(
-          vote.user.find((item) => item.studentId === reqUser.studentId),
-        )
-
-        if (!isAlreadyVoted) {
-          await appendVotedUser()
-        }
-      } else {
-        const isAlreadyVoted = Boolean(
-          votes.find((vote) =>
-            vote.user.find((user) => user.studentId === reqUser.studentId),
-          ),
-        )
-
-        if (isAlreadyVoted) {
-          throw new ConflictException('你已经投过票了')
-        } else {
-          await appendVotedUser()
-        }
-      }
-    }
-
-    await this.holeRepo.save(hole)
-
-    return createResponse('投票成功')
-  }
+  async vote(dto: PostVoteDto, reqUser: IUser) {}
 
   async getDetail(query: GetHoleDetailQuery, reqUser: IUser) {
     const data = await this.holeRepo.findOne({
@@ -204,7 +147,6 @@ export class HoleService {
     return createResponse('获取树洞详情成功', {
       ...data,
       isLiked,
-      voteTotalCount: data.votes.reduce((prev, cur) => prev + cur.count, 0),
     })
   }
 
@@ -297,7 +239,6 @@ export class HoleService {
 
     const votes = dto.votes.map((vote) =>
       this.voteRepo.create({
-        option: vote,
         type: dto.isMultipleVote ? VoteType.multiple : VoteType.single,
       }),
     )

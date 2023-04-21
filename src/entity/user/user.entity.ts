@@ -13,6 +13,7 @@ export enum Gender {
   Female = '女',
 }
 
+// TODO 将用户与树洞表分离
 @Entity()
 export class User extends AutoIncIdEntity {
   @Index()
@@ -67,6 +68,14 @@ export class User extends AutoIncIdEntity {
   @ManyToMany(() => Hole, (hole) => hole.favoriteUsers, { cascade: true })
   @JoinTable()
   favoriteHole: Hole[]
+
+  @ManyToMany(() => Comment, (comment) => comment.favoriteUsers, { cascade: true })
+  @JoinTable()
+  favoriteComment: Comment[]
+
+  @ManyToMany(() => Reply, (reply) => reply.favoriteUsers, { cascade: true })
+  @JoinTable()
+  favoriteReply: Reply[]
 
   @ManyToMany(() => Vote, (vote) => vote.user)
   votes: Vote[]

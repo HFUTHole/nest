@@ -1,6 +1,6 @@
 import { PaginateQuery } from '@/common/dtos/paginate.dto'
 import { IsString } from 'class-validator'
-import { IsCommentExist } from '@/modules/hole/dto/utils.dto'
+import { IsCommentExist, IsReplyExist } from '@/modules/hole/dto/utils.dto'
 
 export class ReplyReplyDto {
   @IsCommentExist()
@@ -19,3 +19,13 @@ export class GetRepliesQuery extends PaginateQuery {
   @IsString()
   id: string
 }
+
+export class IsReplyExistDto {
+  @IsReplyExist()
+  @IsString()
+  id: string
+}
+
+export class LikeReplyDto extends IsReplyExistDto {}
+
+export class DeleteLikeReplyDto extends IsReplyExistDto {}

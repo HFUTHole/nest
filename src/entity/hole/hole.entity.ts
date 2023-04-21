@@ -1,5 +1,7 @@
 import { User } from '@/entity/user/user.entity'
 import {
+  AfterLoad,
+  AfterUpdate,
   Column,
   Entity,
   Index,
@@ -28,21 +30,11 @@ export class Hole extends AutoIncIdEntity {
   })
   imgs: string[]
 
-  @Column({
-    comment: '点赞数',
-    default: 0,
-  })
-  @Index()
-  favoriteCounts: number
-
   @OneToMany(() => Comment, (comment) => comment.hole)
   comments: Comment[]
 
   @ManyToOne(() => User, (user) => user.holes)
   user: User
-
-  @ManyToMany(() => User, (user) => user.favoriteHole)
-  favoriteUsers: User[]
 
   @ManyToMany(() => Tags, (tags) => tags.holes, { eager: true, cascade: true })
   @JoinTable()
@@ -50,6 +42,21 @@ export class Hole extends AutoIncIdEntity {
 
   @OneToOne(() => Vote, (vote) => vote.hole, { cascade: true })
   votes: Vote[]
+
+  @Column({
+    comment: '点赞数',
+    default: 0,
+  })
+  @Index()
+  favoriteCounts: number
+
+  @ManyToMany(() => User, (user) => user.favoriteHole)
+  favoriteUsers: User[]
+
+  @AfterUpdate()
+  async afterLoad() {
+    this.favoriteCounts = this.favoriteUsers?.length
+  }
 
   // Use loadRelationCountAndMap to get whether user liked this hole, it will always return 0 or 1 but you can use it as boolean
   // ref: https://pietrzakadrian.com/blog/virtual-column-solutions-for-typeorm#4-loadrelationcountandmap-method

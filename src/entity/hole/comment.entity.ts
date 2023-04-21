@@ -1,5 +1,14 @@
 import { CommonEntity } from '@/common/entity/common.entity'
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm'
+import {
+  AfterLoad,
+  AfterUpdate,
+  Column,
+  Entity,
+  Index,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm'
 import { Hole } from '@/entity/hole/hole.entity'
 import { User } from '@/entity/user/user.entity'
 import { Reply } from '@/entity/hole/reply.entity'
@@ -9,9 +18,6 @@ export class Comment extends CommonEntity {
   @Column('text', { comment: '留言内容' })
   body: string
 
-  @Column({ comment: '点赞数', default: 0 })
-  favoriteCount: number
-
   @ManyToOne(() => Hole, (hole) => hole.comments, { cascade: true })
   hole: Hole
 
@@ -20,6 +26,21 @@ export class Comment extends CommonEntity {
 
   @OneToMany(() => Reply, (reply) => reply.comment)
   replies: Reply[]
+
+  @Column({
+    comment: '点赞数',
+    default: 0,
+  })
+  @Index()
+  favoriteCounts: number
+
+  @ManyToMany(() => User, (user) => user.favoriteComment)
+  favoriteUsers: User[]
+
+  @AfterUpdate()
+  async afterLoad() {
+    this.favoriteCounts = this.favoriteUsers?.length
+  }
 
   // TODO use @VirtualMapColumn() WIP...
   repliesCount?: number

@@ -8,7 +8,10 @@ import {
 } from 'class-validator'
 import { IsCommentExist, IsHoleExist, IsReplyExist } from '@/modules/hole/dto/utils.dto'
 import { PaginateQuery } from '@/common/dtos/paginate.dto'
-import { HoleDetailCommentMode } from '@/modules/hole/hole.constant'
+import {
+  HoleDetailCommentMode,
+  HoleDetailCommentOrderMode,
+} from '@/modules/hole/hole.constant'
 import { Limit } from '@/constants/limit'
 
 export class GetHoleCommentDto extends PaginateQuery {
@@ -18,7 +21,12 @@ export class GetHoleCommentDto extends PaginateQuery {
   id: number // 树洞id
 
   @IsEnum(HoleDetailCommentMode)
+  @IsOptional()
   mode: HoleDetailCommentMode = HoleDetailCommentMode.all
+
+  @IsEnum(HoleDetailCommentOrderMode)
+  @IsOptional()
+  order?: HoleDetailCommentOrderMode = HoleDetailCommentOrderMode.favorite
 }
 
 export class CreateCommentDto {
@@ -48,3 +56,13 @@ export class CreateCommentReplyDto {
   @IsOptional()
   replyId?: string
 }
+
+export class IsCommentIdExistDto {
+  @IsCommentExist()
+  @IsString()
+  id: string
+}
+
+export class LikeCommentDto extends IsCommentIdExistDto {}
+
+export class DeleteLikeCommentDto extends IsCommentIdExistDto {}

@@ -1,4 +1,12 @@
-import { Column, Entity, ManyToOne } from 'typeorm'
+import {
+  AfterLoad,
+  AfterUpdate,
+  Column,
+  Entity,
+  Index,
+  ManyToMany,
+  ManyToOne,
+} from 'typeorm'
 import { User } from '@/entity/user/user.entity'
 import { CommonEntity } from '@/common/entity/common.entity'
 import { Comment } from '@/entity/hole/comment.entity'
@@ -21,7 +29,16 @@ export class Reply extends CommonEntity {
     comment: '点赞数',
     default: 0,
   })
-  favoriteCount: number
+  @Index()
+  favoriteCounts: number
+
+  @ManyToMany(() => User, (user) => user.favoriteReply)
+  favoriteUsers: User[]
+
+  @AfterUpdate()
+  async afterLoad() {
+    this.favoriteCounts = this.favoriteUsers?.length
+  }
 
   @ManyToOne(() => User, (user) => user.repliedReply, { cascade: true })
   replyUser: User

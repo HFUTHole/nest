@@ -8,6 +8,7 @@ import {
   CreateCommentDto,
   CreateCommentReplyDto,
   GetHoleCommentDto,
+  LikeCommentDto,
 } from '@/modules/hole/dto/comment.dto'
 import { GetHoleDetailQuery, GetHoleListQuery } from '@/modules/hole/dto/hole.dto'
 import { GetRepliesQuery, ReplyReplyDto } from '@/modules/hole/dto/replies.dto'
@@ -69,6 +70,16 @@ export class HoleController {
   @Get('/comment')
   getComment(@Query() query: GetHoleCommentDto) {
     return this.service.getComment(query)
+  }
+
+  @Post('/comment/like')
+  likeComment(@Body() dto: LikeCommentDto, @User() user: IUser) {
+    return this.service.likeComment(dto, user)
+  }
+
+  @Delete('/comment/like')
+  deleteLikeComment(@Body() dto: LikeCommentDto, @User() user: IUser) {
+    return this.service.deleteLikeComment(dto, user)
   }
 
   @Post('/comment/reply')

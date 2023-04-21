@@ -290,27 +290,42 @@ export class HoleService {
       where: { id: dto.id },
     })
 
-    const commentQuery = this.commentRepo.createQueryBuilder().setFindOptions({
-      relations: { user: true, replies: { user: true, replyUser: true } },
-      order: {
-        createAt: 'ASC',
-        replies: {
-          createAt: 'ASC',
+    const isFavoriteMode = dto.mode === HoleDetailCommentMode.favorite
+
+    const commentQuery = this.commentRepo
+      .createQueryBuilder('comment')
+      .setFindOptions({
+        relations: { user: true, replies: { user: true, replyUser: true } },
+        order: {
+          ...(isFavoriteMode
+            ? {
+                favoriteCount: 'ASC',
+                replies: {
+                  favoriteCount: 'ASC',
+                },
+              }
+            : {
+                createdAt: 'ASC',
+                replies: {
+                  createAt: 'ASC',
+                },
+              }),
         },
-      },
-      where: {
-        hole: { id: dto.id },
-        ...(dto.mode === HoleDetailCommentMode.author && {
-          user: { studentId: hole.user.studentId },
-        }),
-      },
-    })
+        where: {
+          hole: { id: dto.id },
+          ...(dto.mode === HoleDetailCommentMode.author && {
+            user: { studentId: hole.user.studentId },
+          }),
+        },
+      })
+      .loadRelationCountAndMap('comment.repliesCount', 'comment.replies')
 
     const data = await paginate<Comment>(commentQuery, {
       limit: dto.limit,
       page: dto.page,
     })
 
+    // TODO use queryBuilder to solve this problem
     ;(data as any).items = data.items.map((item) => {
       item.replies = item.replies.slice(0, 2)
       return item
@@ -348,7 +363,7 @@ export class HoleService {
   }
 
   async getReplies(query: GetRepliesQuery, user: IUser) {
-    const data = paginate<Reply>(
+    const data = await paginate<Reply>(
       this.replyRepo,
       {
         limit: query.limit,
@@ -357,6 +372,15 @@ export class HoleService {
       {
         relations: {
           user: true,
+          comment: true,
+        },
+        where: {
+          comment: {
+            id: query.id,
+          },
+        },
+        order: {
+          favoriteCount: 'ASC',
         },
       },
     )

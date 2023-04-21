@@ -81,7 +81,7 @@ export class HoleController {
     return this.service.replyReply(dto, user)
   }
 
-  @Get('/comment/reply')
+  @Get('/comment/replies')
   getReplies(@Query() query: GetRepliesQuery, @User() user: IUser) {
     return this.service.getReplies(query, user)
   }

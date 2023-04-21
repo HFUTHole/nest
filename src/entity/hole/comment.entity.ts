@@ -20,4 +20,7 @@ export class Comment extends CommonEntity {
 
   @OneToMany(() => Reply, (reply) => reply.comment)
   replies: Reply[]
+
+  // TODO use @VirtualMapColumn() WIP...
+  repliesCount?: number
 }

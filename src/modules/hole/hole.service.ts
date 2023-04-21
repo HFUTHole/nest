@@ -69,7 +69,7 @@ export class HoleService {
     let queryBuilder = this.holeRepo.createQueryBuilder('hole').setFindOptions({
       relations: {
         user: true,
-        votes: true,
+        // votes: true,
         comments: { user: true },
       },
       order: {
@@ -123,31 +123,24 @@ export class HoleService {
   async vote(dto: PostVoteDto, reqUser: IUser) {}
 
   async getDetail(query: GetHoleDetailQuery, reqUser: IUser) {
-    const data = await this.holeRepo.findOne({
-      relations: {
-        user: true,
-        votes: true,
-        favoriteUsers: true,
-      },
-      where: {
-        id: query.id,
-      },
-      select: {
-        favoriteUsers: { studentId: true },
-      },
-    })
+    const data = await this.holeRepo
+      .createQueryBuilder('hole')
+      .setFindOptions({
+        relations: {
+          user: true,
+        },
+        where: {
+          id: query.id,
+        },
+      })
+      .loadRelationCountAndMap('hole.isLiked', 'hole.favoriteUsers', 'isLiked', (qb) =>
+        qb.andWhere('isLiked.studentId = :studentId', {
+          studentId: reqUser.studentId,
+        }),
+      )
+      .getOne()
 
-    const isLiked = !!data.favoriteUsers.find(
-      (item) => item.studentId === reqUser.studentId,
-    )
-
-    delete data.favoriteUsers
-
-    // TODO 用sql解决
-    return createResponse('获取树洞详情成功', {
-      ...data,
-      isLiked,
-    })
+    return createResponse('获取树洞详情成功', data)
   }
 
   async likeHole(dto: GetHoleDetailQuery, reqUser: IUser) {
@@ -281,7 +274,7 @@ export class HoleService {
       )
     })
 
-    return createResponse('留言成功')
+    return createResponse('留言成功', { id: comment.id })
   }
 
   async getComment(dto: GetHoleCommentDto) {
@@ -297,60 +290,57 @@ export class HoleService {
       where: { id: dto.id },
     })
 
-    const data = await paginate<Comment>(
-      this.commentRepo,
-      {
-        limit: dto.limit,
-        page: dto.page,
-      },
-      {
-        relations: { user: true, replies: { user: true } },
-        order: {
+    const commentQuery = this.commentRepo.createQueryBuilder().setFindOptions({
+      relations: { user: true, replies: { user: true, replyUser: true } },
+      order: {
+        createAt: 'ASC',
+        replies: {
           createAt: 'ASC',
-          replies: {
-            createAt: 'ASC',
-          },
-        },
-        where: {
-          hole: { id: dto.id },
-          ...(dto.mode === HoleDetailCommentMode.author && {
-            user: { studentId: hole.user.studentId },
-          }),
         },
       },
-    )
+      where: {
+        hole: { id: dto.id },
+        ...(dto.mode === HoleDetailCommentMode.author && {
+          user: { studentId: hole.user.studentId },
+        }),
+      },
+    })
+
+    const data = await paginate<Comment>(commentQuery, {
+      limit: dto.limit,
+      page: dto.page,
+    })
+
+    ;(data as any).items = data.items.map((item) => {
+      item.replies = item.replies.slice(0, 2)
+      return item
+    })
 
     return createResponse('获取评论成功', data)
   }
 
   async replyComment(dto: CreateCommentReplyDto, reqUser: IUser) {
-    const comment = await this.commentRepo.findOne({
-      relations: { user: true },
-      where: { id: dto.commentId },
-    })
-
-    const user = await this.userRepo.findOne({
-      where: { studentId: reqUser.studentId },
-    })
+    const comment = await this.commentRepo.findOne({ where: { id: dto.commentId } })
+    const user = await this.userRepo.findOneBy({ studentId: reqUser.studentId })
 
     const reply = this.replyRepo.create({
-      comment,
       body: dto.body,
+      comment,
       user,
     })
 
-    await this.manager.transaction(async (transactionalEntityManager) => {
-      await transactionalEntityManager.getRepository(Reply).save(reply)
-      await this.notifyService.notify(
-        NotifyEvent.reply,
-        `有人给你的评论#${comment.id}回复了哦`,
-        comment.user.studentId,
-        comment.id,
-        transactionalEntityManager,
-      )
-    })
+    if (dto.replyId) {
+      const parentReply = await this.replyRepo.findOne({
+        relations: { user: true },
+        where: { id: dto.replyId },
+      })
+      reply.replyUser = parentReply.user
+      reply.parentReply = parentReply
+    }
 
-    return createResponse('回复成功')
+    await this.replyRepo.save(reply)
+
+    return createResponse('回复成功', { id: reply.id })
   }
 
   async replyReply(dto: ReplyReplyDto, reqUser: IUser) {

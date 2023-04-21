@@ -13,7 +13,6 @@ import { Comment } from '@/entity/hole/comment.entity'
 import { AutoIncIdEntity } from '@/common/entity/common.entity'
 import { Tags } from '@/entity/hole/tags.entity'
 import { Vote } from '@/entity/hole/vote.entity'
-import { Limit } from '@/constants/limit'
 
 @Entity()
 export class Hole extends AutoIncIdEntity {
@@ -51,4 +50,8 @@ export class Hole extends AutoIncIdEntity {
 
   @OneToOne(() => Vote, (vote) => vote.hole, { cascade: true })
   votes: Vote[]
+
+  // Use loadRelationCountAndMap to get whether user liked this hole, it will always return 0 or 1 but you can use it as boolean
+  // ref: https://pietrzakadrian.com/blog/virtual-column-solutions-for-typeorm#4-loadrelationcountandmap-method
+  readonly isLiked?: number
 }

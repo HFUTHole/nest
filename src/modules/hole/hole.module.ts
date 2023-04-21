@@ -8,6 +8,7 @@ import { Comment } from '@/entity/hole/comment.entity'
 import {
   IsCommentExistConstraint,
   IsHoleExistConstraint,
+  IsReplyExistConstraint,
   IsValidPostImgsConstraint,
   IsVoteExistConstraint,
 } from '@/modules/hole/dto/utils.dto'
@@ -32,6 +33,7 @@ import { VoteItem } from '@/entity/hole/VoteItem.entity'
     IsCommentExistConstraint,
     IsVoteExistConstraint,
     IsValidPostImgsConstraint,
+    IsReplyExistConstraint,
   ],
 })
 export class HoleModule {}

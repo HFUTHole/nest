@@ -1,15 +1,6 @@
-import {
-  Column,
-  Entity,
-  Index,
-  ManyToMany,
-  OneToMany,
-  JoinTable,
-  ManyToOne,
-} from 'typeorm'
+import { Column, Entity, Index, ManyToMany, OneToMany, JoinTable } from 'typeorm'
 import { AutoIncIdEntity } from '@/common/entity/common.entity'
 import { Hole } from '@/entity/hole/hole.entity'
-import { Exclude } from 'class-transformer'
 import { Comment } from '@/entity/hole/comment.entity'
 import { Reply } from '@/entity/hole/reply.entity'
 import { Role } from '@/modules/role/role.constant'
@@ -69,6 +60,10 @@ export class User extends AutoIncIdEntity {
   @OneToMany(() => Reply, (reply) => reply.user)
   replies: Reply[]
 
+  // 被回复的评论
+  @OneToMany(() => Reply, (reply) => reply.replyUser)
+  repliedReply: Reply[]
+
   @ManyToMany(() => Hole, (hole) => hole.favoriteUsers, { cascade: true })
   @JoinTable()
   favoriteHole: Hole[]
@@ -76,7 +71,7 @@ export class User extends AutoIncIdEntity {
   @ManyToMany(() => Vote, (vote) => vote.user)
   votes: Vote[]
 
-  @ManyToOne(() => VoteItem, (voteItem) => voteItem.user)
+  @ManyToMany(() => VoteItem, (voteItem) => voteItem.user)
   voteItems: VoteItem[]
 
   @OneToMany(() => Notify, (notify) => notify.user)

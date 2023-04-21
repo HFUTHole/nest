@@ -1,5 +1,12 @@
-import { IsEnum, IsNumber, IsPositive, IsString, Length } from 'class-validator'
-import { IsCommentExist, IsHoleExist } from '@/modules/hole/dto/utils.dto'
+import {
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+  Length,
+} from 'class-validator'
+import { IsCommentExist, IsHoleExist, IsReplyExist } from '@/modules/hole/dto/utils.dto'
 import { PaginateQuery } from '@/common/dtos/paginate.dto'
 import { HoleDetailCommentMode } from '@/modules/hole/hole.constant'
 import { Limit } from '@/constants/limit'
@@ -36,4 +43,8 @@ export class CreateCommentReplyDto {
   @Length(1, 1000, { message: '评论字数限制在1-1000字' })
   @IsString()
   body: string
+
+  @IsReplyExist()
+  @IsOptional()
+  replyId?: string
 }

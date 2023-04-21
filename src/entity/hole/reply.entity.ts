@@ -13,4 +13,16 @@ export class Reply extends CommonEntity {
 
   @ManyToOne(() => Comment, (comment) => comment.replies, { cascade: true })
   comment: Comment
+
+  @ManyToOne(() => Reply, (reply) => reply.parentReply)
+  parentReply: Reply
+
+  @Column({
+    comment: '点赞数',
+    default: 0,
+  })
+  favoriteCount: number
+
+  @ManyToOne(() => User, (user) => user.repliedReply, { cascade: true })
+  replyUser: User
 }

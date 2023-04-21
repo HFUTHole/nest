@@ -14,6 +14,7 @@ import { Vote } from '@/entity/hole/vote.entity'
 import { AppConfig } from '@/app.config'
 import axios from 'axios'
 import { InjectLogger } from '@/utils/decorator'
+import { Reply } from '@/entity/hole/reply.entity'
 
 @ValidatorConstraint({ async: true })
 @Injectable()
@@ -100,10 +101,29 @@ export class IsValidPostImgsConstraint {
   }
 }
 
+@ValidatorConstraint({ async: true })
+@Injectable()
+export class IsReplyExistConstraint {
+  @InjectRepository(Reply)
+  private readonly replyRepo: Repository<Reply>
+
+  async validate(id: string) {
+    const reply = await this.replyRepo.findOne({ where: { id } })
+
+    if (!reply) {
+      throw new NotFoundException('回复不存在')
+    }
+
+    return true
+  }
+}
+
 export const IsVoteExist = createClassValidator(IsVoteExistConstraint)
 
 export const IsHoleExist = createClassValidator(IsHoleExistConstraint)
 
 export const IsCommentExist = createClassValidator(IsCommentExistConstraint)
+
+export const IsReplyExist = createClassValidator(IsReplyExistConstraint)
 
 export const IsValidPostImgs = createClassValidator(IsValidPostImgsConstraint)

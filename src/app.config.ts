@@ -2,29 +2,29 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm'
 import { ValidationPipeOptions } from '@nestjs/common'
 
 export class AppConfig {
-  database: TypeOrmModuleOptions
+  database!: TypeOrmModuleOptions
 
-  validations: ValidationPipeOptions
+  validations!: ValidationPipeOptions
 
-  jwt: {
+  jwt!: {
     token: string
     expired: string
   }
 
-  server: {
+  server!: {
     port: number
   }
 
-  throttle: {
+  throttle!: {
     ttl: number
     limit: number
   }
 
-  user: {
+  user!: {
     avatar: string
   }
 
-  image: {
+  image!: {
     url: string
   }
 }

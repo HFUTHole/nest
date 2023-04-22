@@ -11,7 +11,11 @@ import {
   LikeCommentDto,
 } from '@/modules/hole/dto/comment.dto'
 import { GetHoleDetailQuery, GetHoleListQuery } from '@/modules/hole/dto/hole.dto'
-import { GetRepliesQuery, ReplyReplyDto } from '@/modules/hole/dto/replies.dto'
+import {
+  GetRepliesQuery,
+  LikeReplyDto,
+  ReplyReplyDto,
+} from '@/modules/hole/dto/replies.dto'
 import { Roles } from '@/common/decorator/roles.decorator'
 import { PostVoteDto } from '@/modules/hole/dto/vote.dto'
 import { SearchQuery } from '@/modules/hole/dto/search.dto'
@@ -95,6 +99,16 @@ export class HoleController {
   @Get('/comment/replies')
   getReplies(@Query() query: GetRepliesQuery, @User() user: IUser) {
     return this.service.getReplies(query, user)
+  }
+
+  @Post('/comment/reply/like')
+  likeReply(@Query() dto: LikeReplyDto, @User() user: IUser) {
+    return this.service.likeReply(dto, user)
+  }
+
+  @Delete('/comment/reply/like')
+  deleteReply(@Query() dto: LikeReplyDto, @User() user: IUser) {
+    return this.service.deleteReplyLike(dto, user)
   }
 
   @Get('/search')

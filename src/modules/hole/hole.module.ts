@@ -19,6 +19,7 @@ import { Vote } from '@/entity/hole/vote.entity'
 import { NotifyService } from '@/modules/notify/notify.service'
 import { Notify } from '@/entity/notify/notify.entity'
 import { VoteItem } from '@/entity/hole/VoteItem.entity'
+import { HoleRepoService } from '@/modules/hole/hole.repo'
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { VoteItem } from '@/entity/hole/VoteItem.entity'
     HoleService,
     RoleService,
     NotifyService,
+    HoleRepoService,
     IsHoleExistConstraint,
     IsCommentExistConstraint,
     IsVoteExistConstraint,

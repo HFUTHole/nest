@@ -51,6 +51,7 @@ import {
 } from '@/modules/hole/hole.constant'
 import { SearchQuery } from '@/modules/hole/dto/search.dto'
 import { resolvePaginationHoleData } from '@/modules/hole/hole.utils'
+import { HoleRepoService } from '@/modules/hole/hole.repo'
 
 @Injectable()
 export class HoleService {
@@ -77,6 +78,9 @@ export class HoleService {
 
   @Inject()
   private readonly notifyService: NotifyService
+
+  @Inject()
+  private readonly holeRepoService: HoleRepoService
 
   constructor(private readonly appConfig: AppConfig) {}
 
@@ -159,82 +163,21 @@ export class HoleService {
   }
 
   async likeHole(dto: GetHoleDetailQuery, reqUser: IUser) {
-    const isLiked = await this.holeRepo.findOne({
-      relations: {
-        favoriteUsers: true,
-      },
-      where: {
-        id: dto.id,
-        favoriteUsers: {
-          studentId: reqUser.studentId,
-        },
-      },
+    return this.holeRepoService.processLike({
+      dto,
+      reqUser,
+      repo: this.holeRepo,
+      propertyPath: 'favoriteHole',
     })
-
-    if (isLiked) {
-      throw new ConflictException('你已经点赞过了')
-    }
-
-    const user = await this.userRepo.findOne({
-      where: { studentId: reqUser.studentId },
-      relations: { favoriteComment: true },
-    })
-
-    const hole = await this.holeRepo.findOne({
-      where: {
-        id: dto.id,
-      },
-    })
-
-    await this.manager.transaction(async (transactionalEntityManager) => {
-      await transactionalEntityManager
-        .getRepository(User)
-        .createQueryBuilder()
-        .relation(User, 'favoriteHole')
-        .of(user)
-        .add(hole)
-
-      await this.notifyService.notify(
-        NotifyEvent.like,
-        '有一个人点赞了你的树洞',
-        reqUser.studentId,
-        hole.id,
-        transactionalEntityManager,
-      )
-    })
-
-    return createResponse('点赞成功')
   }
 
   async deleteLike(dto: GetHoleDetailQuery, reqUser: IUser) {
-    const hole = await this.holeRepo.findOne({
-      relations: {
-        favoriteUsers: true,
-      },
-      where: {
-        id: dto.id,
-        favoriteUsers: {
-          studentId: reqUser.studentId,
-        },
-      },
+    return this.holeRepoService.processDeleteLike({
+      dto,
+      reqUser,
+      repo: this.holeRepo,
+      propertyPath: 'favoriteHole',
     })
-
-    if (!hole) {
-      throw new ConflictException('你还没有点赞哦')
-    }
-
-    const user = await this.userRepo.findOne({
-      where: { studentId: reqUser.studentId },
-      relations: { favoriteComment: true },
-    })
-
-    await this.userRepo
-      .createQueryBuilder()
-      .relation(User, 'favoriteHole')
-      .of(user)
-      .remove(hole)
-
-    return createResponse('取消点赞成功')
   }
 
   async create(dto: CreateHoleDto, reqUser: IUser) {
@@ -351,76 +294,22 @@ export class HoleService {
   }
 
   async likeComment(dto: LikeCommentDto, reqUser: IUser) {
-    const isLiked = await this.commentRepo.findOne({
-      relations: {
-        favoriteUsers: true,
-      },
-      where: {
-        id: dto.id,
-        favoriteUsers: {
-          studentId: reqUser.studentId,
-        },
-      },
+    return this.holeRepoService.processLike<Comment>({
+      dto,
+      reqUser,
+      repo: this.commentRepo,
+      propertyPath: 'favoriteComment',
     })
-
-    if (isLiked) {
-      throw new ConflictException('你已经点赞过了')
-    }
-
-    const user = await this.userRepo.findOne({
-      where: { studentId: reqUser.studentId },
-      relations: { favoriteComment: true },
-    })
-
-    const comment = await this.commentRepo.findOne({
-      where: {
-        id: dto.id,
-      },
-    })
-
-    await this.userRepo
-      .createQueryBuilder()
-      .relation(User, 'favoriteComment')
-      .of(user)
-      .add(comment)
-
-    return createResponse('点赞成功')
   }
 
   async deleteLikeComment(dto: LikeCommentDto, reqUser: IUser) {
-    const comment = await this.commentRepo.findOne({
-      relations: {
-        favoriteUsers: true,
-      },
-      where: {
-        id: dto.id,
-        favoriteUsers: {
-          studentId: reqUser.studentId,
-        },
-      },
+    return this.holeRepoService.processDeleteLike({
+      dto,
+      reqUser,
+      repo: this.commentRepo,
+      propertyPath: 'favoriteComment',
     })
-
-    if (!comment) {
-      throw new ConflictException('你还没有点赞哦')
-    }
-
-    const user = await this.userRepo.findOne({
-      where: { studentId: reqUser.studentId },
-      relations: { favoriteComment: true },
-    })
-
-    await this.userRepo
-      .createQueryBuilder()
-      .relation(User, 'favoriteComment')
-      .of(user)
-      .remove(comment)
-
-    return createResponse('取消点赞成功')
   }
-
-  async likeReply(dto: LikeReplyDto, reqUser: IUser) {}
-
-  async deleteLikeReply(dto: DeleteLikeReplyDto, reqUser: IUser) {}
 
   async replyComment(dto: CreateCommentReplyDto, reqUser: IUser) {
     const comment = await this.commentRepo.findOne({ where: { id: dto.commentId } })
@@ -474,6 +363,24 @@ export class HoleService {
     )
 
     return createResponse('获取回复成功', data)
+  }
+
+  async likeReply(dto: LikeReplyDto, reqUser: IUser) {
+    return this.holeRepoService.processLike({
+      dto,
+      reqUser,
+      repo: this.replyRepo,
+      propertyPath: 'favoriteReply',
+    })
+  }
+
+  async deleteReplyLike(dto: DeleteLikeReplyDto, reqUser: IUser) {
+    return this.holeRepoService.processDeleteLike({
+      dto,
+      reqUser,
+      repo: this.replyRepo,
+      propertyPath: 'favoriteReply',
+    })
   }
 
   async search(query: SearchQuery) {

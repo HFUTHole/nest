@@ -1,15 +1,18 @@
 import {
+  AfterUpdate,
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
   JoinTable,
+  ManyToMany,
   OneToMany,
   OneToOne,
 } from 'typeorm'
 import { CommonEntity } from '@/common/entity/common.entity'
 import { Hole } from '@/entity/hole/hole.entity'
 import { VoteItem } from '@/entity/hole/VoteItem.entity'
+import { User } from '@/entity/user/user.entity'
 
 export enum VoteType {
   single = 'single',
@@ -36,6 +39,12 @@ export class Vote extends CommonEntity {
   @OneToOne(() => Hole, (hole) => hole.vote)
   hole: Hole
 
-  @OneToMany(() => VoteItem, (voteItem) => voteItem.vote, { cascade: true })
+  @ManyToMany(() => User, (user) => user.votes)
+  user: User[]
+
+  @OneToMany(() => VoteItem, (voteItem) => voteItem.vote, { cascade: true, eager: true })
+  @JoinColumn()
   items: VoteItem[]
+
+  totalCount: number
 }

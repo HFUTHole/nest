@@ -10,6 +10,9 @@ import {
   ManyToOne,
   OneToMany,
   OneToOne,
+  AfterInsert,
+  AfterLoad,
+  AfterRemove,
 } from 'typeorm'
 import { Comment } from '@/entity/hole/comment.entity'
 import { AutoIncIdEntity } from '@/common/entity/common.entity'
@@ -53,11 +56,6 @@ export class Hole extends AutoIncIdEntity {
 
   @ManyToMany(() => User, (user) => user.favoriteHole)
   favoriteUsers: User[]
-
-  @AfterUpdate()
-  async afterLoad() {
-    this.favoriteCounts = this.favoriteUsers?.length
-  }
 
   // Use loadRelationCountAndMap to get whether user liked this hole, it will always return 0 or 1 but you can use it as boolean
   // ref: https://pietrzakadrian.com/blog/virtual-column-solutions-for-typeorm#4-loadrelationcountandmap-method

@@ -4,17 +4,28 @@ import { User } from '@/entity/user/user.entity'
 import { FindOneOptions, Repository } from 'typeorm'
 import { createResponse } from '@/utils/create'
 import { IProcessLikeOptions, ILikeableEntity } from '@/modules/hole/hole.types'
+import { GetHoleDetailQuery } from '@/modules/hole/dto/hole.dto'
+import { Vote } from '@/entity/hole/vote.entity'
+import { VoteItem } from '@/entity/hole/VoteItem.entity'
 
+// TODO 解决any类型
 @Injectable()
 export class HoleRepoService {
   @InjectRepository(User)
   private readonly userRepo: Repository<User>
+
+  @InjectRepository(Vote)
+  private readonly voteRepo: Repository<Vote>
+
+  @InjectRepository(VoteItem)
+  private readonly voteItemRepo: Repository<VoteItem>
 
   async processLike<T extends ILikeableEntity>({
     dto,
     reqUser,
     repo,
     propertyPath,
+    entity,
   }: IProcessLikeOptions<T>) {
     const isLiked = await repo.findOne({
       relations: {
@@ -49,6 +60,13 @@ export class HoleRepoService {
       .of(user)
       .add(target)
 
+    await repo
+      .createQueryBuilder()
+      .update(entity as any)
+      .set({ favoriteCounts: () => 'favoriteCounts + 1' } as any)
+      .where('id = :id', { id: dto.id })
+      .execute()
+
     return createResponse('点赞成功')
   }
 
@@ -57,6 +75,7 @@ export class HoleRepoService {
     reqUser,
     repo,
     propertyPath,
+    entity,
   }: IProcessLikeOptions<T>) {
     const target = await repo.findOne({
       relations: {
@@ -85,6 +104,39 @@ export class HoleRepoService {
       .of(user)
       .remove(target)
 
+    await repo
+      .createQueryBuilder()
+      .update(entity as any)
+      .set({ favoriteCounts: () => 'favoriteCounts - 1' } as any)
+      .where('id = :id', { id: dto.id })
+      .execute()
+
     return createResponse('取消点赞成功')
+  }
+
+  async findVote(dto: GetHoleDetailQuery) {
+    const vote = await this.voteRepo
+      .createQueryBuilder('vote')
+      .setFindOptions({
+        where: {
+          hole: {
+            id: dto.id,
+          },
+        },
+      })
+      .getOne()
+
+    const voteItems = await this.voteItemRepo.find({
+      where: {
+        vote: {
+          id: vote.id,
+        },
+      },
+    })
+
+    const totalCount = voteItems.map((item) => item.count).reduce((a, b) => a + b, 0)
+    vote.totalCount = totalCount
+
+    return vote
   }
 }

@@ -1,9 +1,9 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Inject,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { Hole } from '@/entity/hole/hole.entity'
@@ -11,6 +11,7 @@ import {
   EntityManager,
   FindManyOptions,
   FindOptionsOrder,
+  In,
   Like,
   Repository,
 } from 'typeorm'
@@ -143,17 +144,12 @@ export class HoleService {
     })
   }
 
-  async vote(dto: PostVoteDto, reqUser: IUser) {}
-
   async getDetail(query: GetHoleDetailQuery, reqUser: IUser) {
     const data = await this.holeRepo
       .createQueryBuilder('hole')
       .setFindOptions({
         relations: {
           user: true,
-          vote: {
-            items: true,
-          },
         },
         where: {
           id: query.id,
@@ -166,6 +162,10 @@ export class HoleService {
       )
       .getOne()
 
+    const vote = await this.holeRepoService.findVote(query)
+
+    data.vote = vote
+
     return createResponse('获取树洞详情成功', data as any)
   }
 
@@ -175,6 +175,7 @@ export class HoleService {
       reqUser,
       repo: this.holeRepo,
       propertyPath: 'favoriteHole',
+      entity: Hole as any,
     })
   }
 
@@ -184,6 +185,7 @@ export class HoleService {
       reqUser,
       repo: this.holeRepo,
       propertyPath: 'favoriteHole',
+      entity: Hole as any,
     })
   }
 
@@ -316,6 +318,7 @@ export class HoleService {
       reqUser,
       repo: this.commentRepo,
       propertyPath: 'favoriteComment',
+      entity: Comment as any,
     })
   }
 
@@ -325,6 +328,7 @@ export class HoleService {
       reqUser,
       repo: this.commentRepo,
       propertyPath: 'favoriteComment',
+      entity: Comment as any,
     })
   }
 
@@ -388,6 +392,7 @@ export class HoleService {
       reqUser,
       repo: this.replyRepo,
       propertyPath: 'favoriteReply',
+      entity: Reply as any,
     })
   }
 
@@ -397,7 +402,48 @@ export class HoleService {
       reqUser,
       repo: this.replyRepo,
       propertyPath: 'favoriteReply',
+      entity: Reply as any,
     })
+  }
+
+  async vote(dto: PostVoteDto, reqUser: IUser) {
+    const isExist = await this.voteRepo.findOne({
+      where: {
+        id: dto.id,
+        user: {
+          studentId: reqUser.studentId,
+        },
+      },
+    })
+
+    if (isExist) {
+      throw new ConflictException('你已经投过票了')
+    }
+
+    const vote = await this.voteRepo.findOneBy({ id: dto.id })
+
+    if (vote.type === VoteType.single && dto.ids.length > 1) {
+      throw new BadRequestException('该投票为单选')
+    }
+
+    await this.voteItemRepo.increment({ id: In(dto.ids) }, 'count', 1)
+
+    const voteItems = await this.voteItemRepo.findBy({ vote: { id: dto.id } })
+    vote.items = voteItems
+
+    const user = await this.userRepo.findOneBy({ studentId: reqUser.studentId })
+
+    // 处理投票
+    await this.manager.transaction(async (t) => {
+      if (!user.votes) {
+        user.votes = []
+      }
+      user.votes.push(vote)
+
+      await this.userRepo.save(user)
+    })
+
+    return createResponse('投票成功')
   }
 
   async search(query: SearchQuery) {

@@ -11,6 +11,7 @@ import {
   IsReplyExistConstraint,
   IsValidPostImgsConstraint,
   IsVoteExistConstraint,
+  IsVoteItemExistConstraint,
 } from '@/modules/hole/dto/utils.dto'
 import { Reply } from '@/entity/hole/reply.entity'
 import { RoleService } from '@/modules/role/role.service'
@@ -36,6 +37,7 @@ import { HoleRepoService } from '@/modules/hole/hole.repo'
     IsVoteExistConstraint,
     IsValidPostImgsConstraint,
     IsReplyExistConstraint,
+    IsVoteItemExistConstraint,
   ],
 })
 export class HoleModule {}

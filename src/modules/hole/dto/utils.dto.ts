@@ -15,6 +15,7 @@ import { AppConfig } from '@/app.config'
 import axios from 'axios'
 import { InjectLogger } from '@/utils/decorator'
 import { Reply } from '@/entity/hole/reply.entity'
+import { VoteItem } from '@/entity/hole/VoteItem.entity'
 
 @ValidatorConstraint({ async: true })
 @Injectable()
@@ -118,7 +119,26 @@ export class IsReplyExistConstraint {
   }
 }
 
+@ValidatorConstraint({ async: true })
+@Injectable()
+export class IsVoteItemExistConstraint {
+  @InjectRepository(VoteItem)
+  private readonly voteItemRepo: Repository<VoteItem>
+
+  async validate(id: string) {
+    const reply = await this.voteItemRepo.findOne({ where: { id } })
+
+    if (!reply) {
+      throw new NotFoundException('投票不存在')
+    }
+
+    return true
+  }
+}
+
 export const IsVoteExist = createClassValidator(IsVoteExistConstraint)
+
+export const IsVoteItemExist = createClassValidator(IsVoteItemExistConstraint)
 
 export const IsHoleExist = createClassValidator(IsHoleExistConstraint)
 

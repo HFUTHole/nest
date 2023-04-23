@@ -41,14 +41,14 @@ export class CommonEntity {
   @Timestamp()
   updateAt: Date
 
-  // @DeleteDateColumn({
-  //   type: 'timestamp',
-  //   comment: '删除时间',
-  //   name: 'delete_at',
-  //   select: false,
-  // })
-  // @Timestamp()
-  // deleteAt: Date
+  @DeleteDateColumn({
+    type: 'timestamp',
+    comment: '删除时间',
+    name: 'delete_at',
+    select: false,
+  })
+  @Timestamp()
+  deleteAt: Date
 }
 
 @Entity()

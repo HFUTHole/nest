@@ -8,10 +8,14 @@ interface IdAbleDto {
 }
 
 export interface ILikeableEntity extends CommonEntity {
+  favoriteCounts: number
+
   favoriteUsers: User[]
 }
 
 export interface IProcessLikeOptions<T extends ILikeableEntity> {
+  entity: T
+
   dto: IdAbleDto
 
   repo: Repository<T>

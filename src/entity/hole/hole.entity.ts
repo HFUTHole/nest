@@ -1,6 +1,6 @@
 import { User } from '@/entity/user/user.entity'
 import {
-  AfterLoad,
+  JoinColumn,
   AfterUpdate,
   Column,
   Entity,
@@ -40,8 +40,9 @@ export class Hole extends AutoIncIdEntity {
   @JoinTable()
   tags: Tags[]
 
-  @OneToOne(() => Vote, (vote) => vote.hole, { cascade: true })
-  votes: Vote[]
+  @OneToOne(() => Vote, (vote) => vote.hole, { cascade: true, eager: true })
+  @JoinColumn()
+  vote: Vote
 
   @Column({
     comment: '点赞数',

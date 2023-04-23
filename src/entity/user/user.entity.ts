@@ -77,8 +77,8 @@ export class User extends AutoIncIdEntity {
   @JoinTable()
   favoriteReply: Reply[]
 
-  @ManyToMany(() => Vote, (vote) => vote.user)
-  votes: Vote[]
+  // @ManyToMany(() => Vote, (vote) => vote.user)
+  // votes: Vote[]
 
   @ManyToMany(() => VoteItem, (voteItem) => voteItem.user)
   voteItems: VoteItem[]

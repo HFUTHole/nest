@@ -1,14 +1,35 @@
 import {
   ArrayMaxSize,
-  ArrayMinSize,
   IsArray,
   IsBoolean,
+  IsDate,
   IsOptional,
   IsString,
   MaxLength,
+  MinDate,
+  ValidateNested,
 } from 'class-validator'
 import { Limit } from '@/constants/limit'
 import { IsValidPostImgs } from '@/modules/hole/dto/utils.dto'
+
+class Vote {
+  @ArrayMaxSize(Limit.holeVoteMaxLength, {
+    message: `最多只能创建${Limit.holeVoteMaxLength}个选项哦`,
+  })
+  @MaxLength(Limit.holeVoteOptionLength, {
+    each: true,
+    message: `每个选项最长只能是${Limit.holeVoteOptionLength}个字符哦`,
+  })
+  @IsArray()
+  items: string[] = []
+
+  @IsBoolean()
+  isMultipleVote: boolean = false
+
+  @MinDate(() => new Date(), { message: '结束时间不能早于当前时间哦' })
+  @IsDate()
+  endTime: Date = null
+}
 
 export class CreateHoleDto {
   @MaxLength(Limit.holeBodyMaxLength, {
@@ -36,18 +57,7 @@ export class CreateHoleDto {
   @IsOptional()
   tags: string[] = []
 
-  @ArrayMaxSize(Limit.holeVoteMaxLength, {
-    message: `最多只能创建${Limit.holeVoteMaxLength}个选项哦`,
-  })
-  @MaxLength(Limit.holeVoteOptionLength, {
-    each: true,
-    message: `每个选项最长只能是${Limit.holeVoteOptionLength}个字符哦`,
-  })
-  @IsArray()
+  @ValidateNested()
   @IsOptional()
-  votes: string[] = []
-
-  @IsBoolean()
-  @IsOptional()
-  isMultipleVote: boolean = false
+  vote: Vote
 }

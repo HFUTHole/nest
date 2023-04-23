@@ -3,7 +3,6 @@ import { HoleService } from '@/modules/hole/hole.service'
 import { CreateHoleDto } from '@/modules/hole/dto/create.dto'
 import { User } from '@/common/decorator/user.decorator'
 import { IUser } from '@/app'
-import { PaginateQuery } from '@/common/dtos/paginate.dto'
 import {
   CreateCommentDto,
   CreateCommentReplyDto,

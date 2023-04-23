@@ -52,6 +52,7 @@ import {
 import { SearchQuery } from '@/modules/hole/dto/search.dto'
 import { resolvePaginationHoleData } from '@/modules/hole/hole.utils'
 import { HoleRepoService } from '@/modules/hole/hole.repo'
+import { VoteItem } from '@/entity/hole/VoteItem.entity'
 
 @Injectable()
 export class HoleService {
@@ -72,6 +73,9 @@ export class HoleService {
 
   @InjectRepository(Vote)
   private readonly voteRepo: Repository<Vote>
+
+  @InjectRepository(VoteItem)
+  private readonly voteItemRepo: Repository<VoteItem>
 
   @InjectEntityManager()
   private readonly manager: EntityManager
@@ -147,6 +151,9 @@ export class HoleService {
       .setFindOptions({
         relations: {
           user: true,
+          vote: {
+            items: true,
+          },
         },
         where: {
           id: query.id,
@@ -159,7 +166,7 @@ export class HoleService {
       )
       .getOne()
 
-    return createResponse('获取树洞详情成功', data)
+    return createResponse('获取树洞详情成功', data as any)
   }
 
   async likeHole(dto: GetHoleDetailQuery, reqUser: IUser) {
@@ -191,19 +198,29 @@ export class HoleService {
       }),
     )
 
-    const votes = dto.votes.map((vote) =>
-      this.voteRepo.create({
-        type: dto.isMultipleVote ? VoteType.multiple : VoteType.single,
-      }),
-    )
-
     const hole = this.holeRepo.create({
       user,
       body: dto.body,
       imgs: dto.imgs,
       tags,
-      votes,
     })
+
+    if (dto.vote) {
+      const votes = dto.vote.items.map((item) =>
+        this.voteItemRepo.create({
+          option: item,
+        }),
+      )
+
+      const vote = this.voteRepo.create({
+        items: votes,
+        endTime: dto.vote.endTime,
+        type: dto.vote.isMultipleVote ? VoteType.multiple : VoteType.single,
+        hole,
+      })
+
+      hole.vote = vote
+    }
 
     await this.holeRepo.save(hole)
 
@@ -389,7 +406,7 @@ export class HoleService {
     let searchOptions: FindManyOptions<Hole> = {
       relations: {
         user: true,
-        votes: true,
+        vote: true,
         comments: { user: true },
         tags: true,
       },

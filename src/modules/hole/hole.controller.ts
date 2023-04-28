@@ -71,8 +71,8 @@ export class HoleController {
   }
 
   @Get('/comment')
-  getComment(@Query() query: GetHoleCommentDto) {
-    return this.service.getComment(query)
+  getComment(@Query() query: GetHoleCommentDto, @User() user: IUser) {
+    return this.service.getComment(query, user)
   }
 
   @Post('/comment/like')
@@ -90,23 +90,18 @@ export class HoleController {
     return this.service.replyComment(dto, user)
   }
 
-  @Post('/comment/reply/reply')
-  replyReply(@Body() dto: ReplyReplyDto, @User() user: IUser) {
-    return this.service.replyReply(dto, user)
-  }
-
   @Get('/comment/replies')
   getReplies(@Query() query: GetRepliesQuery, @User() user: IUser) {
     return this.service.getReplies(query, user)
   }
 
   @Post('/comment/reply/like')
-  likeReply(@Query() dto: LikeReplyDto, @User() user: IUser) {
+  likeReply(@Body() dto: LikeReplyDto, @User() user: IUser) {
     return this.service.likeReply(dto, user)
   }
 
   @Delete('/comment/reply/like')
-  deleteReply(@Query() dto: LikeReplyDto, @User() user: IUser) {
+  deleteReply(@Body() dto: LikeReplyDto, @User() user: IUser) {
     return this.service.deleteReplyLike(dto, user)
   }
 

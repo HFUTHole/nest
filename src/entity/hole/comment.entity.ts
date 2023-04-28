@@ -34,6 +34,12 @@ export class Comment extends CommonEntity {
   @Index()
   favoriteCounts: number
 
+  @Column({
+    comment: '图片',
+    type: 'simple-array',
+  })
+  imgs: string[]
+
   @ManyToMany(() => User, (user) => user.favoriteComment)
   favoriteUsers: User[]
 

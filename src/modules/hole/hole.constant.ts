@@ -5,6 +5,10 @@ export enum HoleDetailCommentMode {
 
 export enum HoleDetailCommentOrderMode {
   favorite = 'favorite',
-  time_desc = 'time_desc',
-  time_asc = 'time_asc',
+  time = 'time',
+}
+
+export enum HoleReplyOrderMode {
+  favorite = 'favorite',
+  time = 'time',
 }

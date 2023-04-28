@@ -126,6 +126,10 @@ export class HoleRepoService {
       })
       .getOne()
 
+    if (!vote) {
+      return null
+    }
+
     const voteItems = await this.voteItemRepo.find({
       where: {
         vote: {

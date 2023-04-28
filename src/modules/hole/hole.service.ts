@@ -19,7 +19,7 @@ import { User } from '@/entity/user/user.entity'
 import { CreateHoleDto } from '@/modules/hole/dto/create.dto'
 import { IUser } from '@/app'
 import { createResponse } from '@/utils/create'
-import { paginate } from 'nestjs-typeorm-paginate'
+import { paginate, PaginationTypeEnum } from 'nestjs-typeorm-paginate'
 import {
   CreateCommentDto,
   CreateCommentReplyDto,
@@ -38,7 +38,6 @@ import {
   DeleteLikeReplyDto,
   GetRepliesQuery,
   LikeReplyDto,
-  ReplyReplyDto,
 } from '@/modules/hole/dto/replies.dto'
 import { Tags } from '@/entity/hole/tags.entity'
 import { Vote, VoteType } from '@/entity/hole/vote.entity'
@@ -49,9 +48,10 @@ import { AppConfig } from '@/app.config'
 import {
   HoleDetailCommentMode,
   HoleDetailCommentOrderMode,
+  HoleReplyOrderMode,
 } from '@/modules/hole/hole.constant'
 import { SearchQuery } from '@/modules/hole/dto/search.dto'
-import { resolvePaginationHoleData } from '@/modules/hole/hole.utils'
+import { addCommentIsLiked, resolvePaginationHoleData } from '@/modules/hole/hole.utils'
 import { HoleRepoService } from '@/modules/hole/hole.repo'
 import { VoteItem } from '@/entity/hole/VoteItem.entity'
 
@@ -90,28 +90,26 @@ export class HoleService {
   constructor(private readonly appConfig: AppConfig) {}
 
   async getList(query: GetHoleListQuery) {
-    let queryBuilder = this.holeRepo.createQueryBuilder('hole').setFindOptions({
-      relations: {
-        user: true,
-        // votes: true,
-        comments: { user: true },
-      },
-      order: {
-        comments: {
-          createAt: 'ASC',
-        },
-      },
-    })
+    const queryBuilder = this.holeRepo
+      .createQueryBuilder('hole')
+      .leftJoinAndSelect('hole.user', 'user')
+      .leftJoinAndSelect('hole.tags', 'tags')
+      .leftJoinAndSelect('hole.vote', 'vote')
+      .leftJoinAndSelect('hole.comments', 'comments')
+      .leftJoinAndSelect('comments.user', 'comment.user')
 
     if (query.mode === HoleListMode.random) {
-      queryBuilder = queryBuilder
-        .addSelect('LOG10(hole.favoriteCounts + 2) * RAND() * 5', 'score')
+      queryBuilder
+        .addSelect('LOG10(hole.favoriteCounts + 100) * RAND(ABS(hole.id)) * 100', 'score')
         .orderBy('score', 'DESC')
     } else if (query.mode === HoleListMode.timeline) {
-      queryBuilder = queryBuilder.orderBy('hole.createAt', 'DESC')
+      queryBuilder.orderBy('hole.createAt', 'DESC')
     }
 
-    const data = await paginate(queryBuilder, query)
+    const data = await paginate(queryBuilder, {
+      ...query,
+      paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
+    })
 
     // TODO 用sql解决，还是得多学学sql啊
     resolvePaginationHoleData(data, this.appConfig)
@@ -160,6 +158,7 @@ export class HoleService {
           studentId: reqUser.studentId,
         }),
       )
+      .loadRelationCountAndMap('hole.commentCounts', 'hole.comments')
       .getOne()
 
     const vote = await this.holeRepoService.findVote(query)
@@ -241,6 +240,7 @@ export class HoleService {
       body: dto.body,
       hole,
       user,
+      imgs: dto.imgs,
     })
 
     await this.manager.transaction(async (transactionalEntityManager) => {
@@ -257,7 +257,7 @@ export class HoleService {
     return createResponse('留言成功', { id: comment.id })
   }
 
-  async getComment(dto: GetHoleCommentDto) {
+  async getComment(dto: GetHoleCommentDto, reqUser: IUser) {
     const hole = await this.holeRepo.findOne({
       relations: {
         user: true,
@@ -271,17 +271,12 @@ export class HoleService {
     })
 
     const isFavoriteOrder = dto.order === HoleDetailCommentOrderMode.favorite
-    const isAscOrder = dto.order === HoleDetailCommentOrderMode.time_asc
 
     const order: FindOptionsOrder<Comment> = {
       replies: {
-        favoriteCounts: 'ASC',
+        favoriteCounts: 'DESC',
       },
-      ...(isFavoriteOrder
-        ? { favoriteCount: 'ASC' }
-        : isAscOrder
-        ? { createAt: 'ASC' }
-        : { createAt: 'DESC' }),
+      ...(isFavoriteOrder ? { favoriteCounts: 'DESC' } : { createAt: 'DESC' }),
     }
 
     const commentQuery = this.commentRepo
@@ -297,6 +292,8 @@ export class HoleService {
         },
       })
       .loadRelationCountAndMap('comment.repliesCount', 'comment.replies')
+
+    addCommentIsLiked(commentQuery, reqUser)
 
     const data = await paginate<Comment>(commentQuery, {
       limit: dto.limit,
@@ -356,21 +353,29 @@ export class HoleService {
     return createResponse('回复成功', { id: reply.id })
   }
 
-  async replyReply(dto: ReplyReplyDto, reqUser: IUser) {
-    return createResponse('成功')
-  }
-
-  async getReplies(query: GetRepliesQuery, user: IUser) {
-    const data = await paginate<Reply>(
-      this.replyRepo,
-      {
-        limit: query.limit,
-        page: query.page,
-      },
-      {
+  async getReplies(query: GetRepliesQuery, reqUser: IUser) {
+    const isFavoriteOrder = query.order === HoleReplyOrderMode.favorite
+    const commentQuery = await this.commentRepo
+      .createQueryBuilder('comment')
+      .setFindOptions({
+        where: {
+          id: query.id,
+        },
         relations: {
           user: true,
-          comment: true,
+        },
+      })
+
+    addCommentIsLiked(commentQuery, reqUser)
+
+    const comment = await commentQuery.getOne()
+
+    const queryBuilder = this.replyRepo
+      .createQueryBuilder('reply')
+      .setFindOptions({
+        relations: {
+          user: true,
+          replyUser: true,
         },
         where: {
           comment: {
@@ -378,12 +383,24 @@ export class HoleService {
           },
         },
         order: {
-          favoriteCounts: 'ASC',
+          ...(isFavoriteOrder ? { favoriteCounts: 'DESC' } : { createAt: 'ASC' }),
         },
-      },
-    )
+      })
+      .loadRelationCountAndMap('reply.isLiked', 'reply.favoriteUsers', 'isLiked', (qb) =>
+        qb.andWhere('isLiked.studentId = :studentId', {
+          studentId: reqUser.studentId,
+        }),
+      )
 
-    return createResponse('获取回复成功', data)
+    const data = await paginate<Reply>(queryBuilder, {
+      limit: query.limit,
+      page: query.page,
+    })
+
+    return createResponse('获取回复成功', {
+      ...data,
+      comment,
+    })
   }
 
   async likeReply(dto: LikeReplyDto, reqUser: IUser) {

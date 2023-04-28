@@ -1,4 +1,6 @@
 import {
+  ArrayMaxSize,
+  IsArray,
   IsEnum,
   IsNumber,
   IsOptional,
@@ -6,7 +8,12 @@ import {
   IsString,
   Length,
 } from 'class-validator'
-import { IsCommentExist, IsHoleExist, IsReplyExist } from '@/modules/hole/dto/utils.dto'
+import {
+  IsCommentExist,
+  IsHoleExist,
+  IsReplyExist,
+  IsValidPostImgs,
+} from '@/modules/hole/dto/utils.dto'
 import { PaginateQuery } from '@/common/dtos/paginate.dto'
 import {
   HoleDetailCommentMode,
@@ -40,13 +47,22 @@ export class CreateCommentDto {
   })
   @IsString()
   body: string
+
+  @IsValidPostImgs()
+  @ArrayMaxSize(Limit.commentMaxImgLength, {
+    message: `最多只能上传${Limit.commentMaxImgLength}张图片哦`,
+  })
+  @IsArray()
+  @IsOptional()
+  imgs?: string[] = []
 }
 
 export class CreateCommentReplyDto {
   @IsCommentExist()
   @Length(15, 16)
   @IsString()
-  commentId: string
+  @IsOptional()
+  commentId?: string
 
   @Length(1, 1000, { message: '评论字数限制在1-1000字' })
   @IsString()

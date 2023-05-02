@@ -7,6 +7,7 @@ import { IProcessLikeOptions, ILikeableEntity } from '@/modules/hole/hole.types'
 import { GetHoleDetailQuery } from '@/modules/hole/dto/hole.dto'
 import { Vote } from '@/entity/hole/vote.entity'
 import { VoteItem } from '@/entity/hole/VoteItem.entity'
+import { IUser } from '@/app'
 
 // TODO 解决any类型
 @Injectable()
@@ -114,7 +115,7 @@ export class HoleRepoService {
     return createResponse('取消点赞成功')
   }
 
-  async findVote(dto: GetHoleDetailQuery) {
+  async findVote(dto: GetHoleDetailQuery, reqUser: IUser) {
     const vote = await this.voteRepo
       .createQueryBuilder('vote')
       .setFindOptions({
@@ -124,22 +125,38 @@ export class HoleRepoService {
           },
         },
       })
+      .leftJoinAndSelect('vote.items', 'voteItems')
+      .loadRelationCountAndMap('vote.isVoted', 'vote.user', 'isVoted', (qb) =>
+        qb.andWhere('isVoted.studentId = :studentId', {
+          studentId: reqUser.studentId,
+        }),
+      )
       .getOne()
 
     if (!vote) {
       return null
     }
 
-    const voteItems = await this.voteItemRepo.find({
-      where: {
-        vote: {
-          id: vote.id,
+    const voteItems = await this.voteItemRepo
+      .createQueryBuilder('item')
+      .setFindOptions({
+        where: {
+          vote: {
+            id: vote.id,
+          },
         },
-      },
-    })
+      })
+      .loadRelationCountAndMap('item.isVoted', 'item.user', 'isVoted', (qb) =>
+        qb.andWhere('isVoted.studentId = :studentId', {
+          studentId: reqUser.studentId,
+        }),
+      )
+      .getMany()
 
     const totalCount = voteItems.map((item) => item.count).reduce((a, b) => a + b, 0)
     vote.totalCount = totalCount
+    vote.items = voteItems
+    vote.isExpired = new Date(vote.endTime) < new Date()
 
     return vote
   }

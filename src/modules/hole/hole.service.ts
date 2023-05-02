@@ -51,7 +51,11 @@ import {
   HoleReplyOrderMode,
 } from '@/modules/hole/hole.constant'
 import { SearchQuery } from '@/modules/hole/dto/search.dto'
-import { addCommentIsLiked, resolvePaginationHoleData } from '@/modules/hole/hole.utils'
+import {
+  addCommentIsLiked,
+  isVoteExpired,
+  resolvePaginationHoleData,
+} from '@/modules/hole/hole.utils'
 import { HoleRepoService } from '@/modules/hole/hole.repo'
 import { VoteItem } from '@/entity/hole/VoteItem.entity'
 
@@ -89,18 +93,29 @@ export class HoleService {
 
   constructor(private readonly appConfig: AppConfig) {}
 
-  async getList(query: GetHoleListQuery) {
+  async getList(query: GetHoleListQuery, reqUser: IUser) {
     const queryBuilder = this.holeRepo
       .createQueryBuilder('hole')
       .leftJoinAndSelect('hole.user', 'user')
       .leftJoinAndSelect('hole.tags', 'tags')
       .leftJoinAndSelect('hole.vote', 'vote')
+      .leftJoinAndSelect('vote.items', 'voteItems')
       .leftJoinAndSelect('hole.comments', 'comments')
       .leftJoinAndSelect('comments.user', 'comment.user')
+      .loadRelationCountAndMap('voteItems.isVoted', 'voteItems.user', 'isVoted', (qb) =>
+        qb.andWhere('isVoted.studentId = :studentId', {
+          studentId: reqUser.studentId,
+        }),
+      )
+      .loadRelationCountAndMap('vote.isVoted', 'vote.user', 'isVoted', (qb) =>
+        qb.andWhere('isVoted.studentId = :studentId', {
+          studentId: reqUser.studentId,
+        }),
+      )
 
     if (query.mode === HoleListMode.random) {
       queryBuilder
-        .addSelect('LOG10(hole.favoriteCounts + 100) * RAND(ABS(hole.id)) * 100', 'score')
+        .addSelect(`LOG10(RAND(hole.id)) * RAND() * 100`, 'score')
         .orderBy('score', 'DESC')
     } else if (query.mode === HoleListMode.timeline) {
       queryBuilder.orderBy('hole.createAt', 'DESC')
@@ -143,6 +158,8 @@ export class HoleService {
   }
 
   async getDetail(query: GetHoleDetailQuery, reqUser: IUser) {
+    const vote = await this.holeRepoService.findVote(query, reqUser)
+
     const data = await this.holeRepo
       .createQueryBuilder('hole')
       .setFindOptions({
@@ -160,8 +177,6 @@ export class HoleService {
       )
       .loadRelationCountAndMap('hole.commentCounts', 'hole.comments')
       .getOne()
-
-    const vote = await this.holeRepoService.findVote(query)
 
     data.vote = vote
 
@@ -216,7 +231,7 @@ export class HoleService {
       const vote = this.voteRepo.create({
         items: votes,
         endTime: dto.vote.endTime,
-        type: dto.vote.isMultipleVote ? VoteType.multiple : VoteType.single,
+        type: VoteType.single,
         hole,
       })
 
@@ -424,13 +439,9 @@ export class HoleService {
   }
 
   async vote(dto: PostVoteDto, reqUser: IUser) {
-    const isExist = await this.voteRepo.findOne({
-      where: {
-        id: dto.id,
-        user: {
-          studentId: reqUser.studentId,
-        },
-      },
+    const isExist = await this.userRepo.findOneBy({
+      studentId: reqUser.studentId,
+      votes: { id: dto.id },
     })
 
     if (isExist) {
@@ -443,21 +454,31 @@ export class HoleService {
       throw new BadRequestException('该投票为单选')
     }
 
+    if (isVoteExpired(vote)) {
+      throw new ConflictException('该投票已过期')
+    }
+
     await this.voteItemRepo.increment({ id: In(dto.ids) }, 'count', 1)
 
-    const voteItems = await this.voteItemRepo.findBy({ vote: { id: dto.id } })
-    vote.items = voteItems
+    const voteItems = await this.voteItemRepo.findBy({ id: In(dto.ids) })
 
     const user = await this.userRepo.findOneBy({ studentId: reqUser.studentId })
 
     // 处理投票
     await this.manager.transaction(async (t) => {
-      if (!user.votes) {
-        user.votes = []
-      }
-      user.votes.push(vote)
+      await t
+        .getRepository(User)
+        .createQueryBuilder()
+        .relation(User, 'votes')
+        .of(user)
+        .add(vote)
 
-      await this.userRepo.save(user)
+      await t
+        .getRepository(User)
+        .createQueryBuilder()
+        .relation(User, 'voteItems')
+        .of(user)
+        .add(voteItems)
     })
 
     return createResponse('投票成功')

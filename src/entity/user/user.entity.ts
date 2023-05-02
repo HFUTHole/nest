@@ -81,6 +81,10 @@ export class User extends AutoIncIdEntity {
   @JoinTable()
   votes: Vote[]
 
+  @ManyToMany(() => VoteItem, (voteItem) => voteItem.user, { cascade: true })
+  @JoinTable()
+  voteItems: VoteItem[]
+
   @OneToMany(() => Notify, (notify) => notify.user)
   notifications: Notify[]
 }

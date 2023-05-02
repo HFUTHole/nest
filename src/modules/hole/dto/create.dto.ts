@@ -3,6 +3,7 @@ import {
   IsArray,
   IsBoolean,
   IsDate,
+  IsEnum,
   IsOptional,
   IsString,
   MaxLength,
@@ -11,6 +12,8 @@ import {
 } from 'class-validator'
 import { Limit } from '@/constants/limit'
 import { IsValidPostImgs } from '@/modules/hole/dto/utils.dto'
+import { VoteType } from '@/entity/hole/vote.entity'
+import { add } from 'date-fns'
 
 class Vote {
   @ArrayMaxSize(Limit.holeVoteMaxLength, {
@@ -23,12 +26,15 @@ class Vote {
   @IsArray()
   items: string[] = []
 
-  @IsBoolean()
-  isMultipleVote: boolean = false
-
-  @MinDate(() => new Date(), { message: '结束时间不能早于当前时间哦' })
+  @MinDate(() => add(new Date(), { days: 1 }), {
+    message: '投票结束时间至少在24小时后',
+  })
   @IsDate()
   endTime: Date = null
+
+  @IsEnum(VoteType)
+  @IsOptional()
+  type: VoteType = VoteType.single
 }
 
 export class CreateHoleDto {

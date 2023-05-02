@@ -17,7 +17,7 @@ import { User } from '@/entity/user/user.entity'
 export enum VoteType {
   single = 'single',
 
-  multiple = 'multiple',
+  // multiple = 'multiple',
 }
 
 @Entity()
@@ -47,4 +47,8 @@ export class Vote extends CommonEntity {
   items: VoteItem[]
 
   totalCount: number
+
+  isVoted: number
+
+  isExpired: boolean
 }

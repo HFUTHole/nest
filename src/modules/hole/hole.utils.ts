@@ -2,9 +2,10 @@ import { IPaginationMeta, Pagination } from 'nestjs-typeorm-paginate'
 import { Hole } from '@/entity/hole/hole.entity'
 import { getAvatarUrl } from '@/utils/user'
 import { AppConfig } from '@/app.config'
-import { QueryBuilder, SelectQueryBuilder } from 'typeorm'
+import { SelectQueryBuilder } from 'typeorm'
 import { IUser } from '@/app'
 import { Comment } from '@/entity/hole/comment.entity'
+import { Vote } from '@/entity/hole/vote.entity'
 
 export const resolvePaginationHoleData = (
   data: Pagination<Hole, IPaginationMeta>,
@@ -13,6 +14,11 @@ export const resolvePaginationHoleData = (
   ;(data.items as any) = data.items.map((item) => {
     if (!item.user.avatar) {
       item.user.avatar = getAvatarUrl(config, item.user)
+    }
+
+    if (item.vote) {
+      item.vote.totalCount = item.vote.items.reduce((prev, cur) => prev + cur.count, 0)
+      item.vote.isExpired = isVoteExpired(item.vote)
     }
 
     return {
@@ -34,4 +40,8 @@ export const addCommentIsLiked = (query: SelectQueryBuilder<Comment>, reqUser: I
         studentId: reqUser.studentId,
       }),
   )
+}
+
+export const isVoteExpired = (vote: Vote) => {
+  return new Date(vote.endTime) < new Date()
 }

@@ -1,6 +1,7 @@
 import { CommonEntity } from '@/common/entity/common.entity'
-import { Column, Entity, ManyToOne } from 'typeorm'
+import { Column, Entity, ManyToMany, ManyToOne } from 'typeorm'
 import { Vote } from '@/entity/hole/vote.entity'
+import { User } from '@/entity/user/user.entity'
 
 @Entity()
 export class VoteItem extends CommonEntity {
@@ -14,4 +15,9 @@ export class VoteItem extends CommonEntity {
 
   @ManyToOne(() => Vote, (vote) => vote.items)
   vote: Vote
+
+  @ManyToMany(() => User, (user) => user.voteItems)
+  user: User[]
+
+  isVoted: number
 }

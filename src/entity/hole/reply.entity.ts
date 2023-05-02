@@ -6,10 +6,12 @@ import {
   Index,
   ManyToMany,
   ManyToOne,
+  OneToMany,
 } from 'typeorm'
 import { User } from '@/entity/user/user.entity'
 import { CommonEntity } from '@/common/entity/common.entity'
 import { Comment } from '@/entity/hole/comment.entity'
+import { Report } from '@/entity/report/report.entity'
 
 @Entity()
 export class Reply extends CommonEntity {
@@ -34,6 +36,9 @@ export class Reply extends CommonEntity {
 
   @ManyToMany(() => User, (user) => user.favoriteReply)
   favoriteUsers: User[]
+
+  @OneToMany(() => Report, (report) => report.reply)
+  reports: Report[]
 
   @AfterUpdate()
   async afterLoad() {

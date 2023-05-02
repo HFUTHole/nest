@@ -12,6 +12,7 @@ import {
 import { Hole } from '@/entity/hole/hole.entity'
 import { User } from '@/entity/user/user.entity'
 import { Reply } from '@/entity/hole/reply.entity'
+import { Report } from '@/entity/report/report.entity'
 
 @Entity()
 export class Comment extends CommonEntity {
@@ -42,6 +43,9 @@ export class Comment extends CommonEntity {
 
   @ManyToMany(() => User, (user) => user.favoriteComment)
   favoriteUsers: User[]
+
+  @OneToMany(() => Report, (report) => report.comment)
+  reports: Report[]
 
   @AfterUpdate()
   async afterLoad() {

@@ -7,11 +7,16 @@ import { NotifyService } from '@/modules/notify/notify.service'
 import { createResponse } from '@/utils/create'
 import { ReadNotifyDto } from '@/modules/user/dtos/notify.dto'
 import { PaginateQuery } from '@/common/dtos/paginate.dto'
+import { Hole } from '@/entity/hole/hole.entity'
+import { paginate } from 'nestjs-typeorm-paginate'
 
 @Injectable()
 export class UserService {
   @InjectRepository(User)
   private readonly userRepository: Repository<User>
+
+  @InjectRepository(Hole)
+  private readonly holeRepo: Repository<Hole>
 
   @Inject()
   private readonly notifyService: NotifyService
@@ -34,5 +39,39 @@ export class UserService {
     })
 
     return createResponse('获取用户信息成功', data)
+  }
+
+  async getFavoriteHoles(query: PaginateQuery, reqUser: IUser) {
+    const queryBuilder = this.holeRepo.createQueryBuilder('hole').setFindOptions({
+      where: {
+        favoriteUsers: {
+          studentId: reqUser.studentId,
+        },
+      },
+      order: {
+        createAt: 'DESC',
+      },
+    })
+
+    const data = await paginate(queryBuilder, query)
+
+    return createResponse('获取点赞树洞成功', data)
+  }
+
+  async getHoleList(query: PaginateQuery, reqUser: IUser) {
+    const queryBuilder = this.holeRepo.createQueryBuilder('hole').setFindOptions({
+      where: {
+        user: {
+          studentId: reqUser.studentId,
+        },
+      },
+      order: {
+        createAt: 'DESC',
+      },
+    })
+
+    const data = await paginate(queryBuilder, query)
+
+    return createResponse('获取用户树洞成功', data)
   }
 }

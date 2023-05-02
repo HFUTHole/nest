@@ -7,4 +7,6 @@ export const Limit = {
   holeCommentBodyMaxLength: 1000,
   holeCommentBodyMinLength: 1,
   commentMaxImgLength: 2,
+  reportReasonMaxLength: 500,
+  reportReasonMinLength: 10,
 }

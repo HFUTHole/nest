@@ -7,6 +7,7 @@ import { Role } from '@/modules/role/role.constant'
 import { Vote } from '@/entity/hole/vote.entity'
 import { Notify } from '@/entity/notify/notify.entity'
 import { VoteItem } from '@/entity/hole/VoteItem.entity'
+import { Report } from '@/entity/report/report.entity'
 
 export enum Gender {
   Male = '男',
@@ -87,4 +88,7 @@ export class User extends AutoIncIdEntity {
 
   @OneToMany(() => Notify, (notify) => notify.user)
   notifications: Notify[]
+
+  @ManyToMany(() => Report, (report) => report.user)
+  reports: Report[]
 }

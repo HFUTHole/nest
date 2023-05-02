@@ -22,16 +22,16 @@ export class Report extends CommonEntity {
   @Column()
   reason: string
 
-  @ManyToOne(() => Hole, (hole) => hole.reports)
+  @ManyToOne(() => Hole, (hole) => hole.reports, { cascade: true })
   hole: Hole
 
-  @ManyToOne(() => Comment, (comment) => comment.reports)
+  @ManyToOne(() => Comment, (comment) => comment.reports, { cascade: true })
   comment: Comment
 
-  @ManyToOne(() => Reply, (reply) => reply.reports)
+  @ManyToOne(() => Reply, (reply) => reply.reports, { cascade: true })
   reply: Reply
 
-  @ManyToMany(() => User, (user) => user.reports)
+  @ManyToMany(() => User, (user) => user.reports, { cascade: true })
   @JoinTable()
   user: User[]
 }

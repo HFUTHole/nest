@@ -27,4 +27,8 @@ export class AppConfig {
   image!: {
     url: string
   }
+
+  redis!: {
+    host
+  }
 }

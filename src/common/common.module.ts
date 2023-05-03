@@ -12,10 +12,18 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { User } from '@/entity/user/user.entity'
 import { ThrottlerGuard } from '@nestjs/throttler'
 import { BlockForeignIpMiddleware } from '@/common/middleware/BlockForeignIp.middleware'
+import { RedisModule } from '@liaoliaots/nestjs-redis'
+import { AppConfig } from '@/app.config'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
+    RedisModule.forRootAsync({
+      useFactory: (config: AppConfig) => ({
+        config: config.redis,
+      }),
+      inject: [AppConfig],
+    }),
     WinstonModule.forRootAsync({
       useFactory: () => {
         const myFormat = format.printf(({ level, message, label, timestamp }) => {

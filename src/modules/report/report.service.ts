@@ -8,6 +8,7 @@ import { User } from '@/entity/user/user.entity'
 import { Hole } from '@/entity/hole/hole.entity'
 import { Comment } from '@/entity/hole/comment.entity'
 import { Reply } from '@/entity/hole/reply.entity'
+import { createResponse } from '@/utils/create'
 
 @Injectable()
 export class ReportService {
@@ -33,6 +34,19 @@ export class ReportService {
       ...dto,
     })
 
+    const isReported = await this.reportRepo.findOneBy({
+      user: {
+        studentId: reqUser.studentId,
+      },
+    })
+
+    if (isReported) {
+      isReported.reason = dto.reason
+      await this.reportRepo.save(report)
+
+      return createResponse('更新举报内容成功')
+    }
+
     if (!report.user) {
       report.user = []
     }
@@ -51,5 +65,9 @@ export class ReportService {
     }
 
     await this.reportRepo.save(report)
+
+    return createResponse('举报成功')
   }
+
+  async getReport() {}
 }

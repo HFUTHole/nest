@@ -54,6 +54,7 @@ export class CommonEntity {
 @Entity()
 export class AutoIncIdEntity {
   @PrimaryGeneratedColumn()
+  @Index()
   id: number
 
   @CreateDateColumn({

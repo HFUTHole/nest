@@ -34,8 +34,16 @@ export class UserService {
   }
 
   async getProfile(reqUser: IUser) {
-    const data = await this.userRepository.findOneBy({
-      studentId: reqUser.studentId,
+    const data = await this.userRepository.findOne({
+      where: {
+        studentId: reqUser.studentId,
+      },
+      select: {
+        role: true,
+        avatar: true,
+        username: true,
+        id: true,
+      },
     })
 
     return createResponse('获取用户信息成功', data)
@@ -43,6 +51,9 @@ export class UserService {
 
   async getFavoriteHoles(query: PaginateQuery, reqUser: IUser) {
     const queryBuilder = this.holeRepo.createQueryBuilder('hole').setFindOptions({
+      relations: {
+        user: true,
+      },
       where: {
         favoriteUsers: {
           studentId: reqUser.studentId,
@@ -60,6 +71,9 @@ export class UserService {
 
   async getHoleList(query: PaginateQuery, reqUser: IUser) {
     const queryBuilder = this.holeRepo.createQueryBuilder('hole').setFindOptions({
+      relations: {
+        user: true,
+      },
       where: {
         user: {
           studentId: reqUser.studentId,

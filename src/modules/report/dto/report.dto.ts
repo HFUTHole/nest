@@ -15,13 +15,13 @@ export class ReportDto {
 
   @IsHoleExist()
   @IsOptional()
-  holeId: number
+  holeId?: number
 
   @IsCommentExist()
   @IsOptional()
-  commentId: string
+  commentId?: string
 
   @IsReplyExist()
   @IsOptional()
-  replyId: string
+  replyId?: string
 }

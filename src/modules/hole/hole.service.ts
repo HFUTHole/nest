@@ -169,6 +169,12 @@ export class HoleService {
         where: {
           id: query.id,
         },
+        select: {
+          user: {
+            username: true,
+            avatar: true,
+          },
+        },
       })
       .loadRelationCountAndMap('hole.isLiked', 'hole.favoriteUsers', 'isLiked', (qb) =>
         qb.andWhere('isLiked.studentId = :studentId', {
@@ -288,9 +294,6 @@ export class HoleService {
     const isFavoriteOrder = dto.order === HoleDetailCommentOrderMode.favorite
 
     const order: FindOptionsOrder<Comment> = {
-      replies: {
-        favoriteCounts: 'DESC',
-      },
       ...(isFavoriteOrder ? { favoriteCounts: 'DESC' } : { createAt: 'DESC' }),
     }
 
@@ -304,6 +307,12 @@ export class HoleService {
           ...(dto.mode === HoleDetailCommentMode.author && {
             user: { studentId: hole.user.studentId },
           }),
+        },
+        select: {
+          user: {
+            username: true,
+            avatar: true,
+          },
         },
       })
       .loadRelationCountAndMap('comment.repliesCount', 'comment.replies')
@@ -379,6 +388,12 @@ export class HoleService {
         relations: {
           user: true,
         },
+        select: {
+          user: {
+            username: true,
+            avatar: true,
+          },
+        },
       })
 
     addCommentIsLiked(commentQuery, reqUser)
@@ -415,6 +430,7 @@ export class HoleService {
     return createResponse('获取回复成功', {
       ...data,
       comment,
+      repliesCount: data.meta.totalItems,
     })
   }
 

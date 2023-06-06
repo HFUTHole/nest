@@ -21,10 +21,21 @@ import { NotifyService } from '@/modules/notify/notify.service'
 import { Notify } from '@/entity/notify/notify.entity'
 import { VoteItem } from '@/entity/hole/VoteItem.entity'
 import { HoleRepoService } from '@/modules/hole/hole.repo'
+import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Hole, Comment, Reply, Tags, Vote, VoteItem, Notify]),
+    TypeOrmModule.forFeature([
+      User,
+      Hole,
+      Comment,
+      Reply,
+      Tags,
+      Vote,
+      VoteItem,
+      Notify,
+      ArticleCategory,
+    ]),
   ],
   controllers: [HoleController],
   providers: [

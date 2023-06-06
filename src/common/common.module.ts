@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 import { format } from 'winston'
 import * as winston from 'winston'
 import * as DailyRotateFile from 'winston-daily-rotate-file'
@@ -11,7 +11,6 @@ import { RolesGuard } from '@/modules/role/role.guard'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { User } from '@/entity/user/user.entity'
 import { ThrottlerGuard } from '@nestjs/throttler'
-import { BlockForeignIpMiddleware } from '@/common/middleware/BlockForeignIp.middleware'
 import { RedisModule } from '@liaoliaots/nestjs-redis'
 import { AppConfig } from '@/app.config'
 
@@ -19,9 +18,11 @@ import { AppConfig } from '@/app.config'
   imports: [
     TypeOrmModule.forFeature([User]),
     RedisModule.forRootAsync({
-      useFactory: (config: AppConfig) => ({
-        config: config.redis,
-      }),
+      useFactory: (config: AppConfig) => {
+        return {
+          config: config.redis,
+        }
+      },
       inject: [AppConfig],
     }),
     WinstonModule.forRootAsync({

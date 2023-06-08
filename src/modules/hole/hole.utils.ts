@@ -64,5 +64,5 @@ export const addCommentIsLiked = (query: SelectQueryBuilder<Comment>, reqUser: I
 }
 
 export const isVoteExpired = (vote: Vote) => {
-  return new Date(vote.endTime) < new Date()
+  return false
 }

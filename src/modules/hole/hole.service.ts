@@ -58,6 +58,7 @@ import {
 } from '@/modules/hole/hole.utils'
 import { HoleRepoService } from '@/modules/hole/hole.repo'
 import { VoteItem } from '@/entity/hole/VoteItem.entity'
+import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entity'
 
 @Injectable()
 export class HoleService {
@@ -82,6 +83,9 @@ export class HoleService {
   @InjectRepository(VoteItem)
   private readonly voteItemRepo: Repository<VoteItem>
 
+  @InjectRepository(ArticleCategory)
+  private readonly articleCategoryRepo: Repository<ArticleCategory>
+
   @InjectEntityManager()
   private readonly manager: EntityManager
 
@@ -102,6 +106,7 @@ export class HoleService {
       .leftJoinAndSelect('vote.items', 'voteItems')
       .leftJoinAndSelect('hole.comments', 'comments')
       .leftJoinAndSelect('comments.user', 'comment.user')
+      .leftJoinAndSelect('hole.category', 'category')
       .loadRelationCountAndMap('voteItems.isVoted', 'voteItems.user', 'isVoted', (qb) =>
         qb.andWhere('isVoted.studentId = :studentId', {
           studentId: reqUser.studentId,
@@ -112,6 +117,9 @@ export class HoleService {
           studentId: reqUser.studentId,
         }),
       )
+      .where('category.category = :category', {
+        category: query.category,
+      })
 
     if (query.mode === HoleListMode.random) {
       queryBuilder
@@ -165,6 +173,7 @@ export class HoleService {
       .setFindOptions({
         relations: {
           user: true,
+          category: true,
         },
         where: {
           id: query.id,
@@ -220,11 +229,16 @@ export class HoleService {
       }),
     )
 
+    const category = this.articleCategoryRepo.create({
+      category: dto.category,
+    })
+
     const hole = this.holeRepo.create({
       user,
       body: dto.body,
       imgs: dto.imgs,
       tags,
+      category,
     })
 
     if (dto.vote) {
@@ -234,14 +248,11 @@ export class HoleService {
         }),
       )
 
-      const vote = this.voteRepo.create({
+      hole.vote = this.voteRepo.create({
         items: votes,
-        endTime: dto.vote.endTime,
         type: VoteType.single,
         hole,
       })
-
-      hole.vote = vote
     }
 
     await this.holeRepo.save(hole)

@@ -1,7 +1,6 @@
 import {
   ArrayMaxSize,
   IsArray,
-  IsBoolean,
   IsDate,
   IsEnum,
   IsOptional,
@@ -14,6 +13,7 @@ import { Limit } from '@/constants/limit'
 import { IsValidPostImgs } from '@/modules/hole/dto/utils.dto'
 import { VoteType } from '@/entity/hole/vote.entity'
 import { add } from 'date-fns'
+import { ArticleCategoryEnum } from '@/common/enums/article_category/category'
 
 class Vote {
   @ArrayMaxSize(Limit.holeVoteMaxLength, {
@@ -25,12 +25,6 @@ class Vote {
   })
   @IsArray()
   items: string[] = []
-
-  @MinDate(() => add(new Date(), { days: 1 }), {
-    message: '投票结束时间至少在24小时后',
-  })
-  @IsDate()
-  endTime: Date = null
 
   @IsEnum(VoteType)
   @IsOptional()
@@ -51,6 +45,10 @@ export class CreateHoleDto {
   @IsArray()
   @IsOptional()
   imgs?: string[] = []
+
+  @IsEnum(ArticleCategoryEnum)
+  @IsOptional()
+  category: ArticleCategoryEnum = ArticleCategoryEnum.hfutLife
 
   @MaxLength(Limit.holeVoteOptionLength, {
     each: true,

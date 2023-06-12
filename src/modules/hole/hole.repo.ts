@@ -4,10 +4,18 @@ import { User } from '@/entity/user/user.entity'
 import { FindOneOptions, Repository } from 'typeorm'
 import { createResponse } from '@/utils/create'
 import { IProcessLikeOptions, ILikeableEntity } from '@/modules/hole/hole.types'
-import { GetHoleDetailQuery } from '@/modules/hole/dto/hole.dto'
+import {
+  GetHoleDetailQuery,
+  GetHoleListQuery,
+  HoleListMode,
+} from '@/modules/hole/dto/hole.dto'
 import { Vote } from '@/entity/hole/vote.entity'
 import { VoteItem } from '@/entity/hole/VoteItem.entity'
 import { IUser } from '@/app'
+import { paginate, PaginationTypeEnum } from 'nestjs-typeorm-paginate'
+import { resolvePaginationHoleData } from '@/modules/hole/hole.utils'
+import { Hole } from '@/entity/hole/hole.entity'
+import { AppConfig } from '@/app.config'
 
 // TODO 解决any类型
 @Injectable()
@@ -20,6 +28,11 @@ export class HoleRepoService {
 
   @InjectRepository(VoteItem)
   private readonly voteItemRepo: Repository<VoteItem>
+
+  @InjectRepository(Hole)
+  private readonly holeRepo: Repository<Hole>
+
+  constructor(private readonly appConfig: AppConfig) {}
 
   async processLike<T extends ILikeableEntity>({
     dto,
@@ -159,5 +172,51 @@ export class HoleRepoService {
     vote.isExpired = new Date(vote.endTime) < new Date()
 
     return vote
+  }
+
+  async getList(query: GetHoleListQuery, reqUser: IUser) {
+    const queryBuilder = this.holeRepo
+      .createQueryBuilder('hole')
+      .leftJoinAndSelect('hole.user', 'user')
+      .leftJoinAndSelect('hole.tags', 'tags')
+      .leftJoinAndSelect('hole.vote', 'vote')
+      .leftJoinAndSelect('vote.items', 'voteItems')
+      .leftJoinAndSelect('hole.comments', 'comments')
+      .leftJoinAndSelect('comments.user', 'comment.user')
+      .leftJoinAndSelect('hole.category', 'category')
+      .loadRelationCountAndMap('voteItems.isVoted', 'voteItems.user', 'isVoted', (qb) =>
+        qb.andWhere('isVoted.studentId = :studentId', {
+          studentId: reqUser.studentId,
+        }),
+      )
+      .loadRelationCountAndMap('vote.isVoted', 'vote.user', 'isVoted', (qb) =>
+        qb.andWhere('isVoted.studentId = :studentId', {
+          studentId: reqUser.studentId,
+        }),
+      )
+
+    if (query.category) {
+      queryBuilder.where('category.category = :category', {
+        category: query.category,
+      })
+    }
+
+    if (query.mode === HoleListMode.hot) {
+      queryBuilder
+        .addSelect(`LOG10(RAND(hole.id)) * RAND() * 100`, 'score')
+        .orderBy('score', 'DESC')
+    } else if (query.mode === HoleListMode.latest) {
+      queryBuilder.orderBy('hole.createAt', 'DESC')
+    }
+
+    const data = await paginate(queryBuilder, {
+      ...query,
+      paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
+    })
+
+    // TODO 用sql解决，还是得多学学sql啊
+    resolvePaginationHoleData(data, this.appConfig)
+
+    return data
   }
 }

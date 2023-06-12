@@ -10,11 +10,7 @@ import {
   LikeCommentDto,
 } from '@/modules/hole/dto/comment.dto'
 import { GetHoleDetailQuery, GetHoleListQuery } from '@/modules/hole/dto/hole.dto'
-import {
-  GetRepliesQuery,
-  LikeReplyDto,
-  ReplyReplyDto,
-} from '@/modules/hole/dto/replies.dto'
+import { GetRepliesQuery, LikeReplyDto } from '@/modules/hole/dto/replies.dto'
 import { Roles } from '@/common/decorator/roles.decorator'
 import { PostVoteDto } from '@/modules/hole/dto/vote.dto'
 import { SearchQuery } from '@/modules/hole/dto/search.dto'

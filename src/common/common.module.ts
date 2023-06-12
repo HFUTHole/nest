@@ -13,10 +13,12 @@ import { User } from '@/entity/user/user.entity'
 import { ThrottlerGuard } from '@nestjs/throttler'
 import { RedisModule } from '@liaoliaots/nestjs-redis'
 import { AppConfig } from '@/app.config'
+import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entity'
+import { Hole } from '@/entity/hole/hole.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Hole, ArticleCategory]),
     RedisModule.forRootAsync({
       useFactory: (config: AppConfig) => {
         return {

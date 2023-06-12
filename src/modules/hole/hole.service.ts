@@ -59,6 +59,7 @@ import {
 import { HoleRepoService } from '@/modules/hole/hole.repo'
 import { VoteItem } from '@/entity/hole/VoteItem.entity'
 import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entity'
+import { ArticleCategoryEnum } from '@/common/enums/article_category/category'
 
 @Injectable()
 export class HoleService {
@@ -98,46 +99,9 @@ export class HoleService {
   constructor(private readonly appConfig: AppConfig) {}
 
   async getList(query: GetHoleListQuery, reqUser: IUser) {
-    const queryBuilder = this.holeRepo
-      .createQueryBuilder('hole')
-      .leftJoinAndSelect('hole.user', 'user')
-      .leftJoinAndSelect('hole.tags', 'tags')
-      .leftJoinAndSelect('hole.vote', 'vote')
-      .leftJoinAndSelect('vote.items', 'voteItems')
-      .leftJoinAndSelect('hole.comments', 'comments')
-      .leftJoinAndSelect('comments.user', 'comment.user')
-      .leftJoinAndSelect('hole.category', 'category')
-      .loadRelationCountAndMap('voteItems.isVoted', 'voteItems.user', 'isVoted', (qb) =>
-        qb.andWhere('isVoted.studentId = :studentId', {
-          studentId: reqUser.studentId,
-        }),
-      )
-      .loadRelationCountAndMap('vote.isVoted', 'vote.user', 'isVoted', (qb) =>
-        qb.andWhere('isVoted.studentId = :studentId', {
-          studentId: reqUser.studentId,
-        }),
-      )
-      .where('category.category = :category', {
-        category: query.category,
-      })
+    const data = await this.holeRepoService.getList(query, reqUser)
 
-    if (query.mode === HoleListMode.random) {
-      queryBuilder
-        .addSelect(`LOG10(RAND(hole.id)) * RAND() * 100`, 'score')
-        .orderBy('score', 'DESC')
-    } else if (query.mode === HoleListMode.timeline) {
-      queryBuilder.orderBy('hole.createAt', 'DESC')
-    }
-
-    const data = await paginate(queryBuilder, {
-      ...query,
-      paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
-    })
-
-    // TODO 用sql解决，还是得多学学sql啊
-    resolvePaginationHoleData(data, this.appConfig)
-
-    return data
+    return createResponse('获取成功', data)
   }
 
   async delete(body: DeleteHoleDto, reqUser: IUser) {

@@ -71,6 +71,14 @@ export class CreateCommentReplyDto {
   @IsReplyExist()
   @IsOptional()
   replyId?: string
+
+  @IsValidPostImgs()
+  @ArrayMaxSize(Limit.holeMaxImgLength, {
+    message: `最多只能上传${Limit.holeMaxImgLength}张图片哦`,
+  })
+  @IsArray()
+  @IsOptional()
+  imgs?: string[] = []
 }
 
 export class IsCommentIdExistDto {

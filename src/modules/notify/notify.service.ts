@@ -1,81 +1,137 @@
 import { ConflictException, ForbiddenException, Injectable } from '@nestjs/common'
-import { Notify, NotifyEvent, NotifyStatus } from '@/entity/notify/notify.entity'
 import { InjectRepository } from '@nestjs/typeorm'
-import { EntityManager, Repository } from 'typeorm'
+import { Repository } from 'typeorm'
 import { User } from '@/entity/user/user.entity'
-import { paginate } from 'nestjs-typeorm-paginate'
-import { PaginateQuery } from '@/common/dtos/paginate.dto'
+import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.entity'
+import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
+import {
+  CreateInteractionNotifyInterface,
+  CreateSystemNotifyInterface,
+} from '@/modules/notify/interface/params.interface'
+import { IUser } from '@/app'
+import { ReadNotifyDto } from '@/modules/notify/dtos/notify.dto'
 
 @Injectable()
 export class NotifyService {
-  @InjectRepository(Notify)
-  private readonly notifyRepo: Repository<Notify>
+  @InjectRepository(NotifyInteractionEntity)
+  private readonly notifyInteractionRepo: Repository<NotifyInteractionEntity>
+
+  @InjectRepository(NotifySystemEntity)
+  private readonly notifySystemRepo: Repository<NotifySystemEntity>
 
   @InjectRepository(User)
   private readonly userRepo: Repository<User>
 
-  async notify(
-    event: NotifyEvent,
-    message: string,
-    studentId: number,
-    targetId: string | number,
-    transactionManager?: EntityManager,
-  ) {
-    const user = await this.userRepo.findOneBy({ studentId })
+  async createInteractionNotify(params: CreateInteractionNotifyInterface) {
+    const { type, body, reqUser, recipientId } = params
 
-    const notify = this.notifyRepo.create({
-      event,
-      message,
-      targetId,
+    const creator = await this.userRepo.findOneBy({ studentId: reqUser.studentId })
+    const user = await this.userRepo.findOneBy({ studentId: recipientId })
+
+    const notify = this.notifyInteractionRepo.create({
+      type,
+      body,
+      creator,
       user,
     })
 
-    const repo = transactionManager
-      ? transactionManager.getRepository(Notify)
-      : this.notifyRepo
-
-    await repo.save(notify)
+    await this.notifyInteractionRepo.save(notify)
 
     return true
   }
 
-  async getUserNotifications(query: PaginateQuery, studentId: number) {
-    return paginate<Notify>(this.notifyRepo, query, {
-      relations: {
-        user: true,
-      },
-      where: { user: { studentId } },
-      order: {
-        createAt: 'DESC',
-      },
+  async createSystemNotify(params: CreateSystemNotifyInterface) {
+    const { userId, body, title } = params
+
+    const notify = this.notifySystemRepo.create({
+      title,
+      body,
+      user: this.userRepo.create({ studentId: userId }),
     })
+
+    await this.notifySystemRepo.save(notify)
+
+    return true
   }
 
-  async readNotification(id: string, studentId: number) {
-    const notification = await this.notifyRepo.findOne({
-      relations: { user: true },
-      select: {
-        user: {
-          studentId: true,
-        },
+  async getUserBaseNotifications({ studentId }: IUser) {
+    const latestInteractionNotify = await this.notifyInteractionRepo.findOne({
+      where: {
+        user: { studentId },
+        isRead: false,
       },
+      order: {
+        createAt: 'desc',
+      },
+    })
+    const interactionCount = await this.notifyInteractionRepo.count({
+      where: {
+        user: { studentId },
+        isRead: false,
+      },
+    })
+
+    const latestSystemNotify = await this.notifySystemRepo.findOne({
+      where: {
+        user: { studentId },
+        isRead: false,
+      },
+      order: {
+        createAt: 'desc',
+      },
+    })
+    const systemCount = await this.notifySystemRepo.count({
+      where: {
+        user: { studentId },
+        isRead: false,
+      },
+    })
+
+    return {
+      interaction: {
+        data: latestInteractionNotify,
+        totalCount: interactionCount,
+      },
+      system: {
+        data: latestSystemNotify,
+        totalCount: systemCount,
+      },
+    }
+  }
+
+  async getSystemNotify() {}
+
+  async getInteractionNotify() {}
+
+  async readInteractionNotification(dto: ReadNotifyDto, reqUser: IUser) {
+    return this.processReadNotify(this.notifyInteractionRepo, dto.id, reqUser.studentId)
+  }
+
+  async readSystemNotification(dto: ReadNotifyDto, reqUser: IUser) {
+    return this.processReadNotify(this.notifySystemRepo, dto.id, reqUser.studentId)
+  }
+
+  async processReadNotify(
+    repo: Repository<NotifyInteractionEntity | NotifySystemEntity>,
+    id: string,
+    studentId: number,
+  ) {
+    const notify = await repo.findOne({
+      relations: { user: true },
+      select: { user: { studentId: true } },
       where: { id },
     })
 
-    const isReqUserNotification = notification.user.studentId === studentId
-
-    if (!isReqUserNotification) {
-      throw new ForbiddenException('这不是你的消息哦')
+    if (notify.user.studentId !== studentId) {
+      throw new ForbiddenException('这不是你的通知')
     }
 
-    const isAlreadyRead = notification.status === NotifyStatus.read
-
-    if (isAlreadyRead) {
-      throw new ConflictException('这条消息已经读过了')
+    if (notify.isRead) {
+      throw new ConflictException('这个通知已经读过了哦')
     }
 
-    await this.notifyRepo.update({ id }, { status: NotifyStatus.read })
+    notify.isRead = true
 
-    return true
+    await this.notifyInteractionRepo.save(notify)
   }
 }

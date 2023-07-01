@@ -5,9 +5,9 @@ import { Comment } from '@/entity/hole/comment.entity'
 import { Reply } from '@/entity/hole/reply.entity'
 import { Role } from '@/modules/role/role.constant'
 import { Vote } from '@/entity/hole/vote.entity'
-import { Notify } from '@/entity/notify/notify.entity'
 import { VoteItem } from '@/entity/hole/VoteItem.entity'
 import { Report } from '@/entity/report/report.entity'
+import { ConversationEntity } from '@/entity/chat/conversation.entity'
 
 export enum Gender {
   Male = '男',
@@ -86,9 +86,9 @@ export class User extends AutoIncIdEntity {
   @JoinTable()
   voteItems: VoteItem[]
 
-  @OneToMany(() => Notify, (notify) => notify.user)
-  notifications: Notify[]
-
   @ManyToMany(() => Report, (report) => report.user)
   reports: Report[]
+
+  @ManyToMany(() => ConversationEntity, (conversation) => conversation.user)
+  conversations: ConversationEntity[]
 }

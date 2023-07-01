@@ -11,6 +11,8 @@ export interface ILikeableEntity extends CommonEntity {
   favoriteCounts: number
 
   favoriteUsers: User[]
+
+  user: User
 }
 
 export interface IProcessLikeOptions<T extends ILikeableEntity> {

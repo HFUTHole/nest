@@ -18,10 +18,11 @@ import { RoleService } from '@/modules/role/role.service'
 import { Tags } from '@/entity/hole/tags.entity'
 import { Vote } from '@/entity/hole/vote.entity'
 import { NotifyService } from '@/modules/notify/notify.service'
-import { Notify } from '@/entity/notify/notify.entity'
 import { VoteItem } from '@/entity/hole/VoteItem.entity'
 import { HoleRepoService } from '@/modules/hole/hole.repo'
 import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entity'
+import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.entity'
+import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
 
 @Module({
   imports: [
@@ -33,8 +34,9 @@ import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entit
       Tags,
       Vote,
       VoteItem,
-      Notify,
       ArticleCategory,
+      NotifyInteractionEntity,
+      NotifySystemEntity,
     ]),
   ],
   controllers: [HoleController],

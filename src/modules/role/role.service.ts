@@ -27,7 +27,7 @@ export class RoleService {
 
   async ban(dto: BanDto) {
     const user = await this.userRepo.findOneBy({
-      id: dto.userId,
+      studentId: dto.userId,
     })
 
     if (user.role === Role.Banned) {
@@ -43,7 +43,7 @@ export class RoleService {
 
   async liberate(dto: LiberateDto) {
     const user = await this.userRepo.findOneBy({
-      id: dto.userId,
+      studentId: dto.userId,
     })
 
     user.role = Role.User

@@ -12,7 +12,8 @@ import { AppController } from '@/app.controller'
 import { AppService } from '@/app.service'
 import { NotifyModule } from './modules/notify/notify.module'
 import { ThrottlerModule } from '@nestjs/throttler'
-import { ReportModule } from './modules/report/report.module';
+import { ReportModule } from './modules/report/report.module'
+import { ChatModule } from './modules/chat/chat.module'
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { ReportModule } from './modules/report/report.module';
     RoleModule,
     NotifyModule,
     ReportModule,
+    ChatModule,
   ],
   providers: [AppService],
   controllers: [AppController],

@@ -4,13 +4,15 @@ import { UserService } from './user.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { User } from '@/entity/user/user.entity'
 import { Hole } from '@/entity/hole/hole.entity'
-import { Notify } from '@/entity/notify/notify.entity'
 import { NotifyService } from '@/modules/notify/notify.service'
-import { IsNotificationExistConstraint } from '@/modules/user/dtos/utils.dto'
+import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.entity'
+import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Hole, Notify])],
+  imports: [
+    TypeOrmModule.forFeature([User, Hole, NotifyInteractionEntity, NotifySystemEntity]),
+  ],
   controllers: [UserController],
-  providers: [UserService, NotifyService, IsNotificationExistConstraint],
+  providers: [UserService, NotifyService],
 })
 export class UserModule {}

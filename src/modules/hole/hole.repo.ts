@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common'
+import { ConflictException, Inject, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '@/entity/user/user.entity'
 import { FindOneOptions, Repository } from 'typeorm'
@@ -16,6 +16,11 @@ import { paginate, PaginationTypeEnum } from 'nestjs-typeorm-paginate'
 import { resolvePaginationHoleData } from '@/modules/hole/hole.utils'
 import { Hole } from '@/entity/hole/hole.entity'
 import { AppConfig } from '@/app.config'
+import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
+import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.entity'
+import { NotifyService } from '@/modules/notify/notify.service'
+import { CreateInteractionNotifyInterface } from '@/modules/notify/interface/params.interface'
+import { NotifyEventType } from '@/common/enums/notify/notify.enum'
 
 // TODO 解决any类型
 @Injectable()
@@ -32,6 +37,15 @@ export class HoleRepoService {
   @InjectRepository(Hole)
   private readonly holeRepo: Repository<Hole>
 
+  @InjectRepository(NotifySystemEntity)
+  private readonly notifySystemRepo: Repository<NotifySystemEntity>
+
+  @InjectRepository(NotifyInteractionEntity)
+  private readonly notifyInteractionRepo: Repository<NotifyInteractionEntity>
+
+  @Inject()
+  private readonly notifyService: NotifyService
+
   constructor(private readonly appConfig: AppConfig) {}
 
   async processLike<T extends ILikeableEntity>({
@@ -40,7 +54,8 @@ export class HoleRepoService {
     repo,
     propertyPath,
     entity,
-  }: IProcessLikeOptions<T>) {
+    type,
+  }: IProcessLikeOptions<T> & { type: string }) {
     const isLiked = await repo.findOne({
       relations: {
         favoriteUsers: true,
@@ -63,6 +78,15 @@ export class HoleRepoService {
     })
 
     const target = await repo.findOne({
+      relations: {
+        user: true,
+      },
+      select: {
+        user: {
+          username: true,
+          studentId: true,
+        },
+      },
       where: {
         id: dto.id,
       },
@@ -80,6 +104,13 @@ export class HoleRepoService {
       .set({ favoriteCounts: () => 'favoriteCounts + 1' } as any)
       .where('id = :id', { id: dto.id })
       .execute()
+
+    await this.notifyService.createInteractionNotify({
+      type: NotifyEventType.like,
+      reqUser,
+      body: `${target.user.username} 赞了你的${type}`,
+      recipientId: target.user.studentId,
+    })
 
     return createResponse('点赞成功')
   }

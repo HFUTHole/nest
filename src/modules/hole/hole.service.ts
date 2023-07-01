@@ -19,7 +19,7 @@ import { User } from '@/entity/user/user.entity'
 import { CreateHoleDto } from '@/modules/hole/dto/create.dto'
 import { IUser } from '@/app'
 import { createResponse } from '@/utils/create'
-import { paginate, PaginationTypeEnum } from 'nestjs-typeorm-paginate'
+import { paginate } from 'nestjs-typeorm-paginate'
 import {
   CreateCommentDto,
   CreateCommentReplyDto,
@@ -31,7 +31,6 @@ import {
   DeleteHoleDto,
   GetHoleDetailQuery,
   GetHoleListQuery,
-  HoleListMode,
 } from '@/modules/hole/dto/hole.dto'
 import { Reply } from '@/entity/hole/reply.entity'
 import {
@@ -43,7 +42,6 @@ import { Tags } from '@/entity/hole/tags.entity'
 import { Vote, VoteType } from '@/entity/hole/vote.entity'
 import { PostVoteDto } from '@/modules/hole/dto/vote.dto'
 import { NotifyService } from '@/modules/notify/notify.service'
-import { NotifyEvent } from '@/entity/notify/notify.entity'
 import { AppConfig } from '@/app.config'
 import {
   HoleDetailCommentMode,
@@ -59,7 +57,8 @@ import {
 import { HoleRepoService } from '@/modules/hole/hole.repo'
 import { VoteItem } from '@/entity/hole/VoteItem.entity'
 import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entity'
-import { ArticleCategoryEnum } from '@/common/enums/article_category/category'
+import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.entity'
+import { NotifyEventType } from '@/common/enums/notify/notify.enum'
 
 @Injectable()
 export class HoleService {
@@ -86,6 +85,9 @@ export class HoleService {
 
   @InjectRepository(ArticleCategory)
   private readonly articleCategoryRepo: Repository<ArticleCategory>
+
+  @InjectRepository(NotifyInteractionEntity)
+  private readonly notifyInteractionRepo: Repository<NotifyInteractionEntity>
 
   @InjectEntityManager()
   private readonly manager: EntityManager
@@ -163,13 +165,16 @@ export class HoleService {
   }
 
   async likeHole(dto: GetHoleDetailQuery, reqUser: IUser) {
-    return this.holeRepoService.processLike({
+    const result = this.holeRepoService.processLike({
       dto,
       reqUser,
       repo: this.holeRepo,
       propertyPath: 'favoriteHole',
       entity: Hole as any,
+      type: '帖子',
     })
+
+    return result
   }
 
   async deleteLike(dto: GetHoleDetailQuery, reqUser: IUser) {
@@ -241,13 +246,13 @@ export class HoleService {
 
     await this.manager.transaction(async (transactionalEntityManager) => {
       await transactionalEntityManager.getRepository(Comment).save(comment)
-      await this.notifyService.notify(
-        NotifyEvent.comment,
-        `有人评论了你的树洞#${hole.id}`,
-        hole.user.studentId,
-        hole.id,
-        transactionalEntityManager,
-      )
+      // await this.notifyService.notify(
+      //   NotifyEvent.comment,
+      //   `有人评论了你的树洞#${hole.id}`,
+      //   hole.user.studentId,
+      //   hole.id,
+      //   transactionalEntityManager,
+      // )
     })
 
     return createResponse('留言成功', { id: comment.id })
@@ -315,6 +320,7 @@ export class HoleService {
       repo: this.commentRepo,
       propertyPath: 'favoriteComment',
       entity: Comment as any,
+      type: '评论',
     })
   }
 
@@ -416,6 +422,7 @@ export class HoleService {
       repo: this.replyRepo,
       propertyPath: 'favoriteReply',
       entity: Reply as any,
+      type: '回复',
     })
   }
 

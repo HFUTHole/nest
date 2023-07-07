@@ -31,6 +31,12 @@ export class Hole extends AutoIncIdEntity {
   })
   imgs: string[]
 
+  @Column({
+    comment: 'BV号',
+    default: null,
+  })
+  bilibili: string
+
   @OneToMany(() => Comment, (comment) => comment.hole)
   comments: Comment[]
 

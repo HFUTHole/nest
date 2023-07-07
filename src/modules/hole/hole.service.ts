@@ -208,6 +208,7 @@ export class HoleService {
       imgs: dto.imgs,
       tags,
       category,
+      bilibili: dto.bilibili,
     })
 
     if (dto.vote) {

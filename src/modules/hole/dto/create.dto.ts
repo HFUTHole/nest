@@ -1,18 +1,17 @@
 import {
   ArrayMaxSize,
   IsArray,
-  IsDate,
   IsEnum,
   IsOptional,
   IsString,
+  Length,
   MaxLength,
-  MinDate,
+  Validate,
   ValidateNested,
 } from 'class-validator'
 import { Limit } from '@/constants/limit'
 import { IsValidPostImgs } from '@/modules/hole/dto/utils.dto'
 import { VoteType } from '@/entity/hole/vote.entity'
-import { add } from 'date-fns'
 import { ArticleCategoryEnum } from '@/common/enums/article_category/category'
 
 class Vote {
@@ -45,6 +44,15 @@ export class CreateHoleDto {
   @IsArray()
   @IsOptional()
   imgs?: string[] = []
+
+  // TODO 开一个爬虫去验证是否正确
+  @Validate((value: string) => value.startsWith('BV'), {
+    message: 'BV号格式不正确',
+  })
+  @Length(12, 12, { message: '请输入正确的B站的BV视频号哦' })
+  @IsString()
+  @IsOptional()
+  bilibili?: string
 
   @IsEnum(ArticleCategoryEnum)
   @IsOptional()

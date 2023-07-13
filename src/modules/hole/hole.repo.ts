@@ -13,7 +13,7 @@ import { Vote } from '@/entity/hole/vote.entity'
 import { VoteItem } from '@/entity/hole/VoteItem.entity'
 import { IUser } from '@/app'
 import { paginate, PaginationTypeEnum } from 'nestjs-typeorm-paginate'
-import { resolvePaginationHoleData } from '@/modules/hole/hole.utils'
+import { initHoleDateSelect, resolvePaginationHoleData } from '@/modules/hole/hole.utils'
 import { Hole } from '@/entity/hole/hole.entity'
 import { AppConfig } from '@/app.config'
 import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
@@ -206,15 +206,7 @@ export class HoleRepoService {
   }
 
   async getList(query: GetHoleListQuery, reqUser: IUser) {
-    const queryBuilder = this.holeRepo
-      .createQueryBuilder('hole')
-      .leftJoinAndSelect('hole.user', 'user')
-      .leftJoinAndSelect('hole.tags', 'tags')
-      .leftJoinAndSelect('hole.vote', 'vote')
-      .leftJoinAndSelect('vote.items', 'voteItems')
-      .leftJoinAndSelect('hole.comments', 'comments')
-      .leftJoinAndSelect('comments.user', 'comment.user')
-      .leftJoinAndSelect('hole.category', 'category')
+    const queryBuilder = initHoleDateSelect(this.holeRepo)
       .loadRelationCountAndMap('voteItems.isVoted', 'voteItems.user', 'isVoted', (qb) =>
         qb.andWhere('isVoted.studentId = :studentId', {
           studentId: reqUser.studentId,

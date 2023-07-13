@@ -2,7 +2,7 @@ import { IPaginationMeta, Pagination } from 'nestjs-typeorm-paginate'
 import { Hole } from '@/entity/hole/hole.entity'
 import { getAvatarUrl } from '@/utils/user'
 import { AppConfig } from '@/app.config'
-import { SelectQueryBuilder } from 'typeorm'
+import { Repository, SelectQueryBuilder } from 'typeorm'
 import { IUser } from '@/app'
 import { Comment } from '@/entity/hole/comment.entity'
 import { Vote } from '@/entity/hole/vote.entity'
@@ -66,3 +66,15 @@ export const addCommentIsLiked = (query: SelectQueryBuilder<Comment>, reqUser: I
 export const isVoteExpired = (vote: Vote) => {
   return false
 }
+
+export const initHoleDateSelect = (holeRepo: Repository<Hole>) =>
+  holeRepo
+    .createQueryBuilder('hole')
+    .leftJoinAndSelect('hole.user', 'user')
+    .leftJoinAndSelect('hole.favoriteUsers', 'favoriteUser')
+    .leftJoinAndSelect('hole.tags', 'tags')
+    .leftJoinAndSelect('hole.vote', 'vote')
+    .leftJoinAndSelect('vote.items', 'voteItems')
+    .leftJoinAndSelect('hole.comments', 'comments')
+    .leftJoinAndSelect('comments.user', 'comment.user')
+    .leftJoinAndSelect('hole.category', 'category')

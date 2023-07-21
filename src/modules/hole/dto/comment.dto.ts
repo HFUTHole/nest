@@ -34,6 +34,10 @@ export class GetHoleCommentDto extends PaginateQuery {
   @IsEnum(HoleDetailCommentOrderMode)
   @IsOptional()
   order?: HoleDetailCommentOrderMode = HoleDetailCommentOrderMode.favorite
+
+  @IsCommentExist()
+  @IsOptional()
+  commentId?: string
 }
 
 export class CreateCommentDto {

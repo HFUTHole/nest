@@ -55,7 +55,14 @@ export class HoleRepoService {
     propertyPath,
     entity,
     type,
-  }: IProcessLikeOptions<T> & { type: string }) {
+    notifyProps,
+  }: IProcessLikeOptions<T> & {
+    type: string
+    notifyProps?: Pick<
+      CreateInteractionNotifyInterface,
+      'holeId' | 'commentId' | 'replyId'
+    >
+  }) {
     const isLiked = await repo.findOne({
       relations: {
         favoriteUsers: true,
@@ -110,6 +117,7 @@ export class HoleRepoService {
       reqUser,
       body: `${target.user.username} 赞了你的${type}`,
       recipientId: target.user.studentId,
+      ...notifyProps,
     })
 
     return createResponse('点赞成功')

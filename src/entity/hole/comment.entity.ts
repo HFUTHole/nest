@@ -54,4 +54,6 @@ export class Comment extends CommonEntity {
 
   // TODO use @VirtualMapColumn() WIP...
   repliesCount?: number
+
+  isNotification?: boolean
 }

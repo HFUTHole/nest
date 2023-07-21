@@ -14,10 +14,19 @@ import { JwtModuleOptions } from '@nestjs/jwt/dist/interfaces/jwt-module-options
 import { NotifyService } from '@/modules/notify/notify.service'
 import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.entity'
 import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
+import { Reply } from '@/entity/hole/reply.entity'
+import { Comment } from '@/entity/hole/comment.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Hole, NotifyInteractionEntity, NotifySystemEntity]),
+    TypeOrmModule.forFeature([
+      User,
+      Hole,
+      Comment,
+      Reply,
+      NotifyInteractionEntity,
+      NotifySystemEntity,
+    ]),
     JwtModule.registerAsync({
       useFactory(config: AppConfig): JwtModuleOptions {
         return {

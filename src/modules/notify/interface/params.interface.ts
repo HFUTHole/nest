@@ -6,6 +6,9 @@ export interface CreateInteractionNotifyInterface {
   recipientId: number
   body: string
   reqUser: IUser
+  holeId?: number
+  commentId?: string
+  replyId?: string
 }
 
 export interface CreateSystemNotifyInterface {

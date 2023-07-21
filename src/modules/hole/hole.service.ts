@@ -13,6 +13,7 @@ import {
   FindOptionsOrder,
   In,
   Like,
+  Not,
   Repository,
 } from 'typeorm'
 import { User } from '@/entity/user/user.entity'
@@ -51,6 +52,7 @@ import {
 import { SearchQuery } from '@/modules/hole/dto/search.dto'
 import {
   addCommentIsLiked,
+  ellipsisBody,
   isVoteExpired,
   resolvePaginationHoleData,
 } from '@/modules/hole/hole.utils'
@@ -172,6 +174,9 @@ export class HoleService {
       propertyPath: 'favoriteHole',
       entity: Hole as any,
       type: '帖子',
+      notifyProps: {
+        holeId: dto.id,
+      },
     })
 
     return result
@@ -245,15 +250,14 @@ export class HoleService {
       imgs: dto.imgs,
     })
 
-    await this.manager.transaction(async (transactionalEntityManager) => {
-      await transactionalEntityManager.getRepository(Comment).save(comment)
-      // await this.notifyService.notify(
-      //   NotifyEvent.comment,
-      //   `有人评论了你的树洞#${hole.id}`,
-      //   hole.user.studentId,
-      //   hole.id,
-      //   transactionalEntityManager,
-      // )
+    const savedComment = await this.commentRepo.save(comment)
+
+    await this.notifyService.createInteractionNotify({
+      type: NotifyEventType.comment,
+      reqUser,
+      body: `${user.username} 评论了你的帖子：${ellipsisBody(dto.body, 30)}`,
+      recipientId: hole.user.studentId,
+      commentId: savedComment.id as string,
     })
 
     return createResponse('留言成功', { id: comment.id })
@@ -288,6 +292,7 @@ export class HoleService {
           ...(dto.mode === HoleDetailCommentMode.author && {
             user: { studentId: hole.user.studentId },
           }),
+          ...(dto.commentId && { id: Not(dto.commentId) }),
         },
         select: {
           user: {
@@ -304,6 +309,27 @@ export class HoleService {
       limit: dto.limit,
       page: dto.page,
     })
+
+    if (dto.commentId && dto.page === 1) {
+      const commentBuilder = this.commentRepo
+        .createQueryBuilder('comment')
+        .setFindOptions({
+          relations: { user: true, replies: { user: true } },
+          where: {
+            id: dto.commentId,
+          },
+        })
+        .loadRelationCountAndMap('comment.repliesCount', 'comment.replies')
+
+      addCommentIsLiked(commentBuilder, reqUser)
+
+      const comment = await commentBuilder.getOne()
+
+      // 标明为从通知模块点击来的评论
+      comment.isNotification = true
+
+      data.items.unshift(comment)
+    }
 
     // TODO use queryBuilder to solve this problem
     ;(data as any).items = data.items.map((item) => {
@@ -322,6 +348,9 @@ export class HoleService {
       propertyPath: 'favoriteComment',
       entity: Comment as any,
       type: '评论',
+      notifyProps: {
+        commentId: dto.id,
+      },
     })
   }
 
@@ -424,6 +453,9 @@ export class HoleService {
       propertyPath: 'favoriteReply',
       entity: Reply as any,
       type: '回复',
+      notifyProps: {
+        replyId: dto.id,
+      },
     })
   }
 

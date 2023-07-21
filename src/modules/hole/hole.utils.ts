@@ -45,7 +45,7 @@ export const resolvePaginationHoleData = (
     return {
       ...item,
       comments: item.comments.slice(0, 2),
-      body: `${item.body.slice(0, 300)}${item.body.length > 300 ? '...' : ''}`,
+      body: ellipsisBody(item.body, 300),
       commentCounts: item.comments.length,
     }
   })
@@ -65,4 +65,8 @@ export const addCommentIsLiked = (query: SelectQueryBuilder<Comment>, reqUser: I
 
 export const isVoteExpired = (vote: Vote) => {
   return false
+}
+
+export const ellipsisBody = (str: string, len: number) => {
+  return `${str.slice(0, len)}${str.length > len ? '...' : ''}`
 }

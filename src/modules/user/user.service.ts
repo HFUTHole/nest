@@ -7,7 +7,9 @@ import { NotifyService } from '@/modules/notify/notify.service'
 import { createResponse } from '@/utils/create'
 import { PaginateQuery } from '@/common/dtos/paginate.dto'
 import { Hole } from '@/entity/hole/hole.entity'
-import { paginate } from 'nestjs-typeorm-paginate'
+import { PaginationTypeEnum, paginate } from 'nestjs-typeorm-paginate'
+import { AppConfig } from '@/app.config'
+import { resolvePaginationHoleData, initHoleDateSelect } from '@/modules/hole/hole.utils'
 
 @Injectable()
 export class UserService {
@@ -19,6 +21,8 @@ export class UserService {
 
   @Inject()
   private readonly notifyService: NotifyService
+
+  constructor(private readonly appConfig: AppConfig) {}
 
   async getProfile(reqUser: IUser) {
     const data = await this.userRepository.findOne({
@@ -36,41 +40,51 @@ export class UserService {
   }
 
   async getFavoriteHoles(query: PaginateQuery, reqUser: IUser) {
-    const queryBuilder = this.holeRepo.createQueryBuilder('hole').setFindOptions({
-      relations: {
-        user: true,
-      },
-      where: {
-        favoriteUsers: {
+    const queryBuilder = initHoleDateSelect(this.holeRepo)
+      .where('favoriteUser.studentId = :studentId', { studentId: reqUser.studentId })
+      .loadRelationCountAndMap('voteItems.isVoted', 'voteItems.user', 'isVoted', (qb) =>
+        qb.andWhere('isVoted.studentId = :studentId', {
           studentId: reqUser.studentId,
-        },
-      },
-      order: {
-        createAt: 'DESC',
-      },
+        }),
+      )
+      .loadRelationCountAndMap('vote.isVoted', 'vote.user', 'isVoted', (qb) =>
+        qb.andWhere('isVoted.studentId = :studentId', {
+          studentId: reqUser.studentId,
+        }),
+      )
+      .orderBy('hole.createAt', 'DESC')
+
+    const data = await paginate(queryBuilder, {
+      ...query,
+      paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
     })
 
-    const data = await paginate(queryBuilder, query)
+    resolvePaginationHoleData(data, this.appConfig)
 
-    return createResponse('获取点赞树洞成功', data)
+    return createResponse('获取用户树洞成功', data)
   }
 
   async getHoleList(query: PaginateQuery, reqUser: IUser) {
-    const queryBuilder = this.holeRepo.createQueryBuilder('hole').setFindOptions({
-      relations: {
-        user: true,
-      },
-      where: {
-        user: {
+    const queryBuilder = initHoleDateSelect(this.holeRepo)
+      .where('user.studentId = :studentId', { studentId: reqUser.studentId })
+      .loadRelationCountAndMap('voteItems.isVoted', 'voteItems.user', 'isVoted', (qb) =>
+        qb.andWhere('isVoted.studentId = :studentId', {
           studentId: reqUser.studentId,
-        },
-      },
-      order: {
-        createAt: 'DESC',
-      },
+        }),
+      )
+      .loadRelationCountAndMap('vote.isVoted', 'vote.user', 'isVoted', (qb) =>
+        qb.andWhere('isVoted.studentId = :studentId', {
+          studentId: reqUser.studentId,
+        }),
+      )
+      .orderBy('hole.createAt', 'DESC')
+
+    const data = await paginate(queryBuilder, {
+      ...query,
+      paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
     })
 
-    const data = await paginate(queryBuilder, query)
+    resolvePaginationHoleData(data, this.appConfig)
 
     return createResponse('获取用户树洞成功', data)
   }

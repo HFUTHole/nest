@@ -23,6 +23,11 @@ export class GetRepliesQuery extends PaginateQuery {
   @IsEnum(HoleReplyOrderMode)
   @IsOptional()
   order?: HoleReplyOrderMode = HoleReplyOrderMode.favorite
+
+  @IsReplyExist()
+  @IsString()
+  @IsOptional()
+  replyId?: string
 }
 
 export class IsReplyExistDto {

@@ -18,6 +18,12 @@ export class Reply extends CommonEntity {
   @Column({ comment: '留言内容' })
   body: string
 
+  @Column({
+    comment: '图片',
+    type: 'simple-array',
+  })
+  imgs: string[]
+
   @ManyToOne(() => User, (user) => user.replies, { cascade: true })
   user: User
 
@@ -47,4 +53,6 @@ export class Reply extends CommonEntity {
 
   @ManyToOne(() => User, (user) => user.repliedReply, { cascade: true })
   replyUser: User
+
+  isNotification?: boolean = false
 }

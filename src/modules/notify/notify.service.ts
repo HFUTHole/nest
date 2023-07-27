@@ -76,6 +76,8 @@ export class NotifyService {
           },
         })
       ).hole
+      notify.comment = reply.comment
+      notify.reply = reply
     }
 
     await this.notifyInteractionRepo.save(notify)

@@ -7,6 +7,7 @@ import { IUser } from '@/app'
 import { Comment } from '@/entity/hole/comment.entity'
 import { Vote } from '@/entity/hole/vote.entity'
 import { User } from '@/entity/user/user.entity'
+import { Reply } from '@/entity/hole/reply.entity'
 
 export const resolvePaginationHoleData = (
   data: Pagination<Hole, IPaginationMeta>,
@@ -60,6 +61,14 @@ export const addCommentIsLiked = (query: SelectQueryBuilder<Comment>, reqUser: I
       qb.andWhere('isLiked.studentId = :studentId', {
         studentId: reqUser.studentId,
       }),
+  )
+}
+
+export const addReplyIsLiked = (query: SelectQueryBuilder<Reply>, reqUser: IUser) => {
+  query.loadRelationCountAndMap('reply.isLiked', 'reply.favoriteUsers', 'isLiked', (qb) =>
+    qb.andWhere('isLiked.studentId = :studentId', {
+      studentId: reqUser.studentId,
+    }),
   )
 }
 

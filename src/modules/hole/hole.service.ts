@@ -52,6 +52,7 @@ import {
 import { SearchQuery } from '@/modules/hole/dto/search.dto'
 import {
   addCommentIsLiked,
+  addReplyIsLiked,
   ellipsisBody,
   isVoteExpired,
   resolvePaginationHoleData,
@@ -365,11 +366,21 @@ export class HoleService {
   }
 
   async replyComment(dto: CreateCommentReplyDto, reqUser: IUser) {
-    const comment = await this.commentRepo.findOne({ where: { id: dto.commentId } })
+    const comment = await this.commentRepo.findOne({
+      relations: { user: true },
+      where: { id: dto.commentId },
+      select: {
+        user: {
+          studentId: true,
+          id: true,
+        },
+      },
+    })
     const user = await this.userRepo.findOneBy({ studentId: reqUser.studentId })
 
     const reply = this.replyRepo.create({
       body: dto.body,
+      imgs: dto.imgs,
       comment,
       user,
     })
@@ -378,12 +389,28 @@ export class HoleService {
       const parentReply = await this.replyRepo.findOne({
         relations: { user: true },
         where: { id: dto.replyId },
+        select: {
+          user: {
+            studentId: true,
+            id: true,
+          },
+        },
       })
       reply.replyUser = parentReply.user
       reply.parentReply = parentReply
     }
 
-    await this.replyRepo.save(reply)
+    const savedReply = await this.replyRepo.save(reply)
+
+    await this.notifyService.createInteractionNotify({
+      type: NotifyEventType.reply,
+      reqUser,
+      body: `${user.username} 回复了你：${ellipsisBody(dto.body, 30)}`,
+      recipientId: dto.replyId
+        ? reply.parentReply.user.studentId
+        : comment.user.studentId,
+      replyId: savedReply.id as string,
+    })
 
     return createResponse('回复成功', { id: reply.id })
   }
@@ -411,32 +438,65 @@ export class HoleService {
 
     const comment = await commentQuery.getOne()
 
-    const queryBuilder = this.replyRepo
-      .createQueryBuilder('reply')
-      .setFindOptions({
-        relations: {
-          user: true,
-          replyUser: true,
+    const queryBuilder = this.replyRepo.createQueryBuilder('reply').setFindOptions({
+      relations: {
+        user: true,
+        replyUser: true,
+      },
+      where: {
+        comment: {
+          id: query.id,
         },
-        where: {
-          comment: {
-            id: query.id,
-          },
-        },
-        order: {
-          ...(isFavoriteOrder ? { favoriteCounts: 'DESC' } : { createAt: 'ASC' }),
-        },
-      })
-      .loadRelationCountAndMap('reply.isLiked', 'reply.favoriteUsers', 'isLiked', (qb) =>
-        qb.andWhere('isLiked.studentId = :studentId', {
-          studentId: reqUser.studentId,
-        }),
-      )
+        ...(query.replyId && { id: Not(query.replyId) }),
+      },
+      order: {
+        ...(isFavoriteOrder ? { favoriteCounts: 'DESC' } : { createAt: 'ASC' }),
+      },
+    })
+
+    addReplyIsLiked(queryBuilder, reqUser)
 
     const data = await paginate<Reply>(queryBuilder, {
       limit: query.limit,
       page: query.page,
     })
+
+    if (query.replyId && query.page === 1) {
+      const parentReply = (
+        await this.replyRepo.findOne({
+          relations: {
+            parentReply: true,
+          },
+          where: {
+            id: query.replyId,
+          },
+        })
+      ).parentReply
+
+      const replyBuilder = this.replyRepo.createQueryBuilder('reply').setFindOptions({
+        relations: { user: true, replyUser: true },
+        where: [
+          {
+            id: query.replyId,
+          },
+          {
+            id: parentReply?.id,
+          },
+        ],
+      })
+
+      addReplyIsLiked(replyBuilder, reqUser)
+
+      const reply = await replyBuilder.getMany()
+
+      // 标明为从通知模块点击来的评论
+      data.items.unshift(
+        ...(reply.map((item) => ({
+          ...item,
+          isNotification: true,
+        })) as Reply[]),
+      )
+    }
 
     return createResponse('获取回复成功', {
       ...data,

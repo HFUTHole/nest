@@ -46,7 +46,7 @@ export const resolvePaginationHoleData = (
     return {
       ...item,
       comments: item.comments.slice(0, 2),
-      body: `${item.body.slice(0, 300)}${item.body.length > 300 ? '...' : ''}`,
+      body: `${item.body.slice(0, 150)}${item.body.length > 150 ? '...' : ''}`,
       commentCounts: item.comments.length,
     }
   })

@@ -53,7 +53,6 @@ import { SearchQuery } from '@/modules/hole/dto/search.dto'
 import {
   addCommentIsLiked,
   addReplyIsLiked,
-  ellipsisBody,
   isVoteExpired,
   resolvePaginationHoleData,
 } from '@/modules/hole/hole.utils'
@@ -62,6 +61,7 @@ import { VoteItem } from '@/entity/hole/VoteItem.entity'
 import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entity'
 import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.entity'
 import { NotifyEventType } from '@/common/enums/notify/notify.enum'
+import { ellipsisBody } from '@/utils/string'
 
 @Injectable()
 export class HoleService {

@@ -87,7 +87,3 @@ export const initHoleDateSelect = (holeRepo: Repository<Hole>) =>
     .leftJoinAndSelect('hole.comments', 'comments')
     .leftJoinAndSelect('comments.user', 'comment.user')
     .leftJoinAndSelect('hole.category', 'category')
-
-export const ellipsisBody = (str: string, len: number) => {
-  return `${str.slice(0, len)}${str.length > len ? '...' : ''}`
-}

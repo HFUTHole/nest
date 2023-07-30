@@ -17,7 +17,7 @@ export class UserController {
     return this.service.getProfile(user)
   }
 
-  @Get('hole/favorite')
+  @Get('/hole/favorite')
   getFavoriteHoles(@Query() query: PaginateQuery, @User() user: IUser) {
     return this.service.getFavoriteHoles(query, user)
   }
@@ -25,5 +25,10 @@ export class UserController {
   @Get('/hole/list')
   getHoleList(@Query() query: PaginateQuery, @User() user: IUser) {
     return this.service.getHoleList(query, user)
+  }
+
+  @Get('/comments')
+  getComments(@Query() query: PaginateQuery, @User() user: IUser) {
+    return this.service.getComments(query, user)
   }
 }

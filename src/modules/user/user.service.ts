@@ -7,9 +7,11 @@ import { NotifyService } from '@/modules/notify/notify.service'
 import { createResponse } from '@/utils/create'
 import { PaginateQuery } from '@/common/dtos/paginate.dto'
 import { Hole } from '@/entity/hole/hole.entity'
+import { Comment } from '@/entity/hole/comment.entity'
 import { PaginationTypeEnum, paginate } from 'nestjs-typeorm-paginate'
 import { AppConfig } from '@/app.config'
 import { resolvePaginationHoleData, initHoleDateSelect } from '@/modules/hole/hole.utils'
+import { resolvePaginationCommentData } from '@/modules/user/user.utils'
 
 @Injectable()
 export class UserService {
@@ -18,6 +20,9 @@ export class UserService {
 
   @InjectRepository(Hole)
   private readonly holeRepo: Repository<Hole>
+
+  @InjectRepository(Comment)
+  private readonly commentRepo: Repository<Comment>
 
   @Inject()
   private readonly notifyService: NotifyService
@@ -61,7 +66,7 @@ export class UserService {
 
     resolvePaginationHoleData(data, this.appConfig)
 
-    return createResponse('获取用户树洞成功', data)
+    return createResponse('获取用户点赞树洞成功', data)
   }
 
   async getHoleList(query: PaginateQuery, reqUser: IUser) {
@@ -87,5 +92,23 @@ export class UserService {
     resolvePaginationHoleData(data, this.appConfig)
 
     return createResponse('获取用户树洞成功', data)
+  }
+
+  async getComments(query: PaginateQuery, reqUser: IUser) {
+    const queryBuilder = this.commentRepo
+      .createQueryBuilder('comment')
+      .leftJoinAndSelect('comment.user', 'user')
+      .leftJoinAndSelect('comment.hole', 'hole')
+      .where('user.studentId = :studentId', { studentId: reqUser.studentId })
+      .orderBy('comment.createAt', 'DESC')
+
+    const data = await paginate(queryBuilder, {
+      ...query,
+      paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
+    })
+
+    resolvePaginationCommentData(data)
+
+    return createResponse('获取用户评论成功', data)
   }
 }

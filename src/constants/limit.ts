@@ -9,4 +9,8 @@ export const Limit = {
   commentMaxImgLength: 2,
   reportReasonMaxLength: 500,
   reportReasonMinLength: 10,
+  user: {
+    minUsernameLength: 1,
+    maxUsernameLength: 10,
+  },
 }

@@ -26,4 +26,27 @@ export class IsUserExistConstraint {
   }
 }
 
+@ValidatorConstraint({ async: true })
+@Injectable()
+export class IsUsernameExistConstraint {
+  @InjectRepository(User)
+  private readonly userRepo: Repository<User>
+
+  async validate(username: string) {
+    const user = await this.userRepo.findOne({
+      where: {
+        username,
+      },
+    })
+
+    if (user) {
+      throw new NotFoundException('嗨嗨嗨，这个用户名已经被注册了，换个名字吧')
+    }
+
+    return true
+  }
+}
+
 export const IsUserExist = createClassValidator(IsUserExistConstraint)
+
+export const IsUsernameExist = createClassValidator(IsUsernameExistConstraint)

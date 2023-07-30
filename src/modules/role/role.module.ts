@@ -4,11 +4,14 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { User } from '@/entity/user/user.entity'
 import { RolesGuard } from '@/modules/role/role.guard'
 import { RoleController } from './role.controller'
-import { IsUserExistConstraint } from '@/modules/user/dtos/utils.dto'
+import {
+  IsUserExistConstraint,
+  IsUsernameExistConstraint,
+} from '@/modules/user/dtos/utils.dto'
 
 @Module({
   imports: [TypeOrmModule.forFeature([User])],
-  providers: [RoleService, RolesGuard, IsUserExistConstraint],
+  providers: [RoleService, RolesGuard, IsUserExistConstraint, IsUsernameExistConstraint],
   controllers: [RoleController],
 })
 export class RoleModule {}

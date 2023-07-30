@@ -1,13 +1,16 @@
 import { IsNotEmpty, IsString, Length } from 'class-validator'
 import { AuthDto, StudentIdDto } from '@/modules/auth/dto/studentId.dto'
+import { Limit } from '@/constants/limit'
+import { IsUsernameExist } from '@/modules/user/dtos/utils.dto'
 
 export class LoginDto extends AuthDto {}
 
 export class RegisterDto extends AuthDto {
-  @IsString()
-  @Length(2, 10, {
-    message: '用户名长度只能为2-10',
+  @IsUsernameExist()
+  @Length(Limit.user.minUsernameLength, Limit.user.maxUsernameLength, {
+    message: `用户名长度只能为${Limit.user.minUsernameLength}-${Limit.user.maxUsernameLength}`,
   })
+  @IsString()
   username: string
 
   @IsString()

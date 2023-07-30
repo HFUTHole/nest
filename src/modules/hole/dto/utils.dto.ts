@@ -84,11 +84,22 @@ export class IsValidPostImgsConstraint {
 
   constructor(private readonly config: AppConfig) {}
 
-  async validate(imgs: string[]) {
+  async validate(imgs: string[] | string) {
+    if (!Array.isArray(imgs)) {
+      await this.validateImgs([imgs])
+      return true
+    }
+
     if (!imgs.length) {
       return true
     }
 
+    await this.validateImgs(imgs)
+
+    return true
+  }
+
+  async validateImgs(imgs: string[]) {
     try {
       await axios.post(`${this.config.image.url}/validate`, {
         imgs,
@@ -97,8 +108,6 @@ export class IsValidPostImgsConstraint {
       this.logger.error(err.stack.toString())
       throw new BadRequestException('图片无效')
     }
-
-    return true
   }
 }
 

@@ -1,4 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common'
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+} from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '@/entity/user/user.entity'
 import { Repository } from 'typeorm'
@@ -11,6 +16,7 @@ import { Comment } from '@/entity/hole/comment.entity'
 import { PaginationTypeEnum, paginate } from 'nestjs-typeorm-paginate'
 import { AppConfig } from '@/app.config'
 import { resolvePaginationHoleData, initHoleDateSelect } from '@/modules/hole/hole.utils'
+import { EditProfileDto } from '@/modules/user/dtos/profile.dto'
 import { resolvePaginationCommentData } from '@/modules/user/user.utils'
 
 @Injectable()
@@ -35,6 +41,7 @@ export class UserService {
         studentId: reqUser.studentId,
       },
       select: {
+        id: true,
         role: true,
         avatar: true,
         username: true,
@@ -42,6 +49,23 @@ export class UserService {
     })
 
     return createResponse('获取用户信息成功', data)
+  }
+
+  async editProfile(dto: EditProfileDto, reqUser: IUser) {
+    if (!Object.keys(dto).length) {
+      throw new BadRequestException('参数不合法')
+    }
+
+    await this.userRepository.update(
+      {
+        studentId: reqUser.studentId,
+      },
+      {
+        ...dto,
+      },
+    )
+
+    return createResponse('修改个人信息成功')
   }
 
   async getFavoriteHoles(query: PaginateQuery, reqUser: IUser) {

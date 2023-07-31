@@ -11,6 +11,10 @@ export class AppConfig {
     expired: string
   }
 
+  hole!: {
+    oneDayLimitCreateCount: number
+  }
+
   server!: {
     port: number
   }

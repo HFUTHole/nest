@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Inject, Post, Query } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Inject,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common'
 import { HoleService } from '@/modules/hole/hole.service'
 import { CreateHoleDto } from '@/modules/hole/dto/create.dto'
 import { User } from '@/common/decorator/user.decorator'
@@ -14,6 +23,7 @@ import { GetRepliesQuery, LikeReplyDto } from '@/modules/hole/dto/replies.dto'
 import { Roles } from '@/common/decorator/roles.decorator'
 import { PostVoteDto } from '@/modules/hole/dto/vote.dto'
 import { SearchQuery } from '@/modules/hole/dto/search.dto'
+import { HolePostThrottleGuard } from '@/modules/hole/guard/post-throttle.guard'
 
 @Roles()
 @Controller('hole')
@@ -31,6 +41,7 @@ export class HoleController {
     return this.service.getDetail(query, user)
   }
 
+  @UseGuards(HolePostThrottleGuard)
   @Post('/create')
   create(@Body() body: CreateHoleDto, @User() user: IUser) {
     return this.service.create(body, user)

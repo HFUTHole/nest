@@ -14,6 +14,8 @@ import { NotifyModule } from './modules/notify/notify.module'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { ReportModule } from './modules/report/report.module'
 import { ChatModule } from './modules/chat/chat.module'
+import { RedisModule } from '@liaoliaots/nestjs-redis'
+import { ScheduleModule } from '@nestjs/schedule'
 
 @Module({
   imports: [
@@ -33,6 +35,14 @@ import { ChatModule } from './modules/chat/chat.module'
       },
       inject: [AppConfig],
     }),
+    RedisModule.forRootAsync({
+      useFactory: (config: AppConfig) => {
+        return {
+          config: config.redis,
+        }
+      },
+      inject: [AppConfig],
+    }),
     ThrottlerModule.forRootAsync({
       useFactory({ throttle }: AppConfig) {
         return {
@@ -41,6 +51,7 @@ import { ChatModule } from './modules/chat/chat.module'
       },
       inject: [AppConfig],
     }),
+    ScheduleModule.forRoot(),
     UserModule,
     AuthModule,
     CommonModule,

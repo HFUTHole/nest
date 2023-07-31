@@ -23,6 +23,8 @@ import { HoleRepoService } from '@/modules/hole/hole.repo'
 import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entity'
 import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.entity'
 import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
+import { HolePostThrottleGuard } from '@/modules/hole/guard/post-throttle.guard'
+import { RedisModule } from '@liaoliaots/nestjs-redis'
 
 @Module({
   imports: [
@@ -51,6 +53,7 @@ import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
     IsValidPostImgsConstraint,
     IsReplyExistConstraint,
     IsVoteItemExistConstraint,
+    HolePostThrottleGuard,
   ],
 })
 export class HoleModule {}

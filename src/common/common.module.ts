@@ -11,22 +11,12 @@ import { RolesGuard } from '@/modules/role/role.guard'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { User } from '@/entity/user/user.entity'
 import { ThrottlerGuard } from '@nestjs/throttler'
-import { RedisModule } from '@liaoliaots/nestjs-redis'
-import { AppConfig } from '@/app.config'
 import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entity'
 import { Hole } from '@/entity/hole/hole.entity'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Hole, ArticleCategory]),
-    RedisModule.forRootAsync({
-      useFactory: (config: AppConfig) => {
-        return {
-          config: config.redis,
-        }
-      },
-      inject: [AppConfig],
-    }),
     WinstonModule.forRootAsync({
       useFactory: () => {
         const myFormat = format.printf(({ level, message, label, timestamp }) => {

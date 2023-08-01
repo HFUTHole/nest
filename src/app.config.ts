@@ -35,4 +35,8 @@ export class AppConfig {
   redis!: {
     host
   }
+
+  hfut!: {
+    url: string
+  }
 }

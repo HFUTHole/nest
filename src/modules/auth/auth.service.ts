@@ -14,6 +14,7 @@ import { JwtService } from '@nestjs/jwt'
 import { encryptPassword, verifyPassword } from '@/modules/auth/auth.utils'
 import { AppConfig } from '@/app.config'
 import { getAvatarUrl } from '@/utils/user'
+import axios from 'axios'
 
 @Injectable()
 export class AuthService {
@@ -62,7 +63,10 @@ export class AuthService {
       throw new BadRequestException('嗨嗨嗨，换个名字吧，这个已经被注册了')
     }
 
-    const isHFUTPasswordVerified = await this.verifyHFUTPassword(dto.hfutPassword)
+    const isHFUTPasswordVerified = await this.verifyHFUTPassword(
+      dto.studentId,
+      dto.hfutPassword,
+    )
 
     if (!isHFUTPasswordVerified) {
       throw new BadRequestException('信息门户密码错误')
@@ -105,7 +109,10 @@ export class AuthService {
       throw new NotFoundException('用户不存在')
     }
 
-    const isHfutPasswordCorrect = await this.verifyHFUTPassword(dto.hfutPassword)
+    const isHfutPasswordCorrect = await this.verifyHFUTPassword(
+      dto.studentId,
+      dto.hfutPassword,
+    )
 
     if (!isHfutPasswordCorrect) {
       throw new BadRequestException('信息门户密码错误')
@@ -121,7 +128,22 @@ export class AuthService {
     return createResponse('修改密码成功', { token })
   }
 
-  async verifyHFUTPassword(password: string) {
+  async verifyHFUTPassword(studentId: number, password: string) {
+    const url = `${this.appConfig.hfut.url}/login/verify`
+
+    try {
+      await axios({
+        method: 'GET',
+        url,
+        params: {
+          username: studentId,
+          password,
+        },
+      })
+    } catch (error) {
+      throw new BadRequestException('信息门户密码错误')
+    }
+
     return {
       gender: Gender.Male,
     }

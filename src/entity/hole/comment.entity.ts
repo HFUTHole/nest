@@ -16,6 +16,9 @@ import { Report } from '@/entity/report/report.entity'
 
 @Entity()
 export class Comment extends CommonEntity {
+  @Index({
+    fulltext: true,
+  })
   @Column('text', { comment: '留言内容' })
   body: string
 

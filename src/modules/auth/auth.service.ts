@@ -141,6 +141,9 @@ export class AuthService {
         },
       })
     } catch (error) {
+      if (studentId.toString().startsWith('2023')) {
+        throw new BadRequestException('新生还没有开放信息门户哦，等导员通知吧！')
+      }
       throw new BadRequestException('信息门户密码错误')
     }
 

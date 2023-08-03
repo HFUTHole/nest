@@ -215,6 +215,7 @@ export class HoleService {
       tags,
       category,
       bilibili: dto.bilibili,
+      title: dto.title,
     })
 
     if (dto.vote) {

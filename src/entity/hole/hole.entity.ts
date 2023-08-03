@@ -25,6 +25,12 @@ export class Hole extends AutoIncIdEntity {
   @Column('text', { comment: '文章' })
   body: string
 
+  @Index({
+    fulltext: true,
+  })
+  @Column('text', { comment: '标题', default: null })
+  title: string
+
   @Column({
     comment: '树洞图片',
     type: 'simple-array',

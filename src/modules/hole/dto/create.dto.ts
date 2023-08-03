@@ -45,6 +45,13 @@ export class CreateHoleDto {
   @IsOptional()
   imgs?: string[] = []
 
+  @MaxLength(Limit.hole.titleMaxLength, {
+    message: `标题最长只能有${Limit.hole.titleMaxLength}个字哦`,
+  })
+  @IsString()
+  @IsOptional()
+  title?: string
+
   // TODO 开一个爬虫去验证是否正确
   @Validate((value: string) => value.startsWith('BV'), {
     message: 'BV号格式不正确',

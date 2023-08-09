@@ -2,6 +2,7 @@ import {
   CanActivate,
   ConflictException,
   ExecutionContext,
+  Inject,
   Injectable,
 } from '@nestjs/common'
 import { Request } from 'express'
@@ -13,11 +14,15 @@ import { AppConfig } from '@/app.config'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { InjectLogger } from '@/utils/decorator'
 import { Logger } from 'winston'
+import { RoleService } from '@/modules/role/role.service'
 
 @Injectable()
 export class HolePostThrottleGuard implements CanActivate {
   @InjectLogger()
   private readonly logger: Logger
+
+  @Inject()
+  private readonly roleService: RoleService
 
   constructor(
     @InjectRedis()
@@ -29,6 +34,13 @@ export class HolePostThrottleGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest() as Request
     const user = request.user
+
+    const isAdmin = await this.roleService.isAdmin(user.studentId)
+
+    if (isAdmin) {
+      return true
+    }
+
     const key = `hole_post:${user.studentId}`
 
     const count = parseInt(await this.redis.get(key))
@@ -51,11 +63,14 @@ export class HolePostThrottleGuard implements CanActivate {
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async clearLimit() {
     try {
-      await this.redis.del('hole_post:*')
-      this.logger.log({
-        message: '成功清除所有用户帖子发表次数限制',
-        level: 'logger',
-      })
+      const allKeys = await this.redis.keys('hole_post:*')
+      if (allKeys.length) {
+        await this.redis.del(allKeys)
+        this.logger.log({
+          message: '成功清除所有用户帖子发表次数限制',
+          level: 'logger',
+        })
+      }
     } catch (error) {
       this.logger.error(error)
     }

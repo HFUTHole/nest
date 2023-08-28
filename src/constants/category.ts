@@ -37,7 +37,7 @@ export const Category = [
     name: HoleClassification.loveStory,
     description:
       '在这里分享你的情感故事或者小丑经历 🤡，让大家一起陪你度过高兴或者低落的时刻 ❤️😢。',
-    children: ['你 & Ta的故事', '小丑故事'],
+    children: ['你和Ta的故事', '小丑故事'],
     url: 'https://d-ssl.dtstatic.com/uploads/blog/202308/21/5zS3lYbehO5LyGm.thumb.1000_0.jpeg_webp',
   },
   {

@@ -62,7 +62,7 @@ export class HoleCategoryService {
         subName = '动漫交流'
       } else if (name === ArticleCategoryEnum.love) {
         categoryName = '情感分享'
-        subName = '你 & Ta的故事'
+        subName = '你和Ta的故事'
       } else if (name === ArticleCategoryEnum.study) {
         categoryName = '学在工大'
         subName = '学在工大'

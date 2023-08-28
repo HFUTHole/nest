@@ -56,12 +56,15 @@ import {
   isVoteExpired,
   resolvePaginationHoleData,
 } from '@/modules/hole/hole.utils'
-import { HoleRepoService } from '@/modules/hole/hole.repo'
+import { HoleRepoService } from '@/modules/hole/service/hole.repo'
 import { VoteItem } from '@/entity/hole/VoteItem.entity'
 import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entity'
 import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.entity'
 import { NotifyEventType } from '@/common/enums/notify/notify.enum'
 import { ellipsisBody } from '@/utils/string'
+import { HoleCategoryEntity } from '@/entity/hole/category/HoleCategory.entity'
+import { HoleSubCategoryEntity } from '@/entity/hole/category/HoleSubCategory.entity'
+import { RoleService } from '@/modules/role/role.service'
 
 @Injectable()
 export class HoleService {
@@ -92,6 +95,12 @@ export class HoleService {
   @InjectRepository(NotifyInteractionEntity)
   private readonly notifyInteractionRepo: Repository<NotifyInteractionEntity>
 
+  @InjectRepository(HoleCategoryEntity)
+  private readonly holeCategoryRepo: Repository<HoleCategoryEntity>
+
+  @InjectRepository(HoleSubCategoryEntity)
+  private readonly holeSubCategoryRepo: Repository<HoleSubCategoryEntity>
+
   @InjectEntityManager()
   private readonly manager: EntityManager
 
@@ -100,6 +109,9 @@ export class HoleService {
 
   @Inject()
   private readonly holeRepoService: HoleRepoService
+
+  @Inject()
+  private readonly roleService: RoleService
 
   constructor(private readonly appConfig: AppConfig) {}
 
@@ -116,7 +128,9 @@ export class HoleService {
       select: { user: { studentId: true } },
     })
 
-    if (hole.user.studentId !== reqUser.studentId) {
+    const isAdmin = await this.roleService.isAdmin(reqUser.studentId)
+
+    if (hole.user.studentId !== reqUser.studentId || !isAdmin) {
       throw new ForbiddenException('这不是你的树洞哦')
     }
 
@@ -143,6 +157,8 @@ export class HoleService {
         relations: {
           user: true,
           category: true,
+          classification: true,
+          subClassification: true,
         },
         where: {
           id: query.id,
@@ -194,6 +210,29 @@ export class HoleService {
   }
 
   async create(dto: CreateHoleDto, reqUser: IUser) {
+    const classification = await this.holeCategoryRepo.findOne({
+      relations: {
+        children: true,
+      },
+      where: {
+        name: dto.classification,
+      },
+    })
+
+    const isSubClassificationCorrect = classification.children
+      ?.map((item) => item.name)
+      .includes(dto.subClassification)
+
+    if (!isSubClassificationCorrect) {
+      throw new BadRequestException('子分区错误了哦')
+    }
+
+    const subClassification = await this.holeSubCategoryRepo.findOne({
+      where: {
+        name: dto.subClassification,
+      },
+    })
+
     const user = await this.userRepo.findOne({
       where: { studentId: reqUser.studentId },
     })
@@ -204,18 +243,18 @@ export class HoleService {
       }),
     )
 
-    const category = this.articleCategoryRepo.create({
-      category: dto.category,
-    })
-
     const hole = this.holeRepo.create({
       user,
       body: dto.body,
       imgs: dto.imgs,
       tags,
-      category,
       bilibili: dto.bilibili,
       title: dto.title,
+      classification,
+      subClassification,
+      category: this.articleCategoryRepo.create({
+        category: dto.category,
+      }),
     })
 
     if (dto.vote) {

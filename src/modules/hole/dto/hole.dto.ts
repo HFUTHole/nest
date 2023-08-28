@@ -1,7 +1,8 @@
 import { IsEnum, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator'
-import { IsHoleExist } from '@/modules/hole/dto/utils.dto'
+import { IsCorrectSubCategory, IsHoleExist } from '@/modules/hole/dto/utils.dto'
 import { PaginateQuery } from '@/common/dtos/paginate.dto'
 import { ArticleCategoryEnum } from '@/common/enums/article_category/category'
+import { HoleClassification } from '@/common/enums/hole/category'
 
 export enum HoleListMode {
   latest = 'latest',
@@ -13,9 +14,18 @@ export class GetHoleListQuery extends PaginateQuery {
   @IsString()
   mode = HoleListMode.latest
 
+  // TODO remove
   @IsEnum(ArticleCategoryEnum)
   @IsOptional()
-  category: ArticleCategoryEnum
+  category?: ArticleCategoryEnum
+
+  @IsEnum(HoleClassification)
+  @IsOptional()
+  classification?: HoleClassification
+
+  @IsCorrectSubCategory()
+  @IsOptional()
+  subClassification?: string
 }
 
 export class GetHoleDetailQuery {

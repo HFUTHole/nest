@@ -87,3 +87,5 @@ export const initHoleDateSelect = (holeRepo: Repository<Hole>) =>
     .leftJoinAndSelect('hole.comments', 'comments')
     .leftJoinAndSelect('comments.user', 'comment.user')
     .leftJoinAndSelect('hole.category', 'category')
+    .leftJoinAndSelect('hole.classification', 'classification')
+    .leftJoinAndSelect('hole.subClassification', 'subClassification')

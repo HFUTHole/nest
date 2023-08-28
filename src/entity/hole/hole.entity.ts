@@ -16,6 +16,8 @@ import { Tags } from '@/entity/hole/tags.entity'
 import { Vote } from '@/entity/hole/vote.entity'
 import { Report } from '@/entity/report/report.entity'
 import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entity'
+import { HoleCategoryEntity } from '@/entity/hole/category/HoleCategory.entity'
+import { HoleSubCategoryEntity } from '@/entity/hole/category/HoleSubCategory.entity'
 
 @Entity()
 export class Hole extends AutoIncIdEntity {
@@ -70,10 +72,17 @@ export class Hole extends AutoIncIdEntity {
   @OneToMany(() => Report, (report) => report.hole)
   reports: Report[]
 
+  // TODO 删掉这玩意
   @ManyToOne(() => ArticleCategory, (articleCategory) => articleCategory.holes, {
     cascade: true,
   })
   category: ArticleCategory
+
+  @ManyToOne(() => HoleCategoryEntity, (category) => category.holes, { cascade: true })
+  classification: HoleCategoryEntity
+
+  @ManyToOne(() => HoleSubCategoryEntity, (category) => category.holes, { cascade: true })
+  subClassification: HoleSubCategoryEntity
 
   // Use loadRelationCountAndMap to get whether user liked this hole, it will always return 0 or 1 but you can use it as boolean
   // ref: https://pietrzakadrian.com/blog/virtual-column-solutions-for-typeorm#4-loadrelationcountandmap-method

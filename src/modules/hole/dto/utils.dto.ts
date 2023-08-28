@@ -1,4 +1,8 @@
-import { ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator'
+import {
+  ValidationArguments,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from 'class-validator'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Hole } from '@/entity/hole/hole.entity'
 import { Repository } from 'typeorm'
@@ -16,6 +20,8 @@ import axios from 'axios'
 import { InjectLogger } from '@/utils/decorator'
 import { Reply } from '@/entity/hole/reply.entity'
 import { VoteItem } from '@/entity/hole/VoteItem.entity'
+import { HoleCategoryEntity } from '@/entity/hole/category/HoleCategory.entity'
+import { GetHoleDetailQuery, GetHoleListQuery } from '@/modules/hole/dto/hole.dto'
 
 @ValidatorConstraint({ async: true })
 @Injectable()
@@ -145,6 +151,34 @@ export class IsVoteItemExistConstraint {
   }
 }
 
+@ValidatorConstraint({ async: true })
+@Injectable()
+export class IsCorrectSubCategoryExistConstraint {
+  @InjectRepository(HoleCategoryEntity)
+  private readonly holeCategoryRepo: Repository<HoleCategoryEntity>
+
+  async validate(name: string, validationArguments: ValidationArguments) {
+    const categoryName = (validationArguments.object as GetHoleListQuery)[
+      'classification'
+    ]
+
+    const category = await this.holeCategoryRepo.findOne({
+      relations: {
+        children: true,
+      },
+      where: {
+        name: categoryName,
+      },
+    })
+
+    if (!category.children.map((item) => item.name).includes(name)) {
+      throw new NotFoundException('子分区错误了哦')
+    }
+
+    return true
+  }
+}
+
 export const IsVoteExist = createClassValidator(IsVoteExistConstraint)
 
 export const IsVoteItemExist = createClassValidator(IsVoteItemExistConstraint)
@@ -156,3 +190,7 @@ export const IsCommentExist = createClassValidator(IsCommentExistConstraint)
 export const IsReplyExist = createClassValidator(IsReplyExistConstraint)
 
 export const IsValidPostImgs = createClassValidator(IsValidPostImgsConstraint)
+
+export const IsCorrectSubCategory = createClassValidator(
+  IsCorrectSubCategoryExistConstraint,
+)

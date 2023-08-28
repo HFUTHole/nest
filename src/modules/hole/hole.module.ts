@@ -1,12 +1,13 @@
-import { Module } from '@nestjs/common'
+import { Module, NestModule } from '@nestjs/common'
 import { HoleController } from './hole.controller'
-import { HoleService } from './hole.service'
+import { HoleService } from './service/hole.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { User } from '@/entity/user/user.entity'
 import { Hole } from '@/entity/hole/hole.entity'
 import { Comment } from '@/entity/hole/comment.entity'
 import {
   IsCommentExistConstraint,
+  IsCorrectSubCategoryExistConstraint,
   IsHoleExistConstraint,
   IsReplyExistConstraint,
   IsValidPostImgsConstraint,
@@ -19,12 +20,14 @@ import { Tags } from '@/entity/hole/tags.entity'
 import { Vote } from '@/entity/hole/vote.entity'
 import { NotifyService } from '@/modules/notify/notify.service'
 import { VoteItem } from '@/entity/hole/VoteItem.entity'
-import { HoleRepoService } from '@/modules/hole/hole.repo'
+import { HoleRepoService } from '@/modules/hole/service/hole.repo'
 import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entity'
 import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.entity'
 import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
 import { HolePostThrottleGuard } from '@/modules/hole/guard/post-throttle.guard'
-import { RedisModule } from '@liaoliaots/nestjs-redis'
+import { HoleCategoryService } from '@/modules/hole/service/hole-category.service'
+import { HoleCategoryEntity } from '@/entity/hole/category/HoleCategory.entity'
+import { HoleSubCategoryEntity } from '@/entity/hole/category/HoleSubCategory.entity'
 
 @Module({
   imports: [
@@ -39,6 +42,8 @@ import { RedisModule } from '@liaoliaots/nestjs-redis'
       ArticleCategory,
       NotifyInteractionEntity,
       NotifySystemEntity,
+      HoleCategoryEntity,
+      HoleSubCategoryEntity,
     ]),
   ],
   controllers: [HoleController],
@@ -54,6 +59,12 @@ import { RedisModule } from '@liaoliaots/nestjs-redis'
     IsReplyExistConstraint,
     IsVoteItemExistConstraint,
     HolePostThrottleGuard,
+    HoleCategoryService,
+    IsCorrectSubCategoryExistConstraint,
   ],
 })
-export class HoleModule {}
+export class HoleModule implements NestModule {
+  configure() {
+    console.log(1)
+  }
+}

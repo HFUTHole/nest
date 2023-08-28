@@ -13,6 +13,7 @@ import { Limit } from '@/constants/limit'
 import { IsValidPostImgs } from '@/modules/hole/dto/utils.dto'
 import { VoteType } from '@/entity/hole/vote.entity'
 import { ArticleCategoryEnum } from '@/common/enums/article_category/category'
+import { HoleClassification } from '@/common/enums/hole/category'
 
 class Vote {
   @ArrayMaxSize(Limit.holeVoteMaxLength, {
@@ -75,6 +76,12 @@ export class CreateHoleDto {
   @IsArray()
   @IsOptional()
   tags: string[] = []
+
+  @IsEnum(HoleClassification)
+  classification: HoleClassification
+
+  @IsString()
+  subClassification: string
 
   @ValidateNested()
   @IsOptional()

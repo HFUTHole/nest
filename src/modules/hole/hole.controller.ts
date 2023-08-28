@@ -8,7 +8,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common'
-import { HoleService } from '@/modules/hole/hole.service'
+import { HoleService } from '@/modules/hole/service/hole.service'
 import { CreateHoleDto } from '@/modules/hole/dto/create.dto'
 import { User } from '@/common/decorator/user.decorator'
 import { IUser } from '@/app'
@@ -18,18 +18,33 @@ import {
   GetHoleCommentDto,
   LikeCommentDto,
 } from '@/modules/hole/dto/comment.dto'
-import { GetHoleDetailQuery, GetHoleListQuery } from '@/modules/hole/dto/hole.dto'
+import {
+  DeleteHoleDto,
+  GetHoleDetailQuery,
+  GetHoleListQuery,
+} from '@/modules/hole/dto/hole.dto'
 import { GetRepliesQuery, LikeReplyDto } from '@/modules/hole/dto/replies.dto'
 import { Roles } from '@/common/decorator/roles.decorator'
 import { PostVoteDto } from '@/modules/hole/dto/vote.dto'
 import { SearchQuery } from '@/modules/hole/dto/search.dto'
 import { HolePostThrottleGuard } from '@/modules/hole/guard/post-throttle.guard'
+import { HoleCategoryService } from '@/modules/hole/service/hole-category.service'
+import { Role } from '@/modules/role/role.constant'
 
 @Roles()
 @Controller('hole')
 export class HoleController {
   @Inject()
   private readonly service: HoleService
+
+  @Inject()
+  private readonly holeCategoryService: HoleCategoryService
+
+  @Roles([Role.Admin])
+  @Get('/migrate_category')
+  migrate_category() {
+    return this.holeCategoryService.startMigrate()
+  }
 
   @Get('/list')
   getList(@Query() query: GetHoleListQuery, @User() user: IUser) {
@@ -47,10 +62,10 @@ export class HoleController {
     return this.service.create(body, user)
   }
 
-  // @Delete('/')
-  // delete(@Body() body: DeleteHoleDto, @User() user: IUser) {
-  //   return this.service.delete(body, user)
-  // }
+  @Delete('/delete')
+  delete(@Body() body: DeleteHoleDto, @User() user: IUser) {
+    return this.service.delete(body, user)
+  }
 
   @Get('/tags')
   getTags() {

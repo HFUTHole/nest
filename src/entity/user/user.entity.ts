@@ -43,7 +43,6 @@ export class User extends AutoIncIdEntity {
     comment: '角色权限',
     type: 'enum',
     enum: Role,
-    select: false,
     default: Role.User,
   })
   role: Role

@@ -112,13 +112,15 @@ export class HoleRepoService {
       .where('id = :id', { id: dto.id })
       .execute()
 
-    await this.notifyService.createInteractionNotify({
-      type: NotifyEventType.like,
-      reqUser,
-      body: `${target.user.username} 赞了你的${type}`,
-      recipientId: target.user.studentId,
-      ...notifyProps,
-    })
+    if (reqUser.studentId !== target.user.studentId) {
+      await this.notifyService.createInteractionNotify({
+        type: NotifyEventType.like,
+        reqUser,
+        body: `${user.username} 赞了你的${type}`,
+        recipientId: target.user.studentId,
+        ...notifyProps,
+      })
+    }
 
     return createResponse('点赞成功')
   }
@@ -226,10 +228,23 @@ export class HoleRepoService {
         }),
       )
 
+    // TODO remove
     if (query.category) {
       queryBuilder.where('category.category = :category', {
         category: query.category,
       })
+    }
+
+    if (query.classification) {
+      queryBuilder.andWhere('classification.name = :name', {
+        name: query.classification,
+      })
+
+      if (query.subClassification) {
+        queryBuilder.andWhere('subClassification.name = :subName', {
+          subName: query.subClassification,
+        })
+      }
     }
 
     if (query.mode === HoleListMode.hot) {

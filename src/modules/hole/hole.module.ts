@@ -28,6 +28,8 @@ import { HolePostThrottleGuard } from '@/modules/hole/guard/post-throttle.guard'
 import { HoleCategoryService } from '@/modules/hole/service/hole-category.service'
 import { HoleCategoryEntity } from '@/entity/hole/category/HoleCategory.entity'
 import { HoleSubCategoryEntity } from '@/entity/hole/category/HoleSubCategory.entity'
+import { UserLevelService } from '@/modules/user/service/user-level.service'
+import { UserLevelEntity } from '@/entity/user/level.entity'
 
 @Module({
   imports: [
@@ -44,6 +46,7 @@ import { HoleSubCategoryEntity } from '@/entity/hole/category/HoleSubCategory.en
       NotifySystemEntity,
       HoleCategoryEntity,
       HoleSubCategoryEntity,
+      UserLevelEntity,
     ]),
   ],
   controllers: [HoleController],
@@ -52,6 +55,7 @@ import { HoleSubCategoryEntity } from '@/entity/hole/category/HoleSubCategory.en
     RoleService,
     NotifyService,
     HoleRepoService,
+    UserLevelService,
     IsHoleExistConstraint,
     IsCommentExistConstraint,
     IsVoteExistConstraint,

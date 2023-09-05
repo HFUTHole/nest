@@ -3,6 +3,7 @@ import { AppModule } from './app.module'
 import { AppConfig } from '@/app.config'
 import { ValidationPipe } from '@nestjs/common'
 import { useContainer } from 'class-validator'
+import 'reflect-metadata'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)

@@ -1,4 +1,13 @@
-import { Column, Entity, Index, ManyToMany, OneToMany, JoinTable } from 'typeorm'
+import {
+  Column,
+  Entity,
+  Index,
+  ManyToMany,
+  OneToMany,
+  JoinTable,
+  OneToOne,
+  JoinColumn,
+} from 'typeorm'
 import { AutoIncIdEntity } from '@/common/entity/common.entity'
 import { Hole } from '@/entity/hole/hole.entity'
 import { Comment } from '@/entity/hole/comment.entity'
@@ -8,6 +17,7 @@ import { Vote } from '@/entity/hole/vote.entity'
 import { VoteItem } from '@/entity/hole/VoteItem.entity'
 import { Report } from '@/entity/report/report.entity'
 import { ConversationEntity } from '@/entity/chat/conversation.entity'
+import { UserLevelEntity } from '@/entity/user/level.entity'
 
 export enum Gender {
   Male = '男',
@@ -90,4 +100,8 @@ export class User extends AutoIncIdEntity {
 
   @ManyToMany(() => ConversationEntity, (conversation) => conversation.user)
   conversations: ConversationEntity[]
+
+  @OneToOne(() => UserLevelEntity, (level) => level.user, { cascade: true })
+  @JoinColumn()
+  level: UserLevelEntity
 }

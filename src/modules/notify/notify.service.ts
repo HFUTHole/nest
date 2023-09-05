@@ -59,6 +59,8 @@ export class NotifyService {
         },
       })
 
+      console.log(comment, params.commentId)
+
       notify.comment = comment
       notify.hole = comment.hole
     } else if (params.replyId) {

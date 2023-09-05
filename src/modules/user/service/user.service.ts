@@ -37,6 +37,9 @@ export class UserService {
 
   async getProfile(reqUser: IUser) {
     const data = await this.userRepository.findOne({
+      relations: {
+        level: true,
+      },
       where: {
         studentId: reqUser.studentId,
       },
@@ -45,6 +48,11 @@ export class UserService {
         role: true,
         avatar: true,
         username: true,
+        level: {
+          level: true,
+          experience: true,
+          nextLevelRequiredExperience: true,
+        },
       },
     })
 

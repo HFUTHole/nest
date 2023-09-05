@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { UserController } from './user.controller'
-import { UserService } from './user.service'
+import { UserService } from './service/user.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { User } from '@/entity/user/user.entity'
 import { Hole } from '@/entity/hole/hole.entity'
@@ -9,6 +9,8 @@ import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.enti
 import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
 import { Reply } from '@/entity/hole/reply.entity'
 import { Comment } from '@/entity/hole/comment.entity'
+import { UserLevelEntity } from '@/entity/user/level.entity'
+import { UserLevelService } from '@/modules/user/service/user-level.service'
 
 @Module({
   imports: [
@@ -19,9 +21,11 @@ import { Comment } from '@/entity/hole/comment.entity'
       Reply,
       NotifyInteractionEntity,
       NotifySystemEntity,
+      UserLevelEntity,
     ]),
   ],
   controllers: [UserController],
-  providers: [UserService, NotifyService],
+
+  providers: [UserService, NotifyService, UserLevelService],
 })
 export class UserModule {}

@@ -17,4 +17,9 @@ export const Limit = {
     minUsernameLength: 1,
     maxUsernameLength: 10,
   },
+  level: {
+    hole: 5,
+    comment: 3,
+    reply: 3,
+  },
 }

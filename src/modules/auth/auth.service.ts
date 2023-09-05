@@ -8,18 +8,24 @@ import { ForgetPasswordDto, LoginDto, RegisterDto } from '@/modules/auth/dto/aut
 import { InjectRepository } from '@nestjs/typeorm'
 import { Gender, User } from '@/entity/user/user.entity'
 import { Repository } from 'typeorm'
-import { UserService } from '@/modules/user/user.service'
+import { UserService } from '@/modules/user/service/user.service'
 import { createResponse } from '@/utils/create'
 import { JwtService } from '@nestjs/jwt'
 import { encryptPassword, verifyPassword } from '@/modules/auth/auth.utils'
 import { AppConfig } from '@/app.config'
 import { getAvatarUrl } from '@/utils/user'
 import axios from 'axios'
+import { UserLevelEntity } from '@/entity/user/level.entity'
+import { UserLevelService } from '@/modules/user/service/user-level.service'
+import { getNextRequiredExperience } from '@/constants/level'
 
 @Injectable()
 export class AuthService {
   @InjectRepository(User)
   private readonly userRepo: Repository<User>
+
+  @InjectRepository(UserLevelEntity)
+  private readonly userLevelRepo: Repository<UserLevelEntity>
 
   @Inject()
   private readonly userService: UserService
@@ -80,6 +86,11 @@ export class AuthService {
       hfutPassword,
       password,
       gender: isHFUTPasswordVerified.gender,
+      level: this.userLevelRepo.create({
+        experience: 0,
+        level: 1,
+        nextLevelRequiredExperience: getNextRequiredExperience(1).nextRequiredExperience,
+      }),
     })
 
     user.avatar = getAvatarUrl(this.appConfig, user)

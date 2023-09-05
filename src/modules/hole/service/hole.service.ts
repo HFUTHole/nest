@@ -65,6 +65,9 @@ import { ellipsisBody } from '@/utils/string'
 import { HoleCategoryEntity } from '@/entity/hole/category/HoleCategory.entity'
 import { HoleSubCategoryEntity } from '@/entity/hole/category/HoleSubCategory.entity'
 import { RoleService } from '@/modules/role/role.service'
+import { UserLevelService } from '@/modules/user/service/user-level.service'
+import { UserLevelEntity } from '@/entity/user/level.entity'
+import { Limit } from '@/constants/limit'
 
 @Injectable()
 export class HoleService {
@@ -112,6 +115,9 @@ export class HoleService {
 
   @Inject()
   private readonly roleService: RoleService
+
+  @Inject()
+  private readonly userLevelService: UserLevelService
 
   constructor(private readonly appConfig: AppConfig) {}
 
@@ -271,9 +277,20 @@ export class HoleService {
       })
     }
 
+    await this.manager.transaction(async (t) => {
+      await t.save(hole)
+      await this.userLevelService.incExperience(
+        { studentId: reqUser.studentId, increment: Limit.level.hole },
+        t,
+      )
+    })
+
     await this.holeRepo.save(hole)
 
-    return createResponse('创建树洞成功', { id: hole.id })
+    return createResponse('创建树洞成功', {
+      id: hole.id,
+      incExperience: Limit.level.hole,
+    })
   }
 
   async createComment(dto: CreateCommentDto, reqUser: IUser) {
@@ -292,7 +309,10 @@ export class HoleService {
     })
 
     const savedComment = await this.commentRepo.save(comment)
-
+    await this.userLevelService.incExperience({
+      increment: Limit.level.comment,
+      studentId: reqUser.studentId,
+    })
     await this.notifyService.createInteractionNotify({
       type: NotifyEventType.comment,
       reqUser,
@@ -301,7 +321,10 @@ export class HoleService {
       commentId: savedComment.id as string,
     })
 
-    return createResponse('留言成功', { id: comment.id })
+    return createResponse('留言成功', {
+      id: comment.id,
+      incExperience: Limit.level.comment,
+    })
   }
 
   async getComment(dto: GetHoleCommentDto, reqUser: IUser) {
@@ -378,7 +401,10 @@ export class HoleService {
       return item
     })
 
-    return createResponse('获取评论成功', data)
+    return createResponse('获取评论成功', {
+      ...data,
+      incExperience: Limit.level.comment,
+    })
   }
 
   async likeComment(dto: LikeCommentDto, reqUser: IUser) {
@@ -442,6 +468,11 @@ export class HoleService {
 
     const savedReply = await this.replyRepo.save(reply)
 
+    await this.userLevelService.incExperience({
+      studentId: reqUser.studentId,
+      increment: Limit.level.reply,
+    })
+
     await this.notifyService.createInteractionNotify({
       type: NotifyEventType.reply,
       reqUser,
@@ -452,7 +483,7 @@ export class HoleService {
       replyId: savedReply.id as string,
     })
 
-    return createResponse('回复成功', { id: reply.id })
+    return createResponse('回复成功', { id: reply.id, incExperience: Limit.level.reply })
   }
 
   async getReplies(query: GetRepliesQuery, reqUser: IUser) {

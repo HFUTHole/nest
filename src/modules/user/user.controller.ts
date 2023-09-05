@@ -42,10 +42,4 @@ export class UserController {
   getComments(@Query() query: PaginateQuery, @User() user: IUser) {
     return this.service.getComments(query, user)
   }
-
-  @Roles([Role.Admin])
-  @Get('/migrate')
-  migrate() {
-    return this.levelService.migrate()
-  }
 }

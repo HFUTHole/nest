@@ -25,7 +25,6 @@ import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entit
 import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.entity'
 import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
 import { HolePostThrottleGuard } from '@/modules/hole/guard/post-throttle.guard'
-import { HoleCategoryService } from '@/modules/hole/service/hole-category.service'
 import { HoleCategoryEntity } from '@/entity/hole/category/HoleCategory.entity'
 import { HoleSubCategoryEntity } from '@/entity/hole/category/HoleSubCategory.entity'
 import { UserLevelService } from '@/modules/user/service/user-level.service'
@@ -63,7 +62,6 @@ import { UserLevelEntity } from '@/entity/user/level.entity'
     IsReplyExistConstraint,
     IsVoteItemExistConstraint,
     HolePostThrottleGuard,
-    HoleCategoryService,
     IsCorrectSubCategoryExistConstraint,
   ],
 })

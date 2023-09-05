@@ -3,11 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { UserLevelEntity } from '@/entity/user/level.entity'
 import { EntityManager, Repository } from 'typeorm'
 import { User } from '@/entity/user/user.entity'
-import {
-  getCurrentLevelByRangeExperience,
-  getNextRequiredExperience,
-} from '@/constants/level'
-import { level } from 'winston'
+import { getCurrentLevelByRangeExperience } from '@/constants/level'
 
 @Injectable()
 export class UserLevelService {
@@ -42,49 +38,10 @@ export class UserLevelService {
       userLevel.nextLevelRequiredExperience = nextLevel.nextRequiredExperience
     }
 
-    console.log(userLevel)
-
     userLevel.experience = afterSum
 
     const repo = transaction || this.userLevelRepo
 
     await (repo as Repository<UserLevelEntity>).save(userLevel)
   }
-  async migrate() {
-    const users = await this.userRepo.find({
-      relations: {
-        level: true,
-      },
-    })
-
-    await Promise.all(
-      users.map((user) =>
-        this.userRepo.save({
-          ...user,
-          level: this.userLevelRepo.create({
-            level: 1,
-            experience: 0,
-            nextLevelRequiredExperience:
-              getNextRequiredExperience(2).nextRequiredExperience,
-          }),
-        }),
-      ),
-    )
-  }
-
-  // increaseExperience(increment: number) {
-  //   this.experience += increment
-  //   this.checkAndUpdateLevel()
-  // }
-  //
-  // private checkAndUpdateLevel() {
-  //   const nextLevel = {
-  //     requiredExperience: 100,
-  //     level: 2,
-  //   }
-  //
-  //   if (nextLevel && this.experience >= nextLevel.requiredExperience) {
-  //     this.level = nextLevel.level
-  //   }
-  // }
 }

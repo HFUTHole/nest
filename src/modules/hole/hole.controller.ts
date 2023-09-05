@@ -28,23 +28,12 @@ import { Roles } from '@/common/decorator/roles.decorator'
 import { PostVoteDto } from '@/modules/hole/dto/vote.dto'
 import { SearchQuery } from '@/modules/hole/dto/search.dto'
 import { HolePostThrottleGuard } from '@/modules/hole/guard/post-throttle.guard'
-import { HoleCategoryService } from '@/modules/hole/service/hole-category.service'
-import { Role } from '@/modules/role/role.constant'
 
 @Roles()
 @Controller('hole')
 export class HoleController {
   @Inject()
   private readonly service: HoleService
-
-  @Inject()
-  private readonly holeCategoryService: HoleCategoryService
-
-  @Roles([Role.Admin])
-  @Get('/migrate_category')
-  migrate_category() {
-    return this.holeCategoryService.startMigrate()
-  }
 
   @Get('/list')
   getList(@Query() query: GetHoleListQuery, @User() user: IUser) {

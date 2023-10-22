@@ -782,7 +782,7 @@ export class HoleService {
         [targetKey]: target,
       })
       await this.expressEmojiRepo.save(emoji)
-      return createResponse('发表表情成功')
+      return createResponse('发表表情成功', { msg: '发表表情成功' })
     }
 
     const userIndex = expressEmoji.users.findIndex((item) => item.id === user.id)
@@ -790,7 +790,7 @@ export class HoleService {
     if (userIndex === -1) {
       expressEmoji.users.push(user)
       await this.expressEmojiRepo.save(expressEmoji)
-      return createResponse('发表表情成功')
+      return createResponse('发表表情成功', { msg: '发表表情成功' })
     } else {
       if (expressEmoji.users.length === 1) {
         await this.expressEmojiRepo.remove(expressEmoji)
@@ -798,7 +798,7 @@ export class HoleService {
         expressEmoji.users.splice(userIndex, 1)
         await this.expressEmojiRepo.save(expressEmoji)
       }
-      return createResponse('取消表情成功')
+      return createResponse('取消表情成功', { msg: '取消表情成功' })
     }
   }
 }

@@ -182,6 +182,7 @@ export class HoleService {
           user: {
             username: true,
             avatar: true,
+            id: true,
           },
           expressEmojis: {
             emoji: true,
@@ -388,6 +389,7 @@ export class HoleService {
             users: {
               username: true,
               avatar: true,
+              id: true,
             },
           },
         },
@@ -535,6 +537,7 @@ export class HoleService {
           expressEmojis: {
             emoji: true,
             users: {
+              id: true,
               username: true,
               avatar: true,
             },

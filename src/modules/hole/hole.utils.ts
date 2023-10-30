@@ -45,12 +45,13 @@ export const resolvePaginationHoleData = (
       })
     }
 
-    // 隐藏发表表情用户id
+    // 过滤发表表情用户信息
     if (item.expressEmojis.length) {
       item.expressEmojis = item.expressEmojis.map((emoji) => {
         emoji.users = emoji.users.map(
           (user) =>
             ({
+              id: user.id,
               username: user.username,
               avatar: user.avatar,
             } as User),

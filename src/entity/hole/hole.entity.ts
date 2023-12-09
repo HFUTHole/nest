@@ -11,6 +11,7 @@ import {
   OneToOne,
 } from 'typeorm'
 import { Comment } from '@/entity/hole/comment.entity'
+import { ExpressEmoji } from '@/entity/hole/ExpressEmoji.entity'
 import { AutoIncIdEntity } from '@/common/entity/common.entity'
 import { Tags } from '@/entity/hole/tags.entity'
 import { Vote } from '@/entity/hole/vote.entity'
@@ -83,6 +84,9 @@ export class Hole extends AutoIncIdEntity {
 
   @ManyToOne(() => HoleSubCategoryEntity, (category) => category.holes, { cascade: true })
   subClassification: HoleSubCategoryEntity
+
+  @OneToMany(() => ExpressEmoji, (expressEmoji) => expressEmoji.hole)
+  expressEmojis: ExpressEmoji[]
 
   // Use loadRelationCountAndMap to get whether user liked this hole, it will always return 0 or 1 but you can use it as boolean
   // ref: https://pietrzakadrian.com/blog/virtual-column-solutions-for-typeorm#4-loadrelationcountandmap-method

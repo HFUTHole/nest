@@ -12,6 +12,7 @@ import { User } from '@/entity/user/user.entity'
 import { CommonEntity } from '@/common/entity/common.entity'
 import { Comment } from '@/entity/hole/comment.entity'
 import { Report } from '@/entity/report/report.entity'
+import { ExpressEmoji } from '@/entity/hole/ExpressEmoji.entity'
 
 @Entity()
 export class Reply extends CommonEntity {
@@ -48,6 +49,9 @@ export class Reply extends CommonEntity {
 
   @OneToMany(() => Report, (report) => report.reply)
   reports: Report[]
+
+  @OneToMany(() => ExpressEmoji, (expressEmoji) => expressEmoji.reply)
+  expressEmojis: ExpressEmoji[]
 
   @AfterUpdate()
   async afterLoad() {

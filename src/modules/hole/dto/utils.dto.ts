@@ -179,6 +179,20 @@ export class IsCorrectSubCategoryExistConstraint {
   }
 }
 
+@ValidatorConstraint({ async: true })
+@Injectable()
+export class IsValidExpressEmojiConstraint implements ValidatorConstraintInterface {
+  async validate(expressEmoji: string) {
+    const isVaild = /^\[\/.+\]$/.test(expressEmoji)
+
+    if (!isVaild) {
+      throw new BadRequestException('表情字符串格式错误')
+    }
+
+    return isVaild
+  }
+}
+
 export const IsVoteExist = createClassValidator(IsVoteExistConstraint)
 
 export const IsVoteItemExist = createClassValidator(IsVoteItemExistConstraint)
@@ -194,3 +208,5 @@ export const IsValidPostImgs = createClassValidator(IsValidPostImgsConstraint)
 export const IsCorrectSubCategory = createClassValidator(
   IsCorrectSubCategoryExistConstraint,
 )
+
+export const IsValidExpressEmoji = createClassValidator(IsValidExpressEmojiConstraint)

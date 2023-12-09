@@ -8,6 +8,8 @@ import { Comment } from '@/entity/hole/comment.entity'
 import { Vote } from '@/entity/hole/vote.entity'
 import { User } from '@/entity/user/user.entity'
 import { Reply } from '@/entity/hole/reply.entity'
+import { ExpressEmojiDto } from '@/modules/hole/dto/emoji.dto'
+import { BadRequestException } from '@nestjs/common'
 
 export const resolvePaginationHoleData = (
   data: Pagination<Hole, IPaginationMeta>,
@@ -40,6 +42,21 @@ export const resolvePaginationHoleData = (
         } as User
 
         return comment
+      })
+    }
+
+    // 过滤发表表情用户信息
+    if (item.expressEmojis.length) {
+      item.expressEmojis = item.expressEmojis.map((emoji) => {
+        emoji.users = emoji.users.map(
+          (user) =>
+            ({
+              id: user.id,
+              username: user.username,
+              avatar: user.avatar,
+            } as User),
+        )
+        return emoji
       })
     }
 
@@ -89,3 +106,20 @@ export const initHoleDateSelect = (holeRepo: Repository<Hole>) =>
     .leftJoinAndSelect('hole.category', 'category')
     .leftJoinAndSelect('hole.classification', 'classification')
     .leftJoinAndSelect('hole.subClassification', 'subClassification')
+    .leftJoinAndSelect('hole.expressEmojis', 'expressEmojis')
+    .leftJoinAndSelect('expressEmojis.users', 'expressEmojiUsers')
+
+export const getTargetIdKey = (dto: ExpressEmojiDto) => {
+  const validIds = ['holeId', 'commentId', 'replyId']
+  const targetIds = Object.keys(dto).filter((key) =>
+    validIds.find((item) => item === key),
+  )
+  if (!targetIds.length) {
+    throw new BadRequestException('holeId, commentId, replyId 需要包含一个')
+  }
+  if (targetIds.length > 1) {
+    throw new BadRequestException('holeId, commentId, replyId 只能包含一个')
+  }
+
+  return targetIds[0] as Exclude<keyof ExpressEmojiDto, 'emoji'>
+}

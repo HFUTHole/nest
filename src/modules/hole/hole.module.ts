@@ -4,6 +4,7 @@ import { HoleService } from './service/hole.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { User } from '@/entity/user/user.entity'
 import { Hole } from '@/entity/hole/hole.entity'
+import { ExpressEmoji } from '@/entity/hole/ExpressEmoji.entity'
 import { Comment } from '@/entity/hole/comment.entity'
 import {
   IsCommentExistConstraint,
@@ -46,6 +47,7 @@ import { UserLevelEntity } from '@/entity/user/level.entity'
       HoleCategoryEntity,
       HoleSubCategoryEntity,
       UserLevelEntity,
+      ExpressEmoji,
     ]),
   ],
   controllers: [HoleController],

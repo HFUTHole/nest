@@ -27,6 +27,7 @@ import { GetRepliesQuery, LikeReplyDto } from '@/modules/hole/dto/replies.dto'
 import { Roles } from '@/common/decorator/roles.decorator'
 import { PostVoteDto } from '@/modules/hole/dto/vote.dto'
 import { SearchQuery } from '@/modules/hole/dto/search.dto'
+import { ExpressEmojiDto } from '@/modules/hole/dto/emoji.dto'
 import { HolePostThrottleGuard } from '@/modules/hole/guard/post-throttle.guard'
 
 @Roles()
@@ -119,5 +120,10 @@ export class HoleController {
   @Get('/search')
   search(@Query() query: SearchQuery) {
     return this.service.search(query)
+  }
+
+  @Post('/emoji/create')
+  createExpressEmoji(@Body() dto: ExpressEmojiDto, @User() user: IUser) {
+    return this.service.createExpressEmoji(dto, user)
   }
 }

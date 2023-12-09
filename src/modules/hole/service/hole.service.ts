@@ -53,6 +53,7 @@ import { SearchQuery } from '@/modules/hole/dto/search.dto'
 import {
   addCommentIsLiked,
   addReplyIsLiked,
+  getTargetIdKey,
   isVoteExpired,
   resolvePaginationHoleData,
 } from '@/modules/hole/hole.utils'
@@ -68,6 +69,8 @@ import { RoleService } from '@/modules/role/role.service'
 import { UserLevelService } from '@/modules/user/service/user-level.service'
 import { UserLevelEntity } from '@/entity/user/level.entity'
 import { Limit } from '@/constants/limit'
+import { ExpressEmojiDto } from '@/modules/hole/dto/emoji.dto'
+import { ExpressEmoji } from '@/entity/hole/ExpressEmoji.entity'
 
 @Injectable()
 export class HoleService {
@@ -103,6 +106,9 @@ export class HoleService {
 
   @InjectRepository(HoleSubCategoryEntity)
   private readonly holeSubCategoryRepo: Repository<HoleSubCategoryEntity>
+
+  @InjectRepository(ExpressEmoji)
+  private readonly expressEmojiRepo: Repository<ExpressEmoji>
 
   @InjectEntityManager()
   private readonly manager: EntityManager
@@ -165,6 +171,9 @@ export class HoleService {
           category: true,
           classification: true,
           subClassification: true,
+          expressEmojis: {
+            users: true,
+          },
         },
         where: {
           id: query.id,
@@ -173,6 +182,14 @@ export class HoleService {
           user: {
             username: true,
             avatar: true,
+            id: true,
+          },
+          expressEmojis: {
+            emoji: true,
+            users: {
+              username: true,
+              avatar: true,
+            },
           },
         },
       })
@@ -349,7 +366,11 @@ export class HoleService {
     const commentQuery = this.commentRepo
       .createQueryBuilder('comment')
       .setFindOptions({
-        relations: { user: true, replies: { user: true, replyUser: true } },
+        relations: {
+          user: true,
+          replies: { user: true, replyUser: true },
+          expressEmojis: { users: true },
+        },
         order,
         where: {
           hole: { id: dto.id },
@@ -362,6 +383,14 @@ export class HoleService {
           user: {
             username: true,
             avatar: true,
+          },
+          expressEmojis: {
+            emoji: true,
+            users: {
+              username: true,
+              avatar: true,
+              id: true,
+            },
           },
         },
       })
@@ -496,11 +525,22 @@ export class HoleService {
         },
         relations: {
           user: true,
+          expressEmojis: {
+            users: true,
+          },
         },
         select: {
           user: {
             username: true,
             avatar: true,
+          },
+          expressEmojis: {
+            emoji: true,
+            users: {
+              id: true,
+              username: true,
+              avatar: true,
+            },
           },
         },
       })
@@ -513,6 +553,9 @@ export class HoleService {
       relations: {
         user: true,
         replyUser: true,
+        expressEmojis: {
+          users: true,
+        },
       },
       where: {
         comment: {
@@ -522,6 +565,15 @@ export class HoleService {
       },
       order: {
         ...(isFavoriteOrder ? { favoriteCounts: 'DESC' } : { createAt: 'ASC' }),
+      },
+      select: {
+        expressEmojis: {
+          emoji: true,
+          users: {
+            username: true,
+            avatar: true,
+          },
+        },
       },
     })
 
@@ -697,5 +749,59 @@ export class HoleService {
     resolvePaginationHoleData(data, this.appConfig)
 
     return createResponse('查询成功', data)
+  }
+
+  async createExpressEmoji(dto: ExpressEmojiDto, reqUser: IUser) {
+    const user = await this.userRepo.findOne({
+      where: { studentId: reqUser.studentId },
+    })
+
+    const targetIdKey = getTargetIdKey(dto)
+    const targetKey = targetIdKey.slice(0, -2)
+    const repo =
+      targetIdKey === 'holeId'
+        ? this.holeRepo
+        : targetIdKey === 'commentId'
+        ? this.commentRepo
+        : this.replyRepo
+
+    const expressEmoji = await this.expressEmojiRepo.findOne({
+      relations: {
+        users: true,
+      },
+      where: {
+        emoji: dto.emoji,
+        [targetKey]: {
+          id: dto[targetIdKey],
+        },
+      },
+    })
+
+    if (!expressEmoji) {
+      const target = await repo.findOneBy({ id: dto[targetIdKey] as any })
+      const emoji = this.expressEmojiRepo.create({
+        emoji: dto.emoji,
+        users: [user],
+        [targetKey]: target,
+      })
+      await this.expressEmojiRepo.save(emoji)
+      return createResponse('发表表情成功', { msg: '发表表情成功' })
+    }
+
+    const userIndex = expressEmoji.users.findIndex((item) => item.id === user.id)
+
+    if (userIndex === -1) {
+      expressEmoji.users.push(user)
+      await this.expressEmojiRepo.save(expressEmoji)
+      return createResponse('发表表情成功', { msg: '发表表情成功' })
+    } else {
+      if (expressEmoji.users.length === 1) {
+        await this.expressEmojiRepo.remove(expressEmoji)
+      } else {
+        expressEmoji.users.splice(userIndex, 1)
+        await this.expressEmojiRepo.save(expressEmoji)
+      }
+      return createResponse('取消表情成功', { msg: '取消表情成功' })
+    }
   }
 }

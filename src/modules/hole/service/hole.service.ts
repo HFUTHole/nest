@@ -63,10 +63,8 @@ import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.enti
 import { NotifyEventType } from '@/common/enums/notify/notify.enum'
 import { ellipsisBody } from '@/utils/string'
 import { HoleCategoryEntity } from '@/entity/hole/category/HoleCategory.entity'
-import { HoleSubCategoryEntity } from '@/entity/hole/category/HoleSubCategory.entity'
 import { RoleService } from '@/modules/role/role.service'
 import { UserLevelService } from '@/modules/user/service/user-level.service'
-import { UserLevelEntity } from '@/entity/user/level.entity'
 import { Limit } from '@/constants/limit'
 
 @Injectable()
@@ -100,9 +98,6 @@ export class HoleService {
 
   @InjectRepository(HoleCategoryEntity)
   private readonly holeCategoryRepo: Repository<HoleCategoryEntity>
-
-  @InjectRepository(HoleSubCategoryEntity)
-  private readonly holeSubCategoryRepo: Repository<HoleSubCategoryEntity>
 
   @InjectEntityManager()
   private readonly manager: EntityManager
@@ -164,7 +159,6 @@ export class HoleService {
           user: true,
           category: true,
           classification: true,
-          subClassification: true,
         },
         where: {
           id: query.id,
@@ -217,27 +211,15 @@ export class HoleService {
 
   async create(dto: CreateHoleDto, reqUser: IUser) {
     const classification = await this.holeCategoryRepo.findOne({
-      relations: {
-        children: true,
-      },
+
       where: {
         name: dto.classification,
       },
     })
 
-    const isSubClassificationCorrect = classification.children
-      ?.map((item) => item.name)
-      .includes(dto.subClassification)
 
-    if (!isSubClassificationCorrect) {
-      throw new BadRequestException('子分区错误了哦')
-    }
 
-    const subClassification = await this.holeSubCategoryRepo.findOne({
-      where: {
-        name: dto.subClassification,
-      },
-    })
+
 
     const user = await this.userRepo.findOne({
       where: { studentId: reqUser.studentId },
@@ -257,7 +239,6 @@ export class HoleService {
       bilibili: dto.bilibili,
       title: dto.title,
       classification,
-      subClassification,
       category: this.articleCategoryRepo.create({
         category: dto.category,
       }),

@@ -1,7 +1,7 @@
 import { Column, Entity, OneToMany } from 'typeorm'
 import { CommonEntity } from '@/common/entity/common.entity'
 import { Hole } from '@/entity/hole/hole.entity'
-import { HoleSubCategoryEntity } from '@/entity/hole/category/HoleSubCategory.entity'
+import { SchoolAreaEnum } from '@/common/enums/school-area.enum'
 
 @Entity({ name: 'hole_category' })
 export class HoleCategoryEntity extends CommonEntity {
@@ -12,9 +12,17 @@ export class HoleCategoryEntity extends CommonEntity {
 
   @Column({
     comment: '介绍',
-    type: 'mediumtext',
+    type: 'text',
   })
   description: string
+
+  @Column({
+    comment: '校区',
+    type: 'enum',
+    enum: SchoolAreaEnum,
+    nullable: true
+  })
+  area: SchoolAreaEnum
 
   @Column({
     comment: '背景图片',
@@ -24,9 +32,4 @@ export class HoleCategoryEntity extends CommonEntity {
 
   @OneToMany(() => Hole, (hole) => hole.classification)
   holes: Hole[]
-
-  @OneToMany(() => HoleSubCategoryEntity, (category) => category.category, {
-    cascade: true,
-  })
-  children: HoleSubCategoryEntity[]
 }

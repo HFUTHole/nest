@@ -1,9 +1,31 @@
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import { AppConfig } from '@/app.config'
-import { ValidationPipe } from '@nestjs/common'
+import { INestApplication, ValidationPipe } from '@nestjs/common'
 import { useContainer } from 'class-validator'
-import 'reflect-metadata'
+import { getRepositoryToken } from '@nestjs/typeorm'
+import { HoleCategoryEntity } from '@/entity/hole/category/HoleCategory.entity'
+import { Repository } from 'typeorm'
+
+async function initPostCategories(app: INestApplication) {
+  const categoryRepo = app.get<Repository<HoleCategoryEntity>>(getRepositoryToken(HoleCategoryEntity))
+  const categories = await categoryRepo.find({
+
+  })
+  if (categories.length) {
+    return
+  }
+
+  const savedCategories  = categoryRepo.create([
+    {
+      name: '1',
+      description: '1',
+      bgUrl: '1',
+    }
+  ])
+
+  await categoryRepo.save(savedCategories)
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -20,6 +42,8 @@ async function bootstrap() {
     preflightContinue: false,
     optionsSuccessStatus: 204,
   })
+
+  await initPostCategories(app)
 
   await app.listen(config.server.port)
 }

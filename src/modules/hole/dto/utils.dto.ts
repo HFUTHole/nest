@@ -163,17 +163,13 @@ export class IsCorrectSubCategoryExistConstraint {
     ]
 
     const category = await this.holeCategoryRepo.findOne({
-      relations: {
-        children: true,
-      },
+
       where: {
         name: categoryName,
       },
     })
 
-    if (!category.children.map((item) => item.name).includes(name)) {
-      throw new NotFoundException('子分区错误了哦')
-    }
+
 
     return true
   }

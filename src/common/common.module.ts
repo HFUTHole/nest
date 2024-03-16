@@ -11,12 +11,12 @@ import { RolesGuard } from '@/modules/role/role.guard'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { User } from '@/entity/user/user.entity'
 import { ThrottlerGuard } from '@nestjs/throttler'
-import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entity'
-import { Hole } from '@/entity/hole/hole.entity'
+import { Post } from '@/entity/post/post.entity'
+import { PostCategoryEntity } from '@/entity/post/category/PostCategory.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Hole, ArticleCategory]),
+    TypeOrmModule.forFeature([User, Post, PostCategoryEntity]),
     WinstonModule.forRootAsync({
       useFactory: () => {
         const myFormat = format.printf(({ level, message, label, timestamp }) => {

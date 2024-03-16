@@ -4,11 +4,11 @@ import { AppConfig } from '@/app.config'
 import { INestApplication, ValidationPipe } from '@nestjs/common'
 import { useContainer } from 'class-validator'
 import { getRepositoryToken } from '@nestjs/typeorm'
-import { HoleCategoryEntity } from '@/entity/hole/category/HoleCategory.entity'
+import { PostCategoryEntity } from '@/entity/post/category/PostCategory.entity'
 import { Repository } from 'typeorm'
 
 async function initPostCategories(app: INestApplication) {
-  const categoryRepo = app.get<Repository<HoleCategoryEntity>>(getRepositoryToken(HoleCategoryEntity))
+  const categoryRepo = app.get<Repository<PostCategoryEntity>>(getRepositoryToken(PostCategoryEntity))
   const categories = await categoryRepo.find({
 
   })

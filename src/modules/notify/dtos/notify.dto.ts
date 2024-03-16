@@ -1,6 +1,6 @@
 import { IsOptional, IsString } from 'class-validator'
 import { IsNotifyExist } from '@/modules/notify/dtos/utils.dto'
-import { IsCommentExist, IsHoleExist } from '@/modules/hole/dto/utils.dto'
+import { IsCommentExist, IsPostExist } from '@/modules/post/dto/utils.dto'
 import { IsUserExist } from '@/modules/user/dtos/utils.dto'
 
 export class ReadNotifyDto {
@@ -20,9 +20,9 @@ export class CreateSystemNotifyDto {
   @IsOptional()
   userId?: number
 
-  @IsHoleExist()
+  @IsPostExist()
   @IsOptional()
-  holeId?: number
+  postId?: number
 
   @IsCommentExist()
   @IsOptional()

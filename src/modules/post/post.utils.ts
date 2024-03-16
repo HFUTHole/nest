@@ -1,16 +1,16 @@
 import { IPaginationMeta, Pagination } from 'nestjs-typeorm-paginate'
-import { Hole } from '@/entity/hole/hole.entity'
+import { Post } from '@/entity/post/post.entity'
 import { getAvatarUrl } from '@/utils/user'
 import { AppConfig } from '@/app.config'
 import { Repository, SelectQueryBuilder } from 'typeorm'
 import { IUser } from '@/app'
-import { Comment } from '@/entity/hole/comment.entity'
-import { Vote } from '@/entity/hole/vote.entity'
+import { Comment } from '@/entity/post/comment.entity'
+import { Vote } from '@/entity/post/vote.entity'
 import { User } from '@/entity/user/user.entity'
-import { Reply } from '@/entity/hole/reply.entity'
+import { Reply } from '@/entity/post/reply.entity'
 
-export const resolvePaginationHoleData = (
-  data: Pagination<Hole, IPaginationMeta>,
+export const resolvePaginationPostData = (
+  data: Pagination<Post, IPaginationMeta>,
   config: AppConfig,
 ) => {
   ;(data.items as any) = data.items.map((item) => {
@@ -76,16 +76,14 @@ export const isVoteExpired = (vote: Vote) => {
   return false
 }
 
-export const initHoleDateSelect = (holeRepo: Repository<Hole>) =>
-  holeRepo
-    .createQueryBuilder('hole')
-    .leftJoinAndSelect('hole.user', 'user')
-    .leftJoinAndSelect('hole.favoriteUsers', 'favoriteUser')
-    .leftJoinAndSelect('hole.tags', 'tags')
-    .leftJoinAndSelect('hole.vote', 'vote')
+export const initPostDateSelect = (postRepo: Repository<Post>) =>
+  postRepo
+    .createQueryBuilder('post')
+    .leftJoinAndSelect('post.user', 'user')
+    .leftJoinAndSelect('post.favoriteUsers', 'favoriteUser')
+    .leftJoinAndSelect('post.tags', 'tags')
+    .leftJoinAndSelect('post.vote', 'vote')
     .leftJoinAndSelect('vote.items', 'voteItems')
-    .leftJoinAndSelect('hole.comments', 'comments')
+    .leftJoinAndSelect('post.comments', 'comments')
     .leftJoinAndSelect('comments.user', 'comment.user')
-    .leftJoinAndSelect('hole.category', 'category')
-    .leftJoinAndSelect('hole.classification', 'classification')
-    .leftJoinAndSelect('hole.subClassification', 'subClassification')
+    .leftJoinAndSelect('post.category', 'category')

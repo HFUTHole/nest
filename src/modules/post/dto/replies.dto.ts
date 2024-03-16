@@ -1,7 +1,7 @@
 import { PaginateQuery } from '@/common/dtos/paginate.dto'
 import { IsEnum, IsOptional, IsString } from 'class-validator'
-import { IsCommentExist, IsReplyExist } from '@/modules/hole/dto/utils.dto'
-import { HoleReplyOrderMode } from '@/modules/hole/hole.constant'
+import { IsCommentExist, IsReplyExist } from '@/modules/post/dto/utils.dto'
+import { PostReplyOrderMode } from '@/modules/post/post.constant'
 
 export class ReplyReplyDto {
   @IsCommentExist()
@@ -20,9 +20,9 @@ export class GetRepliesQuery extends PaginateQuery {
   @IsString()
   id: string
 
-  @IsEnum(HoleReplyOrderMode)
+  @IsEnum(PostReplyOrderMode)
   @IsOptional()
-  order?: HoleReplyOrderMode = HoleReplyOrderMode.favorite
+  order?: PostReplyOrderMode = PostReplyOrderMode.favorite
 
   @IsReplyExist()
   @IsString()

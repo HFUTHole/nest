@@ -6,7 +6,7 @@ import {
   Injectable,
 } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
-import { Hole } from '@/entity/hole/hole.entity'
+import { Post } from '@/entity/post/post.entity'
 import {
   EntityManager,
   FindManyOptions,
@@ -17,60 +17,59 @@ import {
   Repository,
 } from 'typeorm'
 import { User } from '@/entity/user/user.entity'
-import { CreateHoleDto } from '@/modules/hole/dto/create.dto'
+import { CreatePostDto } from '@/modules/post/dto/create.dto'
 import { IUser } from '@/app'
 import { createResponse } from '@/utils/create'
 import { paginate } from 'nestjs-typeorm-paginate'
 import {
   CreateCommentDto,
   CreateCommentReplyDto,
-  GetHoleCommentDto,
+  GetPostCommentDto,
   LikeCommentDto,
-} from '@/modules/hole/dto/comment.dto'
-import { Comment } from '@/entity/hole/comment.entity'
+} from '@/modules/post/dto/comment.dto'
+import { Comment } from '@/entity/post/comment.entity'
 import {
-  DeleteHoleDto,
-  GetHoleDetailQuery,
-  GetHoleListQuery,
-} from '@/modules/hole/dto/hole.dto'
-import { Reply } from '@/entity/hole/reply.entity'
+  DeletePostDto,
+  GetPostDetailQuery,
+  GetPostListQuery,
+} from '@/modules/post/dto/post.dto'
+import { Reply } from '@/entity/post/reply.entity'
 import {
   DeleteLikeReplyDto,
   GetRepliesQuery,
   LikeReplyDto,
-} from '@/modules/hole/dto/replies.dto'
-import { Tags } from '@/entity/hole/tags.entity'
-import { Vote, VoteType } from '@/entity/hole/vote.entity'
-import { PostVoteDto } from '@/modules/hole/dto/vote.dto'
+} from '@/modules/post/dto/replies.dto'
+import { Tags } from '@/entity/post/tags.entity'
+import { Vote, VoteType } from '@/entity/post/vote.entity'
+import { PostVoteDto } from '@/modules/post/dto/vote.dto'
 import { NotifyService } from '@/modules/notify/notify.service'
 import { AppConfig } from '@/app.config'
 import {
-  HoleDetailCommentMode,
-  HoleDetailCommentOrderMode,
-  HoleReplyOrderMode,
-} from '@/modules/hole/hole.constant'
-import { SearchQuery } from '@/modules/hole/dto/search.dto'
+  PostDetailCommentMode,
+  PostDetailCommentOrderMode,
+  PostReplyOrderMode,
+} from '@/modules/post/post.constant'
+import { SearchQuery } from '@/modules/post/dto/search.dto'
 import {
   addCommentIsLiked,
   addReplyIsLiked,
   isVoteExpired,
-  resolvePaginationHoleData,
-} from '@/modules/hole/hole.utils'
-import { HoleRepoService } from '@/modules/hole/service/hole.repo'
-import { VoteItem } from '@/entity/hole/VoteItem.entity'
-import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entity'
+  resolvePaginationPostData,
+} from '@/modules/post/post.utils'
+import { PostRepoService } from '@/modules/post/service/post.repo'
+import { VoteItem } from '@/entity/post/VoteItem.entity'
 import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.entity'
 import { NotifyEventType } from '@/common/enums/notify/notify.enum'
 import { ellipsisBody } from '@/utils/string'
-import { HoleCategoryEntity } from '@/entity/hole/category/HoleCategory.entity'
+import { PostCategoryEntity } from '@/entity/post/category/PostCategory.entity'
 import { RoleService } from '@/modules/role/role.service'
 import { UserLevelService } from '@/modules/user/service/user-level.service'
 import { Limit } from '@/constants/limit'
 
 @Injectable()
-export class HoleService {
-  @InjectRepository(Hole)
-  private readonly holeRepo: Repository<Hole>
+export class PostService {
+  @InjectRepository(Post)
+  private readonly postRepo: Repository<Post>
 
   @InjectRepository(User)
   private readonly userRepo: Repository<User>
@@ -90,14 +89,11 @@ export class HoleService {
   @InjectRepository(VoteItem)
   private readonly voteItemRepo: Repository<VoteItem>
 
-  @InjectRepository(ArticleCategory)
-  private readonly articleCategoryRepo: Repository<ArticleCategory>
-
   @InjectRepository(NotifyInteractionEntity)
   private readonly notifyInteractionRepo: Repository<NotifyInteractionEntity>
 
-  @InjectRepository(HoleCategoryEntity)
-  private readonly holeCategoryRepo: Repository<HoleCategoryEntity>
+  @InjectRepository(PostCategoryEntity)
+  private readonly postCategoryRepo: Repository<PostCategoryEntity>
 
   @InjectEntityManager()
   private readonly manager: EntityManager
@@ -106,7 +102,7 @@ export class HoleService {
   private readonly notifyService: NotifyService
 
   @Inject()
-  private readonly holeRepoService: HoleRepoService
+  private readonly postRepoService: PostRepoService
 
   @Inject()
   private readonly roleService: RoleService
@@ -116,14 +112,14 @@ export class HoleService {
 
   constructor(private readonly appConfig: AppConfig) {}
 
-  async getList(query: GetHoleListQuery, reqUser: IUser) {
-    const data = await this.holeRepoService.getList(query, reqUser)
+  async getList(query: GetPostListQuery, reqUser: IUser) {
+    const data = await this.postRepoService.getList(query, reqUser)
 
     return createResponse('获取成功', data)
   }
 
-  async delete(body: DeleteHoleDto, reqUser: IUser) {
-    const hole = await this.holeRepo.findOne({
+  async delete(body: DeletePostDto, reqUser: IUser) {
+    const post = await this.postRepo.findOne({
       relations: { user: true },
       where: { id: body.id },
       select: { user: { studentId: true } },
@@ -131,11 +127,11 @@ export class HoleService {
 
     const isAdmin = await this.roleService.isAdmin(reqUser.studentId)
 
-    if (hole.user.studentId !== reqUser.studentId || !isAdmin) {
+    if (post.user.studentId !== reqUser.studentId || !isAdmin) {
       throw new ForbiddenException('这不是你的树洞哦')
     }
 
-    await this.holeRepo.delete({ id: hole.id })
+    await this.postRepo.delete({ id: post.id })
 
     return createResponse('删除成功')
   }
@@ -143,22 +139,21 @@ export class HoleService {
   async getTags() {
     return this.tagsRepo.find({
       relations: {
-        holes: true,
+        posts: true,
       },
-      where: { holes: { id: 5 } },
+      where: { posts: { id: 5 } },
     })
   }
 
-  async getDetail(query: GetHoleDetailQuery, reqUser: IUser) {
-    const vote = await this.holeRepoService.findVote(query, reqUser)
+  async getDetail(query: GetPostDetailQuery, reqUser: IUser) {
+    const vote = await this.postRepoService.findVote(query, reqUser)
 
-    const data = await this.holeRepo
-      .createQueryBuilder('hole')
+    const data = await this.postRepo
+      .createQueryBuilder('post')
       .setFindOptions({
         relations: {
           user: true,
           category: true,
-          classification: true,
         },
         where: {
           id: query.id,
@@ -170,12 +165,12 @@ export class HoleService {
           },
         },
       })
-      .loadRelationCountAndMap('hole.isLiked', 'hole.favoriteUsers', 'isLiked', (qb) =>
+      .loadRelationCountAndMap('post.isLiked', 'post.favoriteUsers', 'isLiked', (qb) =>
         qb.andWhere('isLiked.studentId = :studentId', {
           studentId: reqUser.studentId,
         }),
       )
-      .loadRelationCountAndMap('hole.commentCounts', 'hole.comments')
+      .loadRelationCountAndMap('post.commentCounts', 'post.comments')
       .getOne()
 
     data.vote = vote
@@ -183,44 +178,31 @@ export class HoleService {
     return createResponse('获取树洞详情成功', data as any)
   }
 
-  async likeHole(dto: GetHoleDetailQuery, reqUser: IUser) {
-    const result = this.holeRepoService.processLike({
+  async likePost(dto: GetPostDetailQuery, reqUser: IUser) {
+    return this.postRepoService.processLike({
       dto,
       reqUser,
-      repo: this.holeRepo,
-      propertyPath: 'favoriteHole',
-      entity: Hole as any,
+      repo: this.postRepo,
+      propertyPath: 'favoritePost',
+      entity: Post as any,
       type: '帖子',
       notifyProps: {
-        holeId: dto.id,
+        postId: dto.id,
       },
     })
-
-    return result
   }
 
-  async deleteLike(dto: GetHoleDetailQuery, reqUser: IUser) {
-    return this.holeRepoService.processDeleteLike({
+  async deleteLike(dto: GetPostDetailQuery, reqUser: IUser) {
+    return this.postRepoService.processDeleteLike({
       dto,
       reqUser,
-      repo: this.holeRepo,
-      propertyPath: 'favoriteHole',
-      entity: Hole as any,
+      repo: this.postRepo,
+      propertyPath: 'favoritePost',
+      entity: Post as any,
     })
   }
 
-  async create(dto: CreateHoleDto, reqUser: IUser) {
-    const classification = await this.holeCategoryRepo.findOne({
-
-      where: {
-        name: dto.classification,
-      },
-    })
-
-
-
-
-
+  async create(dto: CreatePostDto, reqUser: IUser) {
     const user = await this.userRepo.findOne({
       where: { studentId: reqUser.studentId },
     })
@@ -231,17 +213,16 @@ export class HoleService {
       }),
     )
 
-    const hole = this.holeRepo.create({
+    const post = this.postRepo.create({
       user,
       body: dto.body,
       imgs: dto.imgs,
       tags,
       bilibili: dto.bilibili,
       title: dto.title,
-      classification,
-      category: this.articleCategoryRepo.create({
-        category: dto.category,
-      }),
+      category: {
+        id: dto.category
+      },
     })
 
     if (dto.vote) {
@@ -251,31 +232,31 @@ export class HoleService {
         }),
       )
 
-      hole.vote = this.voteRepo.create({
+      post.vote = this.voteRepo.create({
         items: votes,
         type: VoteType.single,
-        hole,
+        post,
       })
     }
 
     await this.manager.transaction(async (t) => {
-      await t.save(hole)
+      await t.save(post)
       await this.userLevelService.incExperience(
-        { studentId: reqUser.studentId, increment: Limit.level.hole },
+        { studentId: reqUser.studentId, increment: Limit.level.post },
         t,
       )
     })
 
-    await this.holeRepo.save(hole)
+    await this.postRepo.save(post)
 
     return createResponse('创建树洞成功', {
-      id: hole.id,
-      incExperience: Limit.level.hole,
+      id: post.id,
+      incExperience: Limit.level.post,
     })
   }
 
   async createComment(dto: CreateCommentDto, reqUser: IUser) {
-    const hole = await this.holeRepo.findOne({
+    const post = await this.postRepo.findOne({
       relations: { user: true },
       select: { user: { studentId: true } },
       where: { id: dto.id },
@@ -284,7 +265,7 @@ export class HoleService {
 
     const comment = this.commentRepo.create({
       body: dto.body,
-      hole,
+      post,
       user,
       imgs: dto.imgs,
     })
@@ -298,7 +279,7 @@ export class HoleService {
       type: NotifyEventType.comment,
       reqUser,
       body: `${user.username} 评论了你的帖子：${ellipsisBody(dto.body, 30)}`,
-      recipientId: hole.user.studentId,
+      recipientId: post.user.studentId,
       commentId: savedComment.id as string,
     })
 
@@ -308,8 +289,8 @@ export class HoleService {
     })
   }
 
-  async getComment(dto: GetHoleCommentDto, reqUser: IUser) {
-    const hole = await this.holeRepo.findOne({
+  async getComment(dto: GetPostCommentDto, reqUser: IUser) {
+    const post = await this.postRepo.findOne({
       relations: {
         user: true,
       },
@@ -321,7 +302,7 @@ export class HoleService {
       where: { id: dto.id },
     })
 
-    const isFavoriteOrder = dto.order === HoleDetailCommentOrderMode.favorite
+    const isFavoriteOrder = dto.order === PostDetailCommentOrderMode.favorite
 
     const order: FindOptionsOrder<Comment> = {
       ...(isFavoriteOrder ? { favoriteCounts: 'DESC' } : { createAt: 'DESC' }),
@@ -333,9 +314,9 @@ export class HoleService {
         relations: { user: true, replies: { user: true, replyUser: true } },
         order,
         where: {
-          hole: { id: dto.id },
-          ...(dto.mode === HoleDetailCommentMode.author && {
-            user: { studentId: hole.user.studentId },
+          post: { id: dto.id },
+          ...(dto.mode === PostDetailCommentMode.author && {
+            user: { studentId: post.user.studentId },
           }),
           ...(dto.commentId && { id: Not(dto.commentId) }),
         },
@@ -389,7 +370,7 @@ export class HoleService {
   }
 
   async likeComment(dto: LikeCommentDto, reqUser: IUser) {
-    return this.holeRepoService.processLike<Comment>({
+    return this.postRepoService.processLike<Comment>({
       dto,
       reqUser,
       repo: this.commentRepo,
@@ -403,7 +384,7 @@ export class HoleService {
   }
 
   async deleteLikeComment(dto: LikeCommentDto, reqUser: IUser) {
-    return this.holeRepoService.processDeleteLike({
+    return this.postRepoService.processDeleteLike({
       dto,
       reqUser,
       repo: this.commentRepo,
@@ -468,7 +449,7 @@ export class HoleService {
   }
 
   async getReplies(query: GetRepliesQuery, reqUser: IUser) {
-    const isFavoriteOrder = query.order === HoleReplyOrderMode.favorite
+    const isFavoriteOrder = query.order === PostReplyOrderMode.favorite
     const commentQuery = await this.commentRepo
       .createQueryBuilder('comment')
       .setFindOptions({
@@ -558,7 +539,7 @@ export class HoleService {
   }
 
   async likeReply(dto: LikeReplyDto, reqUser: IUser) {
-    return this.holeRepoService.processLike({
+    return this.postRepoService.processLike({
       dto,
       reqUser,
       repo: this.replyRepo,
@@ -572,7 +553,7 @@ export class HoleService {
   }
 
   async deleteReplyLike(dto: DeleteLikeReplyDto, reqUser: IUser) {
-    return this.holeRepoService.processDeleteLike({
+    return this.postRepoService.processDeleteLike({
       dto,
       reqUser,
       repo: this.replyRepo,
@@ -630,7 +611,7 @@ export class HoleService {
   async search(query: SearchQuery) {
     const { keywords, ...paginationQuery } = query
 
-    let searchOptions: FindManyOptions<Hole> = {
+    let searchOptions: FindManyOptions<Post> = {
       relations: {
         user: true,
         vote: true,
@@ -644,7 +625,7 @@ export class HoleService {
 
     if (keywords.startsWith('#')) {
       const keyword = keywords.slice(1)
-      // hole id
+      // post id
       if (!isNaN(Number(keyword))) {
         searchOptions = {
           ...searchOptions,
@@ -653,7 +634,7 @@ export class HoleService {
           },
         }
       } else {
-        // hole tag
+        // post tag
         searchOptions = {
           ...searchOptions,
           where: {
@@ -664,7 +645,7 @@ export class HoleService {
         }
       }
     } else {
-      // hole body
+      // post body
       searchOptions = {
         ...searchOptions,
         where: {
@@ -673,9 +654,9 @@ export class HoleService {
       }
     }
 
-    const data = await paginate(this.holeRepo, paginationQuery, searchOptions)
+    const data = await paginate(this.postRepo, paginationQuery, searchOptions)
 
-    resolvePaginationHoleData(data, this.appConfig)
+    resolvePaginationPostData(data, this.appConfig)
 
     return createResponse('查询成功', data)
   }

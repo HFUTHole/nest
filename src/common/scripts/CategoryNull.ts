@@ -1,6 +1,6 @@
 // import { Injectable } from '@nestjs/common'
 // import { InjectRepository } from '@nestjs/typeorm'
-// import { Hole } from '@/entity/hole/hole.entity'
+// import { Post } from '@/entity/post/post.entity'
 // import { Repository } from 'typeorm'
 // import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entity'
 // import { ArticleCategoryEnum } from '@/common/enums/article_category/category'
@@ -9,8 +9,8 @@
 // @Injectable()
 // export class CategoryNullScript {
 //   constructor(
-//     @InjectRepository(Hole)
-//     private readonly holeRepo: Repository<Hole>,
+//     @InjectRepository(Post)
+//     private readonly postRepo: Repository<Post>,
 //
 //     @InjectRepository(ArticleCategory)
 //     private readonly articleCategoryRepo: Repository<ArticleCategory>,
@@ -19,7 +19,7 @@
 //   }
 //
 //   async run() {
-//     const holes = await this.holeRepo.find({
+//     const posts = await this.postRepo.find({
 //       relations: {
 //         category: true,
 //       },
@@ -28,12 +28,12 @@
 //       },
 //     })
 //
-//     for (const hole of holes) {
-//       hole.category = this.articleCategoryRepo.create({
+//     for (const post of posts) {
+//       post.category = this.articleCategoryRepo.create({
 //         category: ArticleCategoryEnum.hfutLife,
 //       })
 //     }
 //
-//     await this.holeRepo.save(holes)
+//     await this.postRepo.save(posts)
 //   }
 // }

@@ -10,9 +10,9 @@ import { CreateSystemNotifyDto, ReadNotifyDto } from '@/modules/notify/dtos/noti
 import { PaginateQuery } from '@/common/dtos/paginate.dto'
 import { paginate } from 'nestjs-typeorm-paginate'
 import { createResponse } from '@/utils/create'
-import { Hole } from '@/entity/hole/hole.entity'
-import { Comment } from '@/entity/hole/comment.entity'
-import { Reply } from '@/entity/hole/reply.entity'
+import { Post } from '@/entity/post/post.entity'
+import { Comment } from '@/entity/post/comment.entity'
+import { Reply } from '@/entity/post/reply.entity'
 
 @Injectable()
 export class NotifyService {
@@ -22,8 +22,8 @@ export class NotifyService {
   @InjectRepository(NotifySystemEntity)
   private readonly notifySystemRepo: Repository<NotifySystemEntity>
 
-  @InjectRepository(Hole)
-  private readonly holeRepo: Repository<Hole>
+  @InjectRepository(Post)
+  private readonly postRepo: Repository<Post>
 
   @InjectRepository(Comment)
   private readonly commentRepo: Repository<Comment>
@@ -35,113 +35,73 @@ export class NotifyService {
   private readonly userRepo: Repository<User>
 
   async createInteractionNotify(params: CreateInteractionNotifyInterface) {
-    const { type, body, reqUser, recipientId } = params
-
-    const creator = await this.userRepo.findOneBy({ studentId: reqUser.studentId })
-    const user = await this.userRepo.findOneBy({ studentId: recipientId })
-
-    const notify = this.notifyInteractionRepo.create({
-      type,
-      body,
-      creator,
-      user,
-    })
-
-    if (params.holeId) {
-      notify.hole = this.holeRepo.create({
-        id: params.holeId,
-      })
-    } else if (params.commentId) {
-      const comment = await this.commentRepo.findOne({
-        relations: { hole: true },
-        where: {
-          id: params.commentId,
-        },
-      })
-
-      console.log(comment, params.commentId)
-
-      notify.comment = comment
-      notify.hole = comment.hole
-    } else if (params.replyId) {
-      const reply = await this.replyRepo.findOne({
-        relations: { comment: true },
-        where: {
-          id: params.replyId,
-        },
-      })
-      notify.hole = (
-        await this.commentRepo.findOne({
-          relations: { hole: true },
-          where: {
-            id: reply.comment.id,
-          },
-        })
-      ).hole
-      notify.comment = reply.comment
-      notify.reply = reply
-    }
-
-    await this.notifyInteractionRepo.save(notify)
-
-    return true
+    // const { type, body, reqUser, recipientId } = params
+    //
+    // const notify = this.notifyInteractionRepo.create({
+    //   type,
+    //   body,
+    //   creator: {
+    //     studentId: reqUser.studentId
+    //   },
+    //   user: {
+    //     studentId: recipientId
+    //   },
+    // })
+    //
+    // if (params.postId) {
+    //   notify.post = this.postRepo.create({
+    //     id: params.postId,
+    //   })
+    // } else if (params.commentId) {
+    //   const comment = await this.commentRepo.findOne({
+    //     relations: { post: true },
+    //     where: {
+    //       id: params.commentId,
+    //     },
+    //   })
+    //
+    //   notify.comment = comment
+    //   notify.post = comment.post
+    // } else if (params.replyId) {
+    //   const reply = await this.replyRepo.findOne({
+    //     relations: { comment: true },
+    //     where: {
+    //       id: params.replyId,
+    //     },
+    //   })
+    //   notify.post = (
+    //     await this.commentRepo.findOne({
+    //       relations: { post: true },
+    //       where: {
+    //         id: reply.comment.id,
+    //       },
+    //     })
+    //   ).post
+    //   notify.comment = reply.comment
+    //   notify.reply = reply
+    // }
+    //
+    // await this.notifyInteractionRepo.save(notify)
+    //
+    // return true
   }
 
   async createSystemNotify(params: CreateSystemNotifyDto) {
-    const { userId, body, title, holeId, replyId, commentId } = params
-
     const notify = this.notifySystemRepo.create({
-      title,
-      body,
+      title: params.title,
+      body: params.body,
+      completedReadingUsers: [],
     })
 
-    if (userId) {
-      notify.user = await this.userRepo.findOneBy({ studentId: userId })
-      if (!notify.completedReadingUsers) {
-        notify.completedReadingUsers = []
-      }
-    }
+    const saved = await this.notifySystemRepo.save(notify)
 
-    if (holeId) {
-      notify.hole = this.holeRepo.create({
-        id: params.holeId,
-      })
-    } else if (commentId) {
-      const comment = await this.commentRepo.findOne({
-        relations: { hole: true },
-        where: {
-          id: params.commentId,
-        },
-      })
-
-      notify.comment = comment
-      notify.hole = comment.hole
-    } else if (replyId) {
-      const reply = await this.replyRepo.findOne({
-        relations: { comment: true },
-        where: {
-          id: params.replyId,
-        },
-      })
-      notify.hole = (
-        await this.commentRepo.findOne({
-          relations: { hole: true },
-          where: {
-            id: reply.comment.id,
-          },
-        })
-      ).hole
-    }
-
-    await this.notifySystemRepo.save(notify)
-
-    return true
+    return createResponse('系统通知发布成功', saved)
   }
 
-  async getUserBaseNotifications({ studentId }: IUser) {
+  async getUserBaseNotifications({ id }: IUser) {
     const latestInteractionNotify = await this.notifyInteractionRepo.findOne({
       where: {
-        user: { studentId },
+        user: { id },
         isRead: false,
       },
       order: {
@@ -151,22 +111,19 @@ export class NotifyService {
 
     const interactionCount = await this.notifyInteractionRepo.count({
       where: {
-        user: { studentId },
+        user: { id },
         isRead: false,
       },
     })
 
-    const [latestSystemNotify, systemCount] = await this.notifySystemRepo
-      .createQueryBuilder('notify')
-      .setFindOptions({
-        where: {
-          isRead: false,
-        },
-        order: {
-          createAt: 'desc',
-        },
-      })
-      .getManyAndCount()
+    const latestSystemNotification = await this.notifySystemRepo.find({
+      relations: {
+        completedReadingUsers: true,
+      },
+      where: {
+        completedReadingUsers: {},
+      },
+    })
 
     return {
       interaction: {
@@ -174,39 +131,18 @@ export class NotifyService {
         totalCount: interactionCount,
       },
       system: {
-        data: latestSystemNotify?.[0] || null,
-        totalCount: systemCount,
+        data: latestSystemNotification,
+        totalCount: latestSystemNotification.length,
       },
     }
   }
 
   async getSystemNotifications(query: PaginateQuery, reqUser: IUser) {
-    const queryBuilder = this.notifySystemRepo
-      .createQueryBuilder('notify')
-      .setFindOptions({
-        relations: {
-          hole: true,
-          comment: true,
-          reply: true,
-        },
-        where: [
-          {
-            user: {
-              studentId: reqUser.studentId,
-            },
-          },
-          {
-            user: IsNull(),
-          },
-        ],
-        order: {
-          createAt: 'DESC',
-        },
-      })
+    const notifyBuilder = this.notifySystemRepo
+      .createQueryBuilder('system')
+      .setFindOptions({})
 
-    const data = await paginate(queryBuilder, query)
-
-    return createResponse('获取成功', data)
+    return createResponse('获取成功')
   }
 
   async getInteractionNotifications(query: PaginateQuery, reqUser: IUser) {
@@ -215,7 +151,7 @@ export class NotifyService {
       .setFindOptions({
         relations: {
           creator: true,
-          hole: true,
+          post: true,
           comment: true,
           reply: true,
         },
@@ -257,7 +193,7 @@ export class NotifyService {
     // const allInteractions = await this.notifyInteractionRepo.find({
     //   relations: { user: true },
     //   where: {
-    //     user: { studentId: reqUser.studentId },
+    //     user: { id: reqUser.id },
     //   },
     // })
 
@@ -265,25 +201,13 @@ export class NotifyService {
   }
 
   async readInteractionNotification(dto: ReadNotifyDto, reqUser: IUser) {
-    return this.processReadNotify(this.notifyInteractionRepo, dto.id, reqUser.studentId)
-  }
-
-  async readSystemNotification(dto: ReadNotifyDto, reqUser: IUser) {
-    return this.processReadNotify(this.notifySystemRepo, dto.id, reqUser.studentId)
-  }
-
-  async processReadNotify(
-    repo: Repository<NotifyInteractionEntity | NotifySystemEntity>,
-    id: string,
-    studentId: number,
-  ) {
-    const notify = await repo.findOne({
+    const notify = await this.notifyInteractionRepo.findOne({
       relations: { user: true },
       select: { user: { studentId: true } },
-      where: { id },
+      where: { id: dto.id },
     })
 
-    if (notify.user.studentId !== studentId) {
+    if (notify.user.studentId !== reqUser.studentId) {
       throw new ForbiddenException('这不是你的通知')
     }
 
@@ -294,5 +218,9 @@ export class NotifyService {
     notify.isRead = true
 
     await this.notifyInteractionRepo.save(notify)
+  }
+
+  async readSystemNotification(dto: ReadNotifyDto, reqUser: IUser) {
+    // return this.processReadNotify(this.notifySystemRepo, dto.id, reqUser.studentId)
   }
 }

@@ -17,7 +17,7 @@ import { Logger } from 'winston'
 import { RoleService } from '@/modules/role/role.service'
 
 @Injectable()
-export class HolePostThrottleGuard implements CanActivate {
+export class PostPostThrottleGuard implements CanActivate {
   @InjectLogger()
   private readonly logger: Logger
 
@@ -41,16 +41,16 @@ export class HolePostThrottleGuard implements CanActivate {
       return true
     }
 
-    const key = `hole_post:${user.studentId}`
+    const key = `post_post:${user.studentId}`
 
     const count = parseInt(await this.redis.get(key))
 
     if (isNullable(count)) {
       await this.redis.set(key, 1)
     } else {
-      if (count === this.config.hole.oneDayLimitCreateCount) {
+      if (count === this.config.post.oneDayLimitCreateCount) {
         throw new ConflictException(
-          `一天最多只能创建${this.config.hole.oneDayLimitCreateCount}个帖子哦`,
+          `一天最多只能创建${this.config.post.oneDayLimitCreateCount}个帖子哦`,
         )
       }
 
@@ -63,7 +63,7 @@ export class HolePostThrottleGuard implements CanActivate {
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async clearLimit() {
     try {
-      const allKeys = await this.redis.keys('hole_post:*')
+      const allKeys = await this.redis.keys('post_post:*')
       if (allKeys.length) {
         await this.redis.del(allKeys)
         this.logger.log({

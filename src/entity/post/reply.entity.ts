@@ -10,7 +10,7 @@ import {
 } from 'typeorm'
 import { User } from '@/entity/user/user.entity'
 import { CommonEntity } from '@/common/entity/common.entity'
-import { Comment } from '@/entity/hole/comment.entity'
+import { Comment } from '@/entity/post/comment.entity'
 import { Report } from '@/entity/report/report.entity'
 
 @Entity()

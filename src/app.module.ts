@@ -6,7 +6,7 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm'
 import { UserModule } from './modules/user/user.module'
 import { AuthModule } from './modules/auth/auth.module'
 import { CommonModule } from '@/common/common.module'
-import { HoleModule } from './modules/hole/hole.module'
+import { PostModule } from './modules/post/post.module'
 import { RoleModule } from './modules/role/role.module'
 import { AppController } from '@/app.controller'
 import { AppService } from '@/app.service'
@@ -55,7 +55,7 @@ import { ScheduleModule } from '@nestjs/schedule'
     UserModule,
     AuthModule,
     CommonModule,
-    HoleModule,
+    PostModule,
     RoleModule,
     NotifyModule,
     ReportModule,

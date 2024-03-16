@@ -46,7 +46,7 @@ export class AuthService {
       throw new BadRequestException('账号或密码错误')
     }
 
-    const token = this.signToken(dto.studentId)
+    const token = this.signToken(user)
 
     return createResponse('登录成功', { token })
   }
@@ -94,18 +94,8 @@ export class AuthService {
 
     user.avatar = getAvatarUrl(this.appConfig, user)
 
-    let token
-    try {
-      token = this.signToken(dto.studentId)
-    } catch (err) {
-      throw err
-    }
-
-    try {
-      await this.userRepo.save(user)
-    } catch (err) {
-      throw err
-    }
+    const savedUser = await this.userRepo.save(user)
+    const token = this.signToken(savedUser)
 
     return createResponse('注册成功', { token })
   }
@@ -131,9 +121,9 @@ export class AuthService {
     user.hfutPassword = await encryptPassword(dto.hfutPassword)
     user.password = await encryptPassword(dto.password)
 
-    await this.userRepo.save(user)
+    const savedUser = await this.userRepo.save(user)
 
-    const token = this.signToken(dto.studentId)
+    const token = this.signToken(savedUser)
 
     return createResponse('修改密码成功', { token })
   }
@@ -162,7 +152,7 @@ export class AuthService {
     }
   }
 
-  signToken(studentId: number) {
-    return this.jwtService.sign({ studentId })
+  signToken(user: User) {
+    return this.jwtService.sign({ id: user.id, studentId: user.studentId })
   }
 }

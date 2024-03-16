@@ -1,31 +1,30 @@
 import { Module, NestModule } from '@nestjs/common'
-import { HoleController } from './hole.controller'
-import { HoleService } from './service/hole.service'
+import { PostController } from './post.controller'
+import { PostService } from './service/post.service'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { User } from '@/entity/user/user.entity'
-import { Hole } from '@/entity/hole/hole.entity'
-import { Comment } from '@/entity/hole/comment.entity'
+import { Post } from '@/entity/post/post.entity'
+import { Comment } from '@/entity/post/comment.entity'
 import {
   IsCommentExistConstraint,
   IsCorrectSubCategoryExistConstraint,
-  IsHoleExistConstraint,
+  IsPostExistConstraint,
   IsReplyExistConstraint,
   IsValidPostImgsConstraint,
   IsVoteExistConstraint,
   IsVoteItemExistConstraint,
-} from '@/modules/hole/dto/utils.dto'
-import { Reply } from '@/entity/hole/reply.entity'
+} from '@/modules/post/dto/utils.dto'
+import { Reply } from '@/entity/post/reply.entity'
 import { RoleService } from '@/modules/role/role.service'
-import { Tags } from '@/entity/hole/tags.entity'
-import { Vote } from '@/entity/hole/vote.entity'
+import { Tags } from '@/entity/post/tags.entity'
+import { Vote } from '@/entity/post/vote.entity'
 import { NotifyService } from '@/modules/notify/notify.service'
-import { VoteItem } from '@/entity/hole/VoteItem.entity'
-import { HoleRepoService } from '@/modules/hole/service/hole.repo'
-import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entity'
+import { VoteItem } from '@/entity/post/VoteItem.entity'
+import { PostRepoService } from '@/modules/post/service/post.repo'
 import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.entity'
 import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
-import { HolePostThrottleGuard } from '@/modules/hole/guard/post-throttle.guard'
-import { HoleCategoryEntity } from '@/entity/hole/category/HoleCategory.entity'
+import { PostPostThrottleGuard } from '@/modules/post/guard/post-throttle.guard'
+import { PostCategoryEntity } from '@/entity/post/category/PostCategory.entity'
 import { UserLevelService } from '@/modules/user/service/user-level.service'
 import { UserLevelEntity } from '@/entity/user/level.entity'
 
@@ -33,37 +32,36 @@ import { UserLevelEntity } from '@/entity/user/level.entity'
   imports: [
     TypeOrmModule.forFeature([
       User,
-      Hole,
+      Post,
       Comment,
       Reply,
       Tags,
       Vote,
       VoteItem,
-      ArticleCategory,
       NotifyInteractionEntity,
       NotifySystemEntity,
-      HoleCategoryEntity,
+      PostCategoryEntity,
       UserLevelEntity,
     ]),
   ],
-  controllers: [HoleController],
+  controllers: [PostController],
   providers: [
-    HoleService,
+    PostService,
     RoleService,
     NotifyService,
-    HoleRepoService,
+    PostRepoService,
     UserLevelService,
-    IsHoleExistConstraint,
+    IsPostExistConstraint,
     IsCommentExistConstraint,
     IsVoteExistConstraint,
     IsValidPostImgsConstraint,
     IsReplyExistConstraint,
     IsVoteItemExistConstraint,
-    HolePostThrottleGuard,
+    PostPostThrottleGuard,
     IsCorrectSubCategoryExistConstraint,
   ],
 })
-export class HoleModule implements NestModule {
+export class PostModule implements NestModule {
   configure() {
     console.log(1)
   }

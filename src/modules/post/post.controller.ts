@@ -8,51 +8,51 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common'
-import { HoleService } from '@/modules/hole/service/hole.service'
-import { CreateHoleDto } from '@/modules/hole/dto/create.dto'
+import { PostService } from '@/modules/post/service/post.service'
+import { CreatePostDto } from '@/modules/post/dto/create.dto'
 import { User } from '@/common/decorator/user.decorator'
 import { IUser } from '@/app'
 import {
   CreateCommentDto,
   CreateCommentReplyDto,
-  GetHoleCommentDto,
+  GetPostCommentDto,
   LikeCommentDto,
-} from '@/modules/hole/dto/comment.dto'
+} from '@/modules/post/dto/comment.dto'
 import {
-  DeleteHoleDto,
-  GetHoleDetailQuery,
-  GetHoleListQuery,
-} from '@/modules/hole/dto/hole.dto'
-import { GetRepliesQuery, LikeReplyDto } from '@/modules/hole/dto/replies.dto'
+  DeletePostDto,
+  GetPostDetailQuery,
+  GetPostListQuery,
+} from '@/modules/post/dto/post.dto'
+import { GetRepliesQuery, LikeReplyDto } from '@/modules/post/dto/replies.dto'
 import { Roles } from '@/common/decorator/roles.decorator'
-import { PostVoteDto } from '@/modules/hole/dto/vote.dto'
-import { SearchQuery } from '@/modules/hole/dto/search.dto'
-import { HolePostThrottleGuard } from '@/modules/hole/guard/post-throttle.guard'
+import { PostVoteDto } from '@/modules/post/dto/vote.dto'
+import { SearchQuery } from '@/modules/post/dto/search.dto'
+import { PostPostThrottleGuard } from '@/modules/post/guard/post-throttle.guard'
 
 @Roles()
-@Controller('hole')
-export class HoleController {
+@Controller('post')
+export class PostController {
   @Inject()
-  private readonly service: HoleService
+  private readonly service: PostService
 
   @Get('/list')
-  getList(@Query() query: GetHoleListQuery, @User() user: IUser) {
+  getList(@Query() query: GetPostListQuery, @User() user: IUser) {
     return this.service.getList(query, user)
   }
 
   @Get('/detail')
-  getDetail(@Query() query: GetHoleDetailQuery, @User() user: IUser) {
+  getDetail(@Query() query: GetPostDetailQuery, @User() user: IUser) {
     return this.service.getDetail(query, user)
   }
 
-  @UseGuards(HolePostThrottleGuard)
+  // @UseGuards(PostPostThrottleGuard)
   @Post('/create')
-  create(@Body() body: CreateHoleDto, @User() user: IUser) {
+  create(@Body() body: CreatePostDto, @User() user: IUser) {
     return this.service.create(body, user)
   }
 
   @Delete('/delete')
-  delete(@Body() body: DeleteHoleDto, @User() user: IUser) {
+  delete(@Body() body: DeletePostDto, @User() user: IUser) {
     return this.service.delete(body, user)
   }
 
@@ -67,12 +67,12 @@ export class HoleController {
   }
 
   @Post('/like')
-  likeHole(@Body() dto: GetHoleDetailQuery, @User() user: IUser) {
-    return this.service.likeHole(dto, user)
+  likePost(@Body() dto: GetPostDetailQuery, @User() user: IUser) {
+    return this.service.likePost(dto, user)
   }
 
   @Delete('/like')
-  deleteLike(@Body() dto: GetHoleDetailQuery, @User() user: IUser) {
+  deleteLike(@Body() dto: GetPostDetailQuery, @User() user: IUser) {
     return this.service.deleteLike(dto, user)
   }
 
@@ -82,7 +82,7 @@ export class HoleController {
   }
 
   @Get('/comment')
-  getComment(@Query() query: GetHoleCommentDto, @User() user: IUser) {
+  getComment(@Query() query: GetPostCommentDto, @User() user: IUser) {
     return this.service.getComment(query, user)
   }
 

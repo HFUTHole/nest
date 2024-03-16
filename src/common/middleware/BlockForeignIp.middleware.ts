@@ -9,7 +9,7 @@ export class BlockForeignIpMiddleware implements NestMiddleware {
   @Inject(WINSTON_MODULE_NEST_PROVIDER)
   private readonly logger: LoggerService
 
-  private readonly blacklistSetName = 'hfuthole'
+  private readonly blacklistSetName = 'hfutpost'
 
   private readonly Searcher = IP2Region.newWithFileOnly('ip2region.xdb')
 

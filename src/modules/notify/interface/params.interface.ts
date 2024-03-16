@@ -6,7 +6,7 @@ export interface CreateInteractionNotifyInterface {
   recipientId: number
   body: string
   reqUser: IUser
-  holeId?: number
+  postId?: number
   commentId?: string
   replyId?: string
 }

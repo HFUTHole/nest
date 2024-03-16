@@ -3,18 +3,18 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '@/entity/user/user.entity'
 import { FindOneOptions, Repository } from 'typeorm'
 import { createResponse } from '@/utils/create'
-import { IProcessLikeOptions, ILikeableEntity } from '@/modules/hole/hole.types'
+import { IProcessLikeOptions, ILikeableEntity } from '@/modules/post/post.types'
 import {
-  GetHoleDetailQuery,
-  GetHoleListQuery,
-  HoleListMode,
-} from '@/modules/hole/dto/hole.dto'
-import { Vote } from '@/entity/hole/vote.entity'
-import { VoteItem } from '@/entity/hole/VoteItem.entity'
+  GetPostDetailQuery,
+  GetPostListQuery,
+  PostListMode,
+} from '@/modules/post/dto/post.dto'
+import { Vote } from '@/entity/post/vote.entity'
+import { VoteItem } from '@/entity/post/VoteItem.entity'
 import { IUser } from '@/app'
 import { paginate, PaginationTypeEnum } from 'nestjs-typeorm-paginate'
-import { initHoleDateSelect, resolvePaginationHoleData } from '@/modules/hole/hole.utils'
-import { Hole } from '@/entity/hole/hole.entity'
+import { initPostDateSelect, resolvePaginationPostData } from '@/modules/post/post.utils'
+import { Post } from '@/entity/post/post.entity'
 import { AppConfig } from '@/app.config'
 import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
 import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.entity'
@@ -24,7 +24,7 @@ import { NotifyEventType } from '@/common/enums/notify/notify.enum'
 
 // TODO 解决any类型
 @Injectable()
-export class HoleRepoService {
+export class PostRepoService {
   @InjectRepository(User)
   private readonly userRepo: Repository<User>
 
@@ -34,8 +34,8 @@ export class HoleRepoService {
   @InjectRepository(VoteItem)
   private readonly voteItemRepo: Repository<VoteItem>
 
-  @InjectRepository(Hole)
-  private readonly holeRepo: Repository<Hole>
+  @InjectRepository(Post)
+  private readonly postRepo: Repository<Post>
 
   @InjectRepository(NotifySystemEntity)
   private readonly notifySystemRepo: Repository<NotifySystemEntity>
@@ -60,7 +60,7 @@ export class HoleRepoService {
     type: string
     notifyProps?: Pick<
       CreateInteractionNotifyInterface,
-      'holeId' | 'commentId' | 'replyId'
+      'postId' | 'commentId' | 'replyId'
     >
   }) {
     const isLiked = await repo.findOne({
@@ -169,12 +169,12 @@ export class HoleRepoService {
     return createResponse('取消点赞成功')
   }
 
-  async findVote(dto: GetHoleDetailQuery, reqUser: IUser) {
+  async findVote(dto: GetPostDetailQuery, reqUser: IUser) {
     const vote = await this.voteRepo
       .createQueryBuilder('vote')
       .setFindOptions({
         where: {
-          hole: {
+          post: {
             id: dto.id,
           },
         },
@@ -215,8 +215,8 @@ export class HoleRepoService {
     return vote
   }
 
-  async getList(query: GetHoleListQuery, reqUser: IUser) {
-    const queryBuilder = initHoleDateSelect(this.holeRepo)
+  async getList(query: GetPostListQuery, reqUser: IUser) {
+    const queryBuilder = initPostDateSelect(this.postRepo)
       .loadRelationCountAndMap('voteItems.isVoted', 'voteItems.user', 'isVoted', (qb) =>
         qb.andWhere('isVoted.studentId = :studentId', {
           studentId: reqUser.studentId,
@@ -228,31 +228,18 @@ export class HoleRepoService {
         }),
       )
 
-    // TODO remove
     if (query.category) {
       queryBuilder.where('category.category = :category', {
         category: query.category,
       })
     }
 
-    if (query.classification) {
-      queryBuilder.andWhere('classification.name = :name', {
-        name: query.classification,
-      })
-
-      if (query.subClassification) {
-        queryBuilder.andWhere('subClassification.name = :subName', {
-          subName: query.subClassification,
-        })
-      }
-    }
-
-    if (query.mode === HoleListMode.hot) {
+    if (query.mode === PostListMode.hot) {
       queryBuilder
-        .addSelect(`LOG10(RAND(hole.id)) * RAND() * 100`, 'score')
+        .addSelect(`LOG10(RAND(post.id)) * RAND() * 100`, 'score')
         .orderBy('score', 'DESC')
-    } else if (query.mode === HoleListMode.latest) {
-      queryBuilder.orderBy('hole.createAt', 'DESC')
+    } else if (query.mode === PostListMode.latest) {
+      queryBuilder.orderBy('post.createAt', 'DESC')
     }
 
     const data = await paginate(queryBuilder, {
@@ -261,7 +248,7 @@ export class HoleRepoService {
     })
 
     // TODO 用sql解决，还是得多学学sql啊
-    resolvePaginationHoleData(data, this.appConfig)
+    resolvePaginationPostData(data, this.appConfig)
 
     return data
   }

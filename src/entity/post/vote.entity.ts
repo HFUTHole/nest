@@ -10,8 +10,8 @@ import {
   OneToOne,
 } from 'typeorm'
 import { CommonEntity } from '@/common/entity/common.entity'
-import { Hole } from '@/entity/hole/hole.entity'
-import { VoteItem } from '@/entity/hole/VoteItem.entity'
+import { Post } from '@/entity/post/post.entity'
+import { VoteItem } from '@/entity/post/VoteItem.entity'
 import { User } from '@/entity/user/user.entity'
 
 export enum VoteType {
@@ -36,8 +36,8 @@ export class Vote extends CommonEntity {
   })
   endTime: Date
 
-  @OneToOne(() => Hole, (hole) => hole.vote)
-  hole: Hole
+  @OneToOne(() => Post, (post) => post.vote)
+  post: Post
 
   @ManyToMany(() => User, (user) => user.votes)
   user: User[]

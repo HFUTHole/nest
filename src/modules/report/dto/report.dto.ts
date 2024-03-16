@@ -1,7 +1,7 @@
 import { IsEnum, IsOptional, IsString, Length } from 'class-validator'
 import { ReportType } from '@/entity/report/report.entity'
 import { Limit } from '@/constants/limit'
-import { IsCommentExist, IsHoleExist, IsReplyExist } from '@/modules/hole/dto/utils.dto'
+import { IsCommentExist, IsPostExist, IsReplyExist } from '@/modules/post/dto/utils.dto'
 
 export class ReportDto {
   @IsEnum(ReportType)
@@ -13,9 +13,9 @@ export class ReportDto {
   @IsString()
   reason: string
 
-  @IsHoleExist()
+  @IsPostExist()
   @IsOptional()
-  holeId?: number
+  postId?: number
 
   @IsCommentExist()
   @IsOptional()

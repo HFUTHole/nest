@@ -1,18 +1,9 @@
-import {
-  Column,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-} from 'typeorm'
+import { Column, Entity, JoinTable, ManyToMany, ManyToOne } from 'typeorm'
 import { CommonEntity } from '@/common/entity/common.entity'
-import { NotifyStatus } from '@/common/enums/notify/notify.enum'
 import { User } from '@/entity/user/user.entity'
-import { Hole } from '@/entity/hole/hole.entity'
-import { Comment } from '@/entity/hole/comment.entity'
-import { Reply } from '@/entity/hole/reply.entity'
+import { Post } from '@/entity/post/post.entity'
+import { Comment } from '@/entity/post/comment.entity'
+import { Reply } from '@/entity/post/reply.entity'
 
 @Entity({ name: 'notify_system' })
 export class NotifySystemEntity extends CommonEntity {
@@ -40,8 +31,8 @@ export class NotifySystemEntity extends CommonEntity {
   @JoinTable()
   completedReadingUsers: User[]
 
-  @ManyToOne(() => Hole)
-  hole: Hole
+  @ManyToOne(() => Post)
+  post: Post
 
   @ManyToOne(() => Comment)
   comment: Comment

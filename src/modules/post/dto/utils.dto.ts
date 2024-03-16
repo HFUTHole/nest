@@ -4,7 +4,7 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Hole } from '@/entity/hole/hole.entity'
+import { Post } from '@/entity/post/post.entity'
 import { Repository } from 'typeorm'
 import { createClassValidator } from '@/utils/create'
 import {
@@ -13,26 +13,26 @@ import {
   LoggerService,
   NotFoundException,
 } from '@nestjs/common'
-import { Comment } from '@/entity/hole/comment.entity'
-import { Vote } from '@/entity/hole/vote.entity'
+import { Comment } from '@/entity/post/comment.entity'
+import { Vote } from '@/entity/post/vote.entity'
 import { AppConfig } from '@/app.config'
 import axios from 'axios'
 import { InjectLogger } from '@/utils/decorator'
-import { Reply } from '@/entity/hole/reply.entity'
-import { VoteItem } from '@/entity/hole/VoteItem.entity'
-import { HoleCategoryEntity } from '@/entity/hole/category/HoleCategory.entity'
-import { GetHoleDetailQuery, GetHoleListQuery } from '@/modules/hole/dto/hole.dto'
+import { Reply } from '@/entity/post/reply.entity'
+import { VoteItem } from '@/entity/post/VoteItem.entity'
+import { PostCategoryEntity } from '@/entity/post/category/PostCategory.entity'
+import { GetPostDetailQuery, GetPostListQuery } from '@/modules/post/dto/post.dto'
 
 @ValidatorConstraint({ async: true })
 @Injectable()
-export class IsHoleExistConstraint implements ValidatorConstraintInterface {
-  @InjectRepository(Hole)
-  private readonly holeRepo: Repository<Hole>
+export class IsPostExistConstraint implements ValidatorConstraintInterface {
+  @InjectRepository(Post)
+  private readonly postRepo: Repository<Post>
 
   async validate(id: number) {
-    const hole = await this.holeRepo.findOneBy({ id })
+    const post = await this.postRepo.findOneBy({ id })
 
-    if (!hole) {
+    if (!post) {
       throw new NotFoundException('树洞不存在哦')
     }
 
@@ -47,13 +47,13 @@ export class IsCommentExistConstraint implements ValidatorConstraintInterface {
   private readonly commentRepo: Repository<Comment>
 
   async validate(id: string) {
-    const hole = await this.commentRepo.findOne({
+    const post = await this.commentRepo.findOne({
       where: {
         id,
       },
     })
 
-    if (!hole) {
+    if (!post) {
       throw new NotFoundException('评论不存在')
     }
 
@@ -68,13 +68,13 @@ export class IsVoteExistConstraint implements ValidatorConstraintInterface {
   private readonly voteRepo: Repository<Vote>
 
   async validate(id: string) {
-    const hole = await this.voteRepo.findOne({
+    const post = await this.voteRepo.findOne({
       where: {
         id,
       },
     })
 
-    if (!hole) {
+    if (!post) {
       throw new NotFoundException('投票不存在')
     }
 
@@ -154,15 +154,15 @@ export class IsVoteItemExistConstraint {
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class IsCorrectSubCategoryExistConstraint {
-  @InjectRepository(HoleCategoryEntity)
-  private readonly holeCategoryRepo: Repository<HoleCategoryEntity>
+  @InjectRepository(PostCategoryEntity)
+  private readonly postCategoryRepo: Repository<PostCategoryEntity>
 
   async validate(name: string, validationArguments: ValidationArguments) {
-    const categoryName = (validationArguments.object as GetHoleListQuery)[
+    const categoryName = (validationArguments.object as GetPostListQuery)[
       'classification'
     ]
 
-    const category = await this.holeCategoryRepo.findOne({
+    const category = await this.postCategoryRepo.findOne({
 
       where: {
         name: categoryName,
@@ -179,7 +179,7 @@ export const IsVoteExist = createClassValidator(IsVoteExistConstraint)
 
 export const IsVoteItemExist = createClassValidator(IsVoteItemExistConstraint)
 
-export const IsHoleExist = createClassValidator(IsHoleExistConstraint)
+export const IsPostExist = createClassValidator(IsPostExistConstraint)
 
 export const IsCommentExist = createClassValidator(IsCommentExistConstraint)
 

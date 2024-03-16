@@ -9,15 +9,16 @@ import {
   JoinColumn,
 } from 'typeorm'
 import { AutoIncIdEntity } from '@/common/entity/common.entity'
-import { Hole } from '@/entity/hole/hole.entity'
-import { Comment } from '@/entity/hole/comment.entity'
-import { Reply } from '@/entity/hole/reply.entity'
+import { Post } from '@/entity/post/post.entity'
+import { Comment } from '@/entity/post/comment.entity'
+import { Reply } from '@/entity/post/reply.entity'
 import { Role } from '@/modules/role/role.constant'
-import { Vote } from '@/entity/hole/vote.entity'
-import { VoteItem } from '@/entity/hole/VoteItem.entity'
+import { Vote } from '@/entity/post/vote.entity'
+import { VoteItem } from '@/entity/post/VoteItem.entity'
 import { Report } from '@/entity/report/report.entity'
 import { ConversationEntity } from '@/entity/chat/conversation.entity'
 import { UserLevelEntity } from '@/entity/user/level.entity'
+import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
 
 export enum Gender {
   Male = '男',
@@ -62,8 +63,8 @@ export class User extends AutoIncIdEntity {
   })
   avatar?: string
 
-  @OneToMany(() => Hole, (hole) => hole.user, { cascade: true })
-  holes: Hole[]
+  @OneToMany(() => Post, (post) => post.user, { cascade: true })
+  posts: Post[]
 
   @OneToMany(() => Comment, (comment) => comment.user)
   comments: Comment[]
@@ -75,9 +76,9 @@ export class User extends AutoIncIdEntity {
   @OneToMany(() => Reply, (reply) => reply.replyUser)
   repliedReply: Reply[]
 
-  @ManyToMany(() => Hole, (hole) => hole.favoriteUsers, { cascade: true })
+  @ManyToMany(() => Post, (post) => post.favoriteUsers, { cascade: true })
   @JoinTable()
-  favoriteHole: Hole[]
+  favoritePost: Post[]
 
   @ManyToMany(() => Comment, (comment) => comment.favoriteUsers, { cascade: true })
   @JoinTable()

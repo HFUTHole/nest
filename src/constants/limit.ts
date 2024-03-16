@@ -1,15 +1,15 @@
 export const Limit = {
-  holeBodyMaxLength: 4096,
-  holeMaxImgLength: 4,
-  holeVoteMaxLength: 5,
-  holeVoteOptionLength: 20,
-  holeTagsMaxLength: 5,
-  holeCommentBodyMaxLength: 1000,
-  holeCommentBodyMinLength: 1,
+  postBodyMaxLength: 4096,
+  postMaxImgLength: 4,
+  postVoteMaxLength: 5,
+  postVoteOptionLength: 20,
+  postTagsMaxLength: 5,
+  postCommentBodyMaxLength: 1000,
+  postCommentBodyMinLength: 1,
   commentMaxImgLength: 2,
   reportReasonMaxLength: 500,
   reportReasonMinLength: 10,
-  hole: {
+  post: {
     maxInfoCommentBodyLength: 30,
     titleMaxLength: 15,
   },
@@ -18,7 +18,7 @@ export const Limit = {
     maxUsernameLength: 10,
   },
   level: {
-    hole: 5,
+    post: 5,
     comment: 3,
     reply: 3,
   },

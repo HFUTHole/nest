@@ -10,16 +10,15 @@ import {
   OneToMany,
   OneToOne,
 } from 'typeorm'
-import { Comment } from '@/entity/hole/comment.entity'
+import { Comment } from '@/entity/post/comment.entity'
 import { AutoIncIdEntity } from '@/common/entity/common.entity'
-import { Tags } from '@/entity/hole/tags.entity'
-import { Vote } from '@/entity/hole/vote.entity'
+import { Tags } from '@/entity/post/tags.entity'
+import { Vote } from '@/entity/post/vote.entity'
 import { Report } from '@/entity/report/report.entity'
-import { ArticleCategory } from '@/entity/article_category/ArticleCategory.entity'
-import { HoleCategoryEntity } from '@/entity/hole/category/HoleCategory.entity'
+import { PostCategoryEntity } from '@/entity/post/category/PostCategory.entity'
 
 @Entity()
-export class Hole extends AutoIncIdEntity {
+export class Post extends AutoIncIdEntity {
   @Index({
     fulltext: true,
   })
@@ -44,17 +43,17 @@ export class Hole extends AutoIncIdEntity {
   })
   bilibili: string
 
-  @OneToMany(() => Comment, (comment) => comment.hole)
+  @OneToMany(() => Comment, (comment) => comment.post)
   comments: Comment[]
 
-  @ManyToOne(() => User, (user) => user.holes)
+  @ManyToOne(() => User, (user) => user.posts)
   user: User
 
-  @ManyToMany(() => Tags, (tags) => tags.holes, { eager: true, cascade: true })
+  @ManyToMany(() => Tags, (tags) => tags.posts, { eager: true, cascade: true })
   @JoinTable()
   tags: Tags[]
 
-  @OneToOne(() => Vote, (vote) => vote.hole, { cascade: true, eager: true })
+  @OneToOne(() => Vote, (vote) => vote.post, { cascade: true, eager: true })
   @JoinColumn()
   vote: Vote
 
@@ -65,22 +64,19 @@ export class Hole extends AutoIncIdEntity {
   @Index()
   favoriteCounts: number
 
-  @ManyToMany(() => User, (user) => user.favoriteHole)
+  @ManyToMany(() => User, (user) => user.favoritePost)
   favoriteUsers: User[]
 
-  @OneToMany(() => Report, (report) => report.hole)
+  @OneToMany(() => Report, (report) => report.post)
   reports: Report[]
 
-  // TODO 删掉这玩意
-  @ManyToOne(() => ArticleCategory, (articleCategory) => articleCategory.holes, {
+  @ManyToOne(() => PostCategoryEntity, (category) => category.posts, {
     cascade: true,
   })
-  category: ArticleCategory
+  category: PostCategoryEntity
 
-  @ManyToOne(() => HoleCategoryEntity, (category) => category.holes, { cascade: true })
-  classification: HoleCategoryEntity
 
-  // Use loadRelationCountAndMap to get whether user liked this hole, it will always return 0 or 1 but you can use it as boolean
+  // Use loadRelationCountAndMap to get whether user liked this post, it will always return 0 or 1 but you can use it as boolean
   // ref: https://pietrzakadrian.com/blog/virtual-column-solutions-for-typeorm#4-loadrelationcountandmap-method
   readonly isLiked?: number
 

@@ -1,5 +1,5 @@
 import { IsOptional, IsString, Length } from 'class-validator'
-import { IsValidPostImgs } from '@/modules/hole/dto/utils.dto'
+import { IsValidPostImgs } from '@/modules/post/dto/utils.dto'
 import { Limit } from '@/constants/limit'
 import { IsUsernameExist } from '@/modules/user/dtos/utils.dto'
 

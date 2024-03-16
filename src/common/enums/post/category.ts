@@ -1,4 +1,4 @@
-export enum HoleClassification {
+export enum PostClassification {
   hfutLife = '日常',
   littleCreature = '小动物',
   loveStory = '情感分享',

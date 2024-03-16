@@ -1,14 +1,14 @@
-export enum HoleDetailCommentMode {
+export enum PostDetailCommentMode {
   all = 'all',
   author = 'author',
 }
 
-export enum HoleDetailCommentOrderMode {
+export enum PostDetailCommentOrderMode {
   favorite = 'favorite',
   time = 'time',
 }
 
-export enum HoleReplyOrderMode {
+export enum PostReplyOrderMode {
   favorite = 'favorite',
   time = 'time',
 }

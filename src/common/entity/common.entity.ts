@@ -18,11 +18,8 @@ export const snowflake = new SnowflakeIdv1({
 @Entity()
 export class CommonEntity {
   @Index()
-  @PrimaryColumn({
-    type: 'bigint',
-    unsigned: true,
-  })
-  id: string | number = snowflake.NextBigId().toString()
+  @PrimaryGeneratedColumn('uuid')
+  id: string
 
   @CreateDateColumn({
     type: 'timestamp',

@@ -1,4 +1,5 @@
 export interface IUser {
+  id: number
   studentId: number
   iat: number
   exp: number

@@ -1,12 +1,12 @@
 import { Column, Entity, JoinTable, ManyToMany, ManyToOne } from 'typeorm'
 import { CommonEntity } from '@/common/entity/common.entity'
-import { Hole } from '@/entity/hole/hole.entity'
-import { Comment } from '@/entity/hole/comment.entity'
-import { Reply } from '@/entity/hole/reply.entity'
+import { Post } from '@/entity/post/post.entity'
+import { Comment } from '@/entity/post/comment.entity'
+import { Reply } from '@/entity/post/reply.entity'
 import { User } from '@/entity/user/user.entity'
 
 export enum ReportType {
-  hole = 'hole',
+  post = 'post',
   comment = 'comment',
   reply = 'reply',
 }
@@ -22,8 +22,8 @@ export class Report extends CommonEntity {
   @Column()
   reason: string
 
-  @ManyToOne(() => Hole, (hole) => hole.reports, { cascade: true })
-  hole: Hole
+  @ManyToOne(() => Post, (post) => post.reports, { cascade: true })
+  post: Post
 
   @ManyToOne(() => Comment, (comment) => comment.reports, { cascade: true })
   comment: Comment

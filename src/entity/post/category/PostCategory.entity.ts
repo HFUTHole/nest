@@ -1,12 +1,13 @@
-import { Column, Entity, OneToMany } from 'typeorm'
+import { Column, Entity, OneToMany, Unique } from 'typeorm'
 import { CommonEntity } from '@/common/entity/common.entity'
-import { Hole } from '@/entity/hole/hole.entity'
+import { Post } from '@/entity/post/post.entity'
 import { SchoolAreaEnum } from '@/common/enums/school-area.enum'
 
-@Entity({ name: 'hole_category' })
-export class HoleCategoryEntity extends CommonEntity {
+@Entity({ name: 'post_category' })
+export class PostCategoryEntity extends CommonEntity {
   @Column({
     comment: '名字',
+    unique: true
   })
   name: string
 
@@ -30,6 +31,6 @@ export class HoleCategoryEntity extends CommonEntity {
   })
   bgUrl: string
 
-  @OneToMany(() => Hole, (hole) => hole.classification)
-  holes: Hole[]
+  @OneToMany(() => Post, (post) => post.category)
+  posts: Post[]
 }

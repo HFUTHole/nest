@@ -5,9 +5,9 @@ import { Repository } from 'typeorm'
 import { ReportDto } from '@/modules/report/dto/report.dto'
 import { IUser } from '@/app'
 import { User } from '@/entity/user/user.entity'
-import { Hole } from '@/entity/hole/hole.entity'
-import { Comment } from '@/entity/hole/comment.entity'
-import { Reply } from '@/entity/hole/reply.entity'
+import { Post } from '@/entity/post/post.entity'
+import { Comment } from '@/entity/post/comment.entity'
+import { Reply } from '@/entity/post/reply.entity'
 import { createResponse } from '@/utils/create'
 
 @Injectable()
@@ -18,8 +18,8 @@ export class ReportService {
   @InjectRepository(User)
   private readonly userRepo: Repository<User>
 
-  @InjectRepository(Hole)
-  private readonly holeRepo: Repository<Hole>
+  @InjectRepository(Post)
+  private readonly postRepo: Repository<Post>
 
   @InjectRepository(Comment)
   private readonly commentRepo: Repository<Comment>
@@ -53,9 +53,9 @@ export class ReportService {
 
     report.user.push(user)
 
-    if (dto.type === ReportType.hole) {
-      const hole = await this.holeRepo.findOneBy({ id: dto.holeId })
-      report.hole = hole
+    if (dto.type === ReportType.post) {
+      const post = await this.postRepo.findOneBy({ id: dto.postId })
+      report.post = post
     } else if (dto.type === ReportType.comment) {
       const comment = await this.commentRepo.findOneBy({ id: dto.commentId })
       report.comment = comment

@@ -1,12 +1,12 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm'
+import { Column, Entity,  ManyToOne } from 'typeorm'
 import { CommonEntity } from '@/common/entity/common.entity'
-import { NotifyEventType, NotifyStatus } from '@/common/enums/notify/notify.enum'
+import { InteractionNotifyTargetType, NotifyEventType } from '@/common/enums/notify/notify.enum'
 import { User } from '@/entity/user/user.entity'
-import { Hole } from '@/entity/hole/hole.entity'
-import { Comment } from '@/entity/hole/comment.entity'
-import { Reply } from '@/entity/hole/reply.entity'
+import { Post } from '@/entity/post/post.entity'
+import { Comment } from '@/entity/post/comment.entity'
+import { Reply } from '@/entity/post/reply.entity'
 
-@Entity({ name: 'notify_interaction' })
+@Entity()
 export class NotifyInteractionEntity extends CommonEntity {
   @Column({
     type: 'boolean',
@@ -23,9 +23,10 @@ export class NotifyInteractionEntity extends CommonEntity {
   type: NotifyEventType
 
   @Column({
-    comment: '通知内容',
+    type: 'enum',
+    enum: InteractionNotifyTargetType,
   })
-  body: string
+  target: InteractionNotifyTargetType
 
   @ManyToOne(() => User)
   creator: User
@@ -33,8 +34,8 @@ export class NotifyInteractionEntity extends CommonEntity {
   @ManyToOne(() => User)
   user: User
 
-  @ManyToOne(() => Hole)
-  hole: Hole
+  @ManyToOne(() => Post)
+  post: Post
 
   @ManyToOne(() => Comment)
   comment: Comment

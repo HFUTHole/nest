@@ -1,6 +1,6 @@
 import { CommonEntity } from '@/common/entity/common.entity'
 import { Column, Entity, ManyToMany, ManyToOne } from 'typeorm'
-import { Vote } from '@/entity/hole/vote.entity'
+import { Vote } from '@/entity/post/vote.entity'
 import { User } from '@/entity/user/user.entity'
 
 @Entity()

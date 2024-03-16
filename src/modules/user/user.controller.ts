@@ -28,14 +28,14 @@ export class UserController {
     return this.service.editProfile(dto, user)
   }
 
-  @Get('hole/favorite')
-  getFavoriteHoles(@Query() query: PaginateQuery, @User() user: IUser) {
-    return this.service.getFavoriteHoles(query, user)
+  @Get('post/favorite')
+  getFavoritePosts(@Query() query: PaginateQuery, @User() user: IUser) {
+    return this.service.getFavoritePosts(query, user)
   }
 
-  @Get('/hole/list')
-  getHoleList(@Query() query: PaginateQuery, @User() user: IUser) {
-    return this.service.getHoleList(query, user)
+  @Get('/post/list')
+  getPostList(@Query() query: PaginateQuery, @User() user: IUser) {
+    return this.service.getPostList(query, user)
   }
 
   @Get('/comments')

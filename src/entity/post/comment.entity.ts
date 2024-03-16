@@ -9,9 +9,9 @@ import {
   ManyToOne,
   OneToMany,
 } from 'typeorm'
-import { Hole } from '@/entity/hole/hole.entity'
+import { Post } from '@/entity/post/post.entity'
 import { User } from '@/entity/user/user.entity'
-import { Reply } from '@/entity/hole/reply.entity'
+import { Reply } from '@/entity/post/reply.entity'
 import { Report } from '@/entity/report/report.entity'
 
 @Entity()
@@ -22,8 +22,8 @@ export class Comment extends CommonEntity {
   @Column('text', { comment: '留言内容' })
   body: string
 
-  @ManyToOne(() => Hole, (hole) => hole.comments, { cascade: true })
-  hole: Hole
+  @ManyToOne(() => Post, (post) => post.comments, { cascade: true })
+  post: Post
 
   @ManyToOne(() => User, (user) => user.comments, { cascade: true })
   user: User

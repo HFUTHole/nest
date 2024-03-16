@@ -6,11 +6,11 @@ import { IUser } from '@/app'
 import { NotifyService } from '@/modules/notify/notify.service'
 import { createResponse } from '@/utils/create'
 import { PaginateQuery } from '@/common/dtos/paginate.dto'
-import { Hole } from '@/entity/hole/hole.entity'
-import { Comment } from '@/entity/hole/comment.entity'
+import { Post } from '@/entity/post/post.entity'
+import { Comment } from '@/entity/post/comment.entity'
 import { PaginationTypeEnum, paginate } from 'nestjs-typeorm-paginate'
 import { AppConfig } from '@/app.config'
-import { resolvePaginationHoleData, initHoleDateSelect } from '@/modules/hole/hole.utils'
+import { resolvePaginationPostData, initPostDateSelect } from '@/modules/post/post.utils'
 import { EditProfileDto } from '@/modules/user/dtos/profile.dto'
 import { resolvePaginationCommentData } from '@/modules/user/user.utils'
 
@@ -19,8 +19,8 @@ export class UserService {
   @InjectRepository(User)
   private readonly userRepository: Repository<User>
 
-  @InjectRepository(Hole)
-  private readonly holeRepo: Repository<Hole>
+  @InjectRepository(Post)
+  private readonly postRepo: Repository<Post>
 
   @InjectRepository(Comment)
   private readonly commentRepo: Repository<Comment>
@@ -71,8 +71,8 @@ export class UserService {
     return createResponse('修改个人信息成功')
   }
 
-  async getFavoriteHoles(query: PaginateQuery, reqUser: IUser) {
-    const queryBuilder = initHoleDateSelect(this.holeRepo)
+  async getFavoritePosts(query: PaginateQuery, reqUser: IUser) {
+    const queryBuilder = initPostDateSelect(this.postRepo)
       .where('favoriteUser.studentId = :studentId', { studentId: reqUser.studentId })
       .loadRelationCountAndMap('voteItems.isVoted', 'voteItems.user', 'isVoted', (qb) =>
         qb.andWhere('isVoted.studentId = :studentId', {
@@ -84,20 +84,20 @@ export class UserService {
           studentId: reqUser.studentId,
         }),
       )
-      .orderBy('hole.createAt', 'DESC')
+      .orderBy('post.createAt', 'DESC')
 
     const data = await paginate(queryBuilder, {
       ...query,
       paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
     })
 
-    resolvePaginationHoleData(data, this.appConfig)
+    resolvePaginationPostData(data, this.appConfig)
 
     return createResponse('获取用户点赞树洞成功', data)
   }
 
-  async getHoleList(query: PaginateQuery, reqUser: IUser) {
-    const queryBuilder = initHoleDateSelect(this.holeRepo)
+  async getPostList(query: PaginateQuery, reqUser: IUser) {
+    const queryBuilder = initPostDateSelect(this.postRepo)
       .where('user.studentId = :studentId', { studentId: reqUser.studentId })
       .loadRelationCountAndMap('voteItems.isVoted', 'voteItems.user', 'isVoted', (qb) =>
         qb.andWhere('isVoted.studentId = :studentId', {
@@ -109,14 +109,14 @@ export class UserService {
           studentId: reqUser.studentId,
         }),
       )
-      .orderBy('hole.createAt', 'DESC')
+      .orderBy('post.createAt', 'DESC')
 
     const data = await paginate(queryBuilder, {
       ...query,
       paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
     })
 
-    resolvePaginationHoleData(data, this.appConfig)
+    resolvePaginationPostData(data, this.appConfig)
 
     return createResponse('获取用户树洞成功', data)
   }
@@ -125,7 +125,7 @@ export class UserService {
     const queryBuilder = this.commentRepo
       .createQueryBuilder('comment')
       .leftJoinAndSelect('comment.user', 'user')
-      .leftJoinAndSelect('comment.hole', 'hole')
+      .leftJoinAndSelect('comment.post', 'post')
       .where('user.studentId = :studentId', { studentId: reqUser.studentId })
       .orderBy('comment.createAt', 'DESC')
 

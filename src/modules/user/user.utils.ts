@@ -1,8 +1,8 @@
 import { ellipsisBody } from '@/utils/string'
 import { IPaginationMeta, Pagination } from 'nestjs-typeorm-paginate'
-import { Comment } from '@/entity/hole/comment.entity'
+import { Comment } from '@/entity/post/comment.entity'
 import { User } from '@/entity/user/user.entity'
-import { Hole } from '@/entity/hole/hole.entity'
+import { Post } from '@/entity/post/post.entity'
 
 export const resolvePaginationCommentData = (
   data: Pagination<Comment, IPaginationMeta>,
@@ -15,9 +15,9 @@ export const resolvePaginationCommentData = (
       avatar: item.user.avatar,
     } as User
 
-    item.hole = {
-      id: item.hole.id,
-      imgs: item.hole.imgs,
-    } as Hole
+    item.post = {
+      id: item.post.id,
+      imgs: item.post.imgs,
+    } as Post
   })
 }

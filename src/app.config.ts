@@ -11,7 +11,7 @@ export class AppConfig {
     expired: string
   }
 
-  hole!: {
+  post!: {
     oneDayLimitCreateCount: number
   }
 

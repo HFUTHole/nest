@@ -1,4 +1,4 @@
-export enum ArticleCategoryEnum {
+export enum PostCategoryEnum {
   hfutLife = '肥工日常',
   taoSecondHand = '淘二手',
   lostAndFound = '失物招领',

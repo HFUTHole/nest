@@ -221,7 +221,7 @@ export class PostService {
       bilibili: dto.bilibili,
       title: dto.title,
       category: {
-        id: dto.category
+        id: dto.category,
       },
     })
 
@@ -659,5 +659,11 @@ export class PostService {
     resolvePaginationPostData(data, this.appConfig)
 
     return createResponse('查询成功', data)
+  }
+
+  async getCategories() {
+    const categories = await this.postCategoryRepo.find()
+
+    return createResponse('获取列表成功', categories)
   }
 }

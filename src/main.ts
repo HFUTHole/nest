@@ -6,22 +6,24 @@ import { useContainer } from 'class-validator'
 import { getRepositoryToken } from '@nestjs/typeorm'
 import { PostCategoryEntity } from '@/entity/post/category/PostCategory.entity'
 import { Repository } from 'typeorm'
+import { Category } from '@/constants/category'
 
 async function initPostCategories(app: INestApplication) {
-  const categoryRepo = app.get<Repository<PostCategoryEntity>>(getRepositoryToken(PostCategoryEntity))
-  const categories = await categoryRepo.find({
+  const categoryRepo = app.get<Repository<PostCategoryEntity>>(
+    getRepositoryToken(PostCategoryEntity),
+  )
+  const categories = await categoryRepo.find({})
 
-  })
   if (categories.length) {
     return
   }
 
-  const savedCategories  = categoryRepo.create([
-    {
-      name: '1',
-      description: '1',
-      bgUrl: '1',
-    }
+  const savedCategories = categoryRepo.create([
+    ...Category.map((item) => ({
+      name: item.name,
+      description: item.description,
+      bgUrl: item.url,
+    })),
   ])
 
   await categoryRepo.save(savedCategories)

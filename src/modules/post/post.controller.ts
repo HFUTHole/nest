@@ -120,4 +120,9 @@ export class PostController {
   search(@Query() query: SearchQuery) {
     return this.service.search(query)
   }
+
+  @Get('/categories')
+  getCategories() {
+    return this.service.getCategories()
+  }
 }

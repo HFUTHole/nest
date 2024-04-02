@@ -63,7 +63,6 @@ export class CreateCommentDto {
 
 export class CreateCommentReplyDto {
   @IsCommentExist()
-  @Length(15, 16)
   @IsString()
   @IsOptional()
   commentId?: string

@@ -7,7 +7,7 @@ import { SchoolAreaEnum } from '@/common/enums/school-area.enum'
 export class PostCategoryEntity extends CommonEntity {
   @Column({
     comment: '名字',
-    unique: true
+    unique: true,
   })
   name: string
 
@@ -16,14 +16,6 @@ export class PostCategoryEntity extends CommonEntity {
     type: 'text',
   })
   description: string
-
-  @Column({
-    comment: '校区',
-    type: 'enum',
-    enum: SchoolAreaEnum,
-    nullable: true
-  })
-  area: SchoolAreaEnum
 
   @Column({
     comment: '背景图片',

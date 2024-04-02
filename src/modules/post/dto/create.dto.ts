@@ -3,7 +3,8 @@ import {
   IsArray,
   IsEnum,
   IsOptional,
-  IsString, IsUUID,
+  IsString,
+  IsUUID,
   Length,
   MaxLength,
   Validate,
@@ -12,7 +13,7 @@ import {
 import { Limit } from '@/constants/limit'
 import { IsValidPostImgs } from '@/modules/post/dto/utils.dto'
 import { VoteType } from '@/entity/post/vote.entity'
-import {  PostCategoryEnum } from '@/common/enums/article_category/category'
+import { PostCategoryEnum } from '@/common/enums/article_category/category'
 import { PostClassification } from '@/common/enums/post/category'
 
 class Vote {
@@ -38,7 +39,7 @@ export class CreatePostDto {
   @IsString()
   body: string
 
-  @IsValidPostImgs()
+  // @IsValidPostImgs()
   @ArrayMaxSize(Limit.postMaxImgLength, {
     message: `最多只能上传${Limit.postMaxImgLength}张图片哦`,
   })

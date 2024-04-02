@@ -75,7 +75,7 @@ export class PostRepoService {
       },
     } as FindOneOptions<T>)
 
-    if (isLiked) {
+    if (isLiked.favoriteUsers.length) {
       throw new ConflictException('你已经点赞过了')
     }
 
@@ -225,6 +225,11 @@ export class PostRepoService {
       .loadRelationCountAndMap('vote.isVoted', 'vote.user', 'isVoted', (qb) =>
         qb.andWhere('isVoted.studentId = :studentId', {
           studentId: reqUser.studentId,
+        }),
+      )
+      .loadRelationCountAndMap('post.isLiked', 'post.favoriteUsers', 'isLiked', (qb) =>
+        qb.andWhere('isLiked.id = :id', {
+          id: reqUser.id,
         }),
       )
 

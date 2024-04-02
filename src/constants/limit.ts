@@ -1,6 +1,6 @@
 export const Limit = {
   postBodyMaxLength: 4096,
-  postMaxImgLength: 4,
+  postMaxImgLength: 9,
   postVoteMaxLength: 5,
   postVoteOptionLength: 20,
   postTagsMaxLength: 5,

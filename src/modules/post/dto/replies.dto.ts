@@ -1,5 +1,5 @@
 import { PaginateQuery } from '@/common/dtos/paginate.dto'
-import { IsEnum, IsOptional, IsString } from 'class-validator'
+import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator'
 import { IsCommentExist, IsReplyExist } from '@/modules/post/dto/utils.dto'
 import { PostReplyOrderMode } from '@/modules/post/post.constant'
 
@@ -20,9 +20,12 @@ export class GetRepliesQuery extends PaginateQuery {
   @IsString()
   id: string
 
-  @IsEnum(PostReplyOrderMode)
+  @IsCommentExist({
+    each: true,
+  })
+  @IsArray()
   @IsOptional()
-  order?: PostReplyOrderMode = PostReplyOrderMode.favorite
+  filterReplyIds?: string[]
 
   @IsReplyExist()
   @IsString()

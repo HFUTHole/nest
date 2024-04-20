@@ -312,7 +312,12 @@ export class PostService {
       .createQueryBuilder('comment')
       .setFindOptions({
         relations: { user: true, replies: { user: true, replyUser: true } },
-        order,
+        order: {
+          ...order,
+          replies: {
+            favoriteCounts: 'DESC',
+          },
+        },
         where: {
           post: { id: dto.id },
           ...(dto.mode === PostDetailCommentMode.author && {
@@ -359,7 +364,7 @@ export class PostService {
 
     // TODO use queryBuilder to solve this problem
     ;(data as any).items = data.items.map((item) => {
-      item.replies = item.replies.slice(0, 2)
+      item.replies = item.replies.slice(0, 1)
       return item
     })
 
@@ -449,41 +454,16 @@ export class PostService {
   }
 
   async getReplies(query: GetRepliesQuery, reqUser: IUser) {
-    const isFavoriteOrder = query.order === PostReplyOrderMode.favorite
-    const commentQuery = await this.commentRepo
-      .createQueryBuilder('comment')
-      .setFindOptions({
-        where: {
-          id: query.id,
-        },
-        relations: {
-          user: true,
-        },
-        select: {
-          user: {
-            username: true,
-            avatar: true,
-          },
-        },
-      })
-
-    addCommentIsLiked(commentQuery, reqUser)
-
-    const comment = await commentQuery.getOne()
-
     const queryBuilder = this.replyRepo.createQueryBuilder('reply').setFindOptions({
       relations: {
         user: true,
         replyUser: true,
       },
       where: {
+        id: Not(query.replyId),
         comment: {
           id: query.id,
         },
-        ...(query.replyId && { id: Not(query.replyId) }),
-      },
-      order: {
-        ...(isFavoriteOrder ? { favoriteCounts: 'DESC' } : { createAt: 'ASC' }),
       },
     })
 
@@ -508,6 +488,10 @@ export class PostService {
 
       const replyBuilder = this.replyRepo.createQueryBuilder('reply').setFindOptions({
         relations: { user: true, replyUser: true },
+        order: {
+          createAt: 'DESC',
+          favoriteCounts: 'DESC',
+        },
         where: [
           {
             id: query.replyId,
@@ -533,7 +517,6 @@ export class PostService {
 
     return createResponse('获取回复成功', {
       ...data,
-      comment,
       repliesCount: data.meta.totalItems,
     })
   }

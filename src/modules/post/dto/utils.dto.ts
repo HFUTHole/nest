@@ -126,6 +126,7 @@ export class IsReplyExistConstraint {
   async validate(id: string) {
     const reply = await this.replyRepo.findOne({ where: { id } })
 
+    console.log(id, reply)
     if (!reply) {
       throw new NotFoundException('回复不存在')
     }
@@ -163,13 +164,10 @@ export class IsCorrectSubCategoryExistConstraint {
     ]
 
     const category = await this.postCategoryRepo.findOne({
-
       where: {
         name: categoryName,
       },
     })
-
-
 
     return true
   }

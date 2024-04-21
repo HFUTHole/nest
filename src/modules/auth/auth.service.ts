@@ -17,6 +17,7 @@ import { getAvatarUrl } from '@/utils/user'
 import axios from 'axios'
 import { UserLevelEntity } from '@/entity/user/level.entity'
 import { getNextRequiredExperience } from '@/constants/level'
+import { PrismaService } from 'nestjs-prisma'
 
 @Injectable()
 export class AuthService {
@@ -37,7 +38,7 @@ export class AuthService {
   async login(dto: LoginDto) {
     const user = await this.userRepo.findOne({
       where: { studentId: dto.studentId },
-      select: { password: true },
+      select: { password: true, username: true, studentId: true, id: true },
     })
 
     const isVerified = await verifyPassword(user.password, dto.password)
@@ -148,7 +149,7 @@ export class AuthService {
     // }
 
     return {
-      gender: Gender.Male,
+      gender: Gender.male,
     }
   }
 

@@ -2,6 +2,7 @@ import { Repository } from 'typeorm'
 import { IUser } from '@/app'
 import { User } from '@/entity/user/user.entity'
 import { CommonEntity } from '@/common/entity/common.entity'
+import { InteractionNotifyTargetType } from '@/common/enums/notify/notify.enum'
 
 interface IdAbleDto {
   id: string | number
@@ -25,4 +26,6 @@ export interface IProcessLikeOptions<T extends ILikeableEntity> {
   propertyPath: keyof User
 
   reqUser: IUser
+
+  target: InteractionNotifyTargetType
 }

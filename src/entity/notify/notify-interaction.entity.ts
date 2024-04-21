@@ -1,6 +1,9 @@
-import { Column, Entity,  ManyToOne } from 'typeorm'
+import { Column, Entity, ManyToOne } from 'typeorm'
 import { CommonEntity } from '@/common/entity/common.entity'
-import { InteractionNotifyTargetType, NotifyEventType } from '@/common/enums/notify/notify.enum'
+import {
+  InteractionNotifyTargetType,
+  NotifyEventType,
+} from '@/common/enums/notify/notify.enum'
 import { User } from '@/entity/user/user.entity'
 import { Post } from '@/entity/post/post.entity'
 import { Comment } from '@/entity/post/comment.entity'
@@ -14,6 +17,12 @@ export class NotifyInteractionEntity extends CommonEntity {
     default: false,
   })
   isRead: boolean
+
+  @Column({
+    comment: '评论通知',
+    nullable: true,
+  })
+  body?: string
 
   @Column({
     type: 'enum',

@@ -14,6 +14,7 @@ async function initPostCategories(app: INestApplication) {
   )
   const categories = await categoryRepo.find({})
 
+  console.log(categories)
   if (categories.length) {
     return
   }

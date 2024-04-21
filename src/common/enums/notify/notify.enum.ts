@@ -1,15 +1,14 @@
 export enum NotifyEventType {
-  comment,
-  reply,
-  like
+  comment = 'comment',
+  reply = 'reply',
+  like = 'like',
 }
 
 export enum InteractionNotifyTargetType {
-  comment,
-  reply,
-  post,
+  comment = 'comment',
+  reply = ' reply',
+  post = 'post',
 }
-
 
 export enum NotifyStatus {
   unread,

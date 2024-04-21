@@ -1,9 +1,13 @@
-import { NotifyEventType } from '@/common/enums/notify/notify.enum'
+import {
+  InteractionNotifyTargetType,
+  NotifyEventType,
+} from '@/common/enums/notify/notify.enum'
 import { IUser } from '@/app'
 
 export interface CreateInteractionNotifyInterface {
   type: NotifyEventType
   recipientId: number
+  target: InteractionNotifyTargetType
   body: string
   reqUser: IUser
   postId?: number

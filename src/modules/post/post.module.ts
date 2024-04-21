@@ -27,9 +27,12 @@ import { PostPostThrottleGuard } from '@/modules/post/guard/post-throttle.guard'
 import { PostCategoryEntity } from '@/entity/post/category/PostCategory.entity'
 import { UserLevelService } from '@/modules/user/service/user-level.service'
 import { UserLevelEntity } from '@/entity/user/level.entity'
+import { PrismaModule } from 'nestjs-prisma'
+import { PostLikeService } from '@/modules/post/service/post-like.service'
 
 @Module({
   imports: [
+    PrismaModule.forRoot(),
     TypeOrmModule.forFeature([
       User,
       Post,
@@ -59,6 +62,7 @@ import { UserLevelEntity } from '@/entity/user/level.entity'
     IsVoteItemExistConstraint,
     PostPostThrottleGuard,
     IsCorrectSubCategoryExistConstraint,
+    PostLikeService,
   ],
 })
 export class PostModule implements NestModule {

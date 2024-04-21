@@ -20,7 +20,11 @@ import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
 import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.entity'
 import { NotifyService } from '@/modules/notify/notify.service'
 import { CreateInteractionNotifyInterface } from '@/modules/notify/interface/params.interface'
-import { NotifyEventType } from '@/common/enums/notify/notify.enum'
+import {
+  InteractionNotifyTargetType,
+  NotifyEventType,
+} from '@/common/enums/notify/notify.enum'
+import { PrismaService } from 'nestjs-prisma'
 
 // TODO 解决any类型
 @Injectable()
@@ -46,7 +50,10 @@ export class PostRepoService {
   @Inject()
   private readonly notifyService: NotifyService
 
-  constructor(private readonly appConfig: AppConfig) {}
+  constructor(
+    private readonly appConfig: AppConfig,
+    private readonly prisma: PrismaService,
+  ) {}
 
   async processLike<T extends ILikeableEntity>({
     dto,
@@ -56,6 +63,7 @@ export class PostRepoService {
     entity,
     type,
     notifyProps,
+    target: notifyTarget,
   }: IProcessLikeOptions<T> & {
     type: string
     notifyProps?: Pick<
@@ -70,12 +78,12 @@ export class PostRepoService {
       where: {
         id: dto.id,
         favoriteUsers: {
-          studentId: reqUser.studentId,
+          id: reqUser.id,
         },
       },
     } as FindOneOptions<T>)
 
-    if (isLiked.favoriteUsers.length) {
+    if (isLiked?.favoriteUsers?.length) {
       throw new ConflictException('你已经点赞过了')
     }
 
@@ -119,6 +127,7 @@ export class PostRepoService {
         body: `${user.username} 赞了你的${type}`,
         recipientId: target.user.studentId,
         ...notifyProps,
+        target: notifyTarget,
       })
     }
 
@@ -131,6 +140,7 @@ export class PostRepoService {
     repo,
     propertyPath,
     entity,
+    target: notifyTarget,
   }: IProcessLikeOptions<T>) {
     const target = await repo.findOne({
       relations: {

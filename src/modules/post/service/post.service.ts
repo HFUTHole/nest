@@ -47,7 +47,6 @@ import { AppConfig } from '@/app.config'
 import {
   PostDetailCommentMode,
   PostDetailCommentOrderMode,
-  PostReplyOrderMode,
 } from '@/modules/post/post.constant'
 import { SearchQuery } from '@/modules/post/dto/search.dto'
 import {
@@ -59,12 +58,16 @@ import {
 import { PostRepoService } from '@/modules/post/service/post.repo'
 import { VoteItem } from '@/entity/post/VoteItem.entity'
 import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.entity'
-import { NotifyEventType } from '@/common/enums/notify/notify.enum'
+import {
+  InteractionNotifyTargetType,
+  NotifyEventType,
+} from '@/common/enums/notify/notify.enum'
 import { ellipsisBody } from '@/utils/string'
 import { PostCategoryEntity } from '@/entity/post/category/PostCategory.entity'
 import { RoleService } from '@/modules/role/role.service'
 import { UserLevelService } from '@/modules/user/service/user-level.service'
 import { Limit } from '@/constants/limit'
+import { PrismaService } from 'nestjs-prisma'
 
 @Injectable()
 export class PostService {
@@ -110,7 +113,10 @@ export class PostService {
   @Inject()
   private readonly userLevelService: UserLevelService
 
-  constructor(private readonly appConfig: AppConfig) {}
+  constructor(
+    private readonly appConfig: AppConfig,
+    private readonly prisma: PrismaService,
+  ) {}
 
   async getList(query: GetPostListQuery, reqUser: IUser) {
     const data = await this.postRepoService.getList(query, reqUser)
@@ -189,6 +195,7 @@ export class PostService {
       notifyProps: {
         postId: dto.id,
       },
+      target: InteractionNotifyTargetType.post,
     })
   }
 
@@ -199,6 +206,7 @@ export class PostService {
       repo: this.postRepo,
       propertyPath: 'favoritePost',
       entity: Post as any,
+      target: InteractionNotifyTargetType.post,
     })
   }
 
@@ -281,6 +289,7 @@ export class PostService {
       body: `${user.username} 评论了你的帖子：${ellipsisBody(dto.body, 30)}`,
       recipientId: post.user.studentId,
       commentId: savedComment.id as string,
+      target: InteractionNotifyTargetType.post,
     })
 
     return createResponse('留言成功', {
@@ -385,6 +394,7 @@ export class PostService {
       notifyProps: {
         commentId: dto.id,
       },
+      target: InteractionNotifyTargetType.comment,
     })
   }
 
@@ -395,6 +405,7 @@ export class PostService {
       repo: this.commentRepo,
       propertyPath: 'favoriteComment',
       entity: Comment as any,
+      target: InteractionNotifyTargetType.comment,
     })
   }
 
@@ -448,6 +459,7 @@ export class PostService {
         ? reply.parentReply.user.studentId
         : comment.user.studentId,
       replyId: savedReply.id as string,
+      target: InteractionNotifyTargetType.comment,
     })
 
     return createResponse('回复成功', { id: reply.id, incExperience: Limit.level.reply })
@@ -504,15 +516,15 @@ export class PostService {
 
       addReplyIsLiked(replyBuilder, reqUser)
 
-      const reply = await replyBuilder.getMany()
-
-      // 标明为从通知模块点击来的评论
-      data.items.unshift(
-        ...(reply.map((item) => ({
-          ...item,
-          isNotification: true,
-        })) as Reply[]),
-      )
+      // const reply = await replyBuilder.getMany()
+      //
+      // // 标明为从通知模块点击来的评论
+      // data.items.unshift(
+      //   ...(reply.map((item) => ({
+      //     ...item,
+      //     isNotification: true,
+      //   })) as Reply[]),
+      // )
     }
 
     return createResponse('获取回复成功', {
@@ -532,6 +544,7 @@ export class PostService {
       notifyProps: {
         replyId: dto.id,
       },
+      target: InteractionNotifyTargetType.reply,
     })
   }
 
@@ -542,6 +555,7 @@ export class PostService {
       repo: this.replyRepo,
       propertyPath: 'favoriteReply',
       entity: Reply as any,
+      target: InteractionNotifyTargetType.reply,
     })
   }
 

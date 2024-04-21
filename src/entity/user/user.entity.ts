@@ -21,8 +21,8 @@ import { UserLevelEntity } from '@/entity/user/level.entity'
 import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
 
 export enum Gender {
-  Male = '男',
-  Female = '女',
+  male = '男',
+  female = '女',
 }
 
 // TODO 将用户与树洞表分离

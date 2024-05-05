@@ -1,0 +1,431 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model comment {
+  id                            String                          @id(map: "PK_0b0e4bbc8415ec426f87f3a88e2") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  create_at                     DateTime                        @default(now()) @db.Timestamp(6)
+  update_at                     DateTime                        @default(now()) @db.Timestamp(6)
+  delete_at                     DateTime?                       @db.Timestamp(6)
+  body                          String
+  favoriteCounts                Int                             @default(0)
+  imgs                          String
+  postId                        Int?
+  userId                        Int?
+  post                          post?                           @relation(fields: [postId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_94a85bb16d24033a2afdd5df060")
+  user                          user?                           @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_c0354a9a009d3bb45a08655ce3b")
+  notify_interaction_entity     notify_interaction_entity[]
+  notify_system                 notify_system[]
+  reply                         reply[]
+  report                        report[]
+  user_favorite_comment_comment user_favorite_comment_comment[]
+
+  @@index([id], map: "IDX_0b0e4bbc8415ec426f87f3a88e")
+  @@index([favoriteCounts], map: "IDX_8e55192f9dcce600c6a5c57f2a")
+  @@index([body], map: "IDX_e326aed451c3ccd2646d17bad2")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model conversation {
+  id                     String                   @id(map: "PK_864528ec4274360a40f66c29845") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  create_at              DateTime                 @default(now()) @db.Timestamp(6)
+  update_at              DateTime                 @default(now()) @db.Timestamp(6)
+  delete_at              DateTime?                @db.Timestamp(6)
+  conversation_user_user conversation_user_user[]
+
+  @@index([id], map: "IDX_864528ec4274360a40f66c2984")
+}
+
+model conversation_user_user {
+  conversationId String       @db.Uuid
+  userId         Int
+  conversation   conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade, map: "FK_733629445745e584497e81fee2f")
+  user           user         @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_9839909ce6e60e2af0f61d5a541")
+
+  @@id([conversationId, userId], map: "PK_6e6a1f189d97eaef74144d5c493")
+  @@index([conversationId], map: "IDX_733629445745e584497e81fee2")
+  @@index([userId], map: "IDX_9839909ce6e60e2af0f61d5a54")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model message {
+  id        String    @id(map: "PK_ba01f0a3e0123651915008bc578") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  create_at DateTime  @default(now()) @db.Timestamp(6)
+  update_at DateTime  @default(now()) @db.Timestamp(6)
+  delete_at DateTime? @db.Timestamp(6)
+  body      String    @db.VarChar
+  senderId  Int?
+  user      user?     @relation(fields: [senderId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_bc096b4e18b1f9508197cd98066")
+
+  @@index([id], map: "IDX_ba01f0a3e0123651915008bc57")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model notify_interaction_entity {
+  id                                             String                                @id(map: "PK_796ddc9c7bbbf2111bbe133cb77") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  create_at                                      DateTime                              @default(now()) @db.Timestamp(6)
+  update_at                                      DateTime                              @default(now()) @db.Timestamp(6)
+  delete_at                                      DateTime?                             @db.Timestamp(6)
+  isRead                                         Boolean                               @default(false)
+  type                                           notify_interaction_entity_type_enum
+  target                                         notify_interaction_entity_target_enum
+  creatorId                                      Int?
+  userId                                         Int?
+  postId                                         Int?
+  commentId                                      String?                               @db.Uuid
+  replyId                                        String?                               @db.Uuid
+  body                                           String?                               @db.VarChar
+  post                                           post?                                 @relation(fields: [postId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_0544c41b6d812b9e79bf2270159")
+  reply                                          reply?                                @relation(fields: [replyId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_9aa3e2c0d84b8d3379cc8b43d90")
+  comment                                        comment?                              @relation(fields: [commentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_cd247a8f2c8ebe03824f10f2a93")
+  user_notify_interaction_entity_userIdTouser    user?                                 @relation("notify_interaction_entity_userIdTouser", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_d24aaf226d4cbc9001a7194b6f5")
+  user_notify_interaction_entity_creatorIdTouser user?                                 @relation("notify_interaction_entity_creatorIdTouser", fields: [creatorId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_ec5f6ba02c24b142a85236b253a")
+
+  @@index([id], map: "IDX_796ddc9c7bbbf2111bbe133cb7")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model notify_system {
+  id                                         String                                       @id(map: "PK_495d34ceafef7482bef2fc8d98b") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  create_at                                  DateTime                                     @default(now()) @db.Timestamp(6)
+  update_at                                  DateTime                                     @default(now()) @db.Timestamp(6)
+  delete_at                                  DateTime?                                    @db.Timestamp(6)
+  title                                      String                                       @db.VarChar
+  body                                       String                                       @db.VarChar
+  isRead                                     Boolean                                      @default(false)
+  userId                                     Int?
+  postId                                     Int?
+  commentId                                  String?                                      @db.Uuid
+  replyId                                    String?                                      @db.Uuid
+  comment                                    comment?                                     @relation(fields: [commentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_498e178003307f6ed0eca72bf36")
+  reply                                      reply?                                       @relation(fields: [replyId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_a9b10997868aef790d9b5a9942a")
+  user                                       user?                                        @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_dd973808b910ee6e8d9a4a1e7cb")
+  post                                       post?                                        @relation(fields: [postId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_f8a328d892d69b9cee4617a6956")
+  notify_system_completed_reading_users_user notify_system_completed_reading_users_user[]
+
+  @@index([id], map: "IDX_495d34ceafef7482bef2fc8d98")
+}
+
+model notify_system_completed_reading_users_user {
+  notifySystemId String        @db.Uuid
+  userId         Int
+  notify_system  notify_system @relation(fields: [notifySystemId], references: [id], onDelete: Cascade, map: "FK_2f4cbcd7e92ca19bd9660013fac")
+  user           user          @relation(fields: [userId], references: [id], onDelete: Cascade, map: "FK_eb0b020a8eb5fceef87a90a950e")
+
+  @@id([notifySystemId, userId], map: "PK_95ee13725fbc912fd08039ef9d9")
+  @@index([notifySystemId], map: "IDX_2f4cbcd7e92ca19bd9660013fa")
+  @@index([userId], map: "IDX_eb0b020a8eb5fceef87a90a950")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model post {
+  id                        Int                         @id(map: "PK_be5fda3aac270b134ff9c21cdee") @default(autoincrement())
+  create_at                 DateTime                    @default(now()) @db.Timestamp(6)
+  update_at                 DateTime                    @default(now()) @db.Timestamp(6)
+  delete_at                 DateTime?                   @db.Timestamp(6)
+  is_hidden                 Boolean                     @default(false)
+  body                      String
+  title                     String?
+  imgs                      String
+  bilibili                  String?                     @db.VarChar
+  favoriteCounts            Int                         @default(0)
+  userId                    Int?
+  voteId                    String?                     @unique(map: "REL_a6f1ff575d8d9f6e635598de27") @db.Uuid
+  categoryId                String?                     @db.Uuid
+  comment                   comment[]
+  notify_interaction_entity notify_interaction_entity[]
+  notify_system             notify_system[]
+  post_category             post_category?              @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_1077d47e0112cad3c16bbcea6cd")
+  user                      user?                       @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_5c1cf55c308037b5aca1038a131")
+  vote                      vote?                       @relation(fields: [voteId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_a6f1ff575d8d9f6e635598de273")
+  post_tags_tags            post_tags_tags[]
+  report                    report[]
+  user_favorite_post_post   user_favorite_post_post[]
+
+  @@index([body], map: "IDX_2d1a073c37ebd9a2e7c0f28f38")
+  @@index([favoriteCounts], map: "IDX_3ed7ecdb288770ab3a3d6e1cfe")
+  @@index([id], map: "IDX_be5fda3aac270b134ff9c21cde")
+  @@index([title], map: "IDX_e28aa0c4114146bfb1567bfa9a")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model post_category {
+  id          String    @id(map: "PK_388636ba602c312da6026dc9dbc") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  create_at   DateTime  @default(now()) @db.Timestamp(6)
+  update_at   DateTime  @default(now()) @db.Timestamp(6)
+  delete_at   DateTime? @db.Timestamp(6)
+  name        String    @unique(map: "UQ_83f78d22e3e01c0fc9af0cd5a25") @db.VarChar
+  description String
+  bgUrl       String
+  post        post[]
+
+  @@index([id], map: "IDX_388636ba602c312da6026dc9db")
+}
+
+model post_tags_tags {
+  postId Int
+  tagsId String @db.Uuid
+  post   post   @relation(fields: [postId], references: [id], onDelete: Cascade, map: "FK_ba037b6fe8bd028a82b36384672")
+  tags   tags   @relation(fields: [tagsId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_fd01de8916c2da37ddda2808461")
+
+  @@id([postId, tagsId], map: "PK_11a80b010e4e0a1f7cbfa45088e")
+  @@index([postId], map: "IDX_ba037b6fe8bd028a82b3638467")
+  @@index([tagsId], map: "IDX_fd01de8916c2da37ddda280846")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model reply {
+  id                           String                      @id(map: "PK_94fa9017051b40a71e000a2aff9") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  create_at                    DateTime                    @default(now()) @db.Timestamp(6)
+  update_at                    DateTime                    @default(now()) @db.Timestamp(6)
+  delete_at                    DateTime?                   @db.Timestamp(6)
+  body                         String                      @db.VarChar
+  imgs                         String
+  favoriteCounts               Int                         @default(0)
+  userId                       Int?
+  commentId                    String?                     @db.Uuid
+  parentReplyId                String?                     @db.Uuid
+  replyUserId                  Int?
+  notify_interaction_entity    notify_interaction_entity[]
+  notify_system                notify_system[]
+  user_reply_replyUserIdTouser user?                       @relation("reply_replyUserIdTouser", fields: [replyUserId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_3eba86f2b7658cbe427b61796d5")
+  comment                      comment?                    @relation(fields: [commentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_b63950f2876403407137a257a9a")
+  user_reply_userIdTouser      user?                       @relation("reply_userIdTouser", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_e9886d6d04a19413a2f0aac5d7b")
+  reply                        reply?                      @relation("replyToreply", fields: [parentReplyId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_f0af68fe0e599c7cc7f34699ad5")
+  other_reply                  reply[]                     @relation("replyToreply")
+  report                       report[]
+  user_favorite_reply_reply    user_favorite_reply_reply[]
+
+  @@index([favoriteCounts], map: "IDX_16e72c2c0722929b8991139af3")
+  @@index([id], map: "IDX_94fa9017051b40a71e000a2aff")
+  @@index([body], map: "IDX_9ccd620572e2bd46877aa2f465")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model report {
+  id               String             @id(map: "PK_99e4d0bea58cba73c57f935a546") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  create_at        DateTime           @default(now()) @db.Timestamp(6)
+  update_at        DateTime           @default(now()) @db.Timestamp(6)
+  delete_at        DateTime?          @db.Timestamp(6)
+  type             report_type_enum
+  reason           String             @db.VarChar
+  postId           Int?
+  commentId        String?            @db.Uuid
+  replyId          String?            @db.Uuid
+  post             post?              @relation(fields: [postId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_4b6fe2df37305bc075a4a16d3ea")
+  comment          comment?           @relation(fields: [commentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_97372830f2390803a3e2df4a46e")
+  reply            reply?             @relation(fields: [replyId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_f9f267c9398d503975b66f06693")
+  report_user_user report_user_user[]
+
+  @@index([id], map: "IDX_99e4d0bea58cba73c57f935a54")
+}
+
+model report_user_user {
+  reportId String @db.Uuid
+  userId   Int
+  user     user   @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_0b5ca52e3e5f5870168c60b6bcd")
+  report   report @relation(fields: [reportId], references: [id], onDelete: Cascade, map: "FK_37d87b094a1ffdb2613e8987659")
+
+  @@id([reportId, userId], map: "PK_998710b285d162a6e6dd92bc568")
+  @@index([userId], map: "IDX_0b5ca52e3e5f5870168c60b6bc")
+  @@index([reportId], map: "IDX_37d87b094a1ffdb2613e898765")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model tags {
+  id             String           @id(map: "PK_e7dc17249a1148a1970748eda99") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  create_at      DateTime         @default(now()) @db.Timestamp(6)
+  update_at      DateTime         @default(now()) @db.Timestamp(6)
+  delete_at      DateTime?        @db.Timestamp(6)
+  body           String           @db.VarChar
+  post_tags_tags post_tags_tags[]
+
+  @@index([id], map: "IDX_e7dc17249a1148a1970748eda9")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user {
+  id                                                                  Int                                          @id(map: "PK_cace4a159ff9f2512dd42373760") @default(autoincrement())
+  create_at                                                           DateTime                                     @default(now()) @db.Timestamp(6)
+  update_at                                                           DateTime                                     @default(now()) @db.Timestamp(6)
+  delete_at                                                           DateTime?                                    @db.Timestamp(6)
+  is_hidden                                                           Boolean                                      @default(false)
+  studentId                                                           Int
+  username                                                            String                                       @db.VarChar
+  password                                                            String                                       @db.VarChar
+  hfutPassword                                                        String                                       @db.VarChar
+  gender                                                              user_gender_enum
+  role                                                                user_role_enum                               @default(user)
+  avatar                                                              String                                       @db.VarChar
+  levelId                                                             String?                                      @unique(map: "REL_50cb127cc28cf5075eda2fbaa8") @db.Uuid
+  comment                                                             comment[]
+  conversation_user_user                                              conversation_user_user[]
+  message                                                             message[]
+  notify_interaction_entity_notify_interaction_entity_userIdTouser    notify_interaction_entity[]                  @relation("notify_interaction_entity_userIdTouser")
+  notify_interaction_entity_notify_interaction_entity_creatorIdTouser notify_interaction_entity[]                  @relation("notify_interaction_entity_creatorIdTouser")
+  notify_system                                                       notify_system[]
+  notify_system_completed_reading_users_user                          notify_system_completed_reading_users_user[]
+  post                                                                post[]
+  reply_reply_replyUserIdTouser                                       reply[]                                      @relation("reply_replyUserIdTouser")
+  reply_reply_userIdTouser                                            reply[]                                      @relation("reply_userIdTouser")
+  report_user_user                                                    report_user_user[]
+  user_level_entity                                                   user_level_entity?                           @relation(fields: [levelId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_50cb127cc28cf5075eda2fbaa85")
+  user_favorite_comment_comment                                       user_favorite_comment_comment[]
+  userLikePosts                                                       user_favorite_post_post[]
+  user_favorite_reply_reply                                           user_favorite_reply_reply[]
+  user_vote_items_vote_item                                           user_vote_items_vote_item[]
+  user_votes_vote                                                     user_votes_vote[]
+  followedBy                                                          Follows[]                                    @relation("followedBy")
+  following                                                           Follows[]                                    @relation("following")
+
+  @@index([studentId], map: "IDX_2279dce27cfb8d7b0e6e9bbf5c")
+  @@index([username], map: "IDX_78a916df40e02a9deb1c4b75ed")
+  @@index([id], map: "IDX_cace4a159ff9f2512dd4237376")
+}
+
+model Follows {
+  followedBy   user @relation("followedBy", fields: [followedById], references: [id])
+  followedById Int
+  following    user @relation("following", fields: [followingId], references: [id])
+  followingId  Int
+
+  @@id([followingId, followedById])
+}
+
+model user_favorite_comment_comment {
+  userId    Int
+  commentId String  @db.Uuid
+  comment   comment @relation(fields: [commentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_effee35628e49721d3b3d180337")
+  user      user    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "FK_f6e187c2b9a4358f8e998685bef")
+
+  @@id([userId, commentId], map: "PK_0fbae21ac17297e170050386ead")
+  @@index([commentId], map: "IDX_effee35628e49721d3b3d18033")
+  @@index([userId], map: "IDX_f6e187c2b9a4358f8e998685be")
+}
+
+model user_favorite_post_post {
+  userId Int
+  postId Int
+  post   post @relation(fields: [postId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_237368efde87627445bbb33d787")
+  user   user @relation(fields: [userId], references: [id], onDelete: Cascade, map: "FK_e9db2a26a78d235de5a90c535d0")
+
+  @@id([userId, postId], map: "PK_81f58a77799e30b69801838a0b5")
+  @@index([postId], map: "IDX_237368efde87627445bbb33d78")
+  @@index([userId], map: "IDX_e9db2a26a78d235de5a90c535d")
+}
+
+model user_favorite_reply_reply {
+  userId  Int
+  replyId String @db.Uuid
+  user    user   @relation(fields: [userId], references: [id], onDelete: Cascade, map: "FK_65bb39c924197708e90d66f2448")
+  reply   reply  @relation(fields: [replyId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_da48e0b9607e9c6cda5cee67c8b")
+
+  @@id([userId, replyId], map: "PK_e65e44443fe165e1bec643b0457")
+  @@index([userId], map: "IDX_65bb39c924197708e90d66f244")
+  @@index([replyId], map: "IDX_da48e0b9607e9c6cda5cee67c8")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user_level_entity {
+  id                          String    @id(map: "PK_d49835b96baa71da64cdcf35614") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  create_at                   DateTime  @default(now()) @db.Timestamp(6)
+  update_at                   DateTime  @default(now()) @db.Timestamp(6)
+  delete_at                   DateTime? @db.Timestamp(6)
+  level                       Int       @db.SmallInt
+  nextLevelRequiredExperience Int
+  experience                  Int
+  user                        user?
+
+  @@index([id], map: "IDX_d49835b96baa71da64cdcf3561")
+}
+
+model user_vote_items_vote_item {
+  userId     Int
+  voteItemId String    @db.Uuid
+  vote_item  vote_item @relation(fields: [voteItemId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_60bbd864103c3b002b272f5c963")
+  user       user      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "FK_b4d764e397d331002861120f921")
+
+  @@id([userId, voteItemId], map: "PK_5554a61e2e782abf48c9d6df304")
+  @@index([voteItemId], map: "IDX_60bbd864103c3b002b272f5c96")
+  @@index([userId], map: "IDX_b4d764e397d331002861120f92")
+}
+
+model user_votes_vote {
+  userId Int
+  voteId String @db.Uuid
+  vote   vote   @relation(fields: [voteId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_1cdd3a9e85dca7f23d032f88374")
+  user   user   @relation(fields: [userId], references: [id], onDelete: Cascade, map: "FK_3d7c5952002bd1c143bc746d070")
+
+  @@id([userId, voteId], map: "PK_170543906f6f90715e74b2ae89d")
+  @@index([voteId], map: "IDX_1cdd3a9e85dca7f23d032f8837")
+  @@index([userId], map: "IDX_3d7c5952002bd1c143bc746d07")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model vote {
+  id              String            @id(map: "PK_2d5932d46afe39c8176f9d4be72") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  create_at       DateTime          @default(now()) @db.Timestamp(6)
+  update_at       DateTime          @default(now()) @db.Timestamp(6)
+  delete_at       DateTime?         @db.Timestamp(6)
+  type            vote_type_enum    @default(single)
+  endTime         DateTime          @default(now()) @db.Timestamp(6)
+  post            post?
+  user_votes_vote user_votes_vote[]
+  vote_item       vote_item[]
+
+  @@index([id], map: "IDX_2d5932d46afe39c8176f9d4be7")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model vote_item {
+  id                        String                      @id(map: "PK_fe84957ab91f7210c4f95bd9060") @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  create_at                 DateTime                    @default(now()) @db.Timestamp(6)
+  update_at                 DateTime                    @default(now()) @db.Timestamp(6)
+  delete_at                 DateTime?                   @db.Timestamp(6)
+  option                    String                      @db.VarChar
+  count                     Int                         @default(0)
+  voteId                    String?                     @db.Uuid
+  user_vote_items_vote_item user_vote_items_vote_item[]
+  vote                      vote?                       @relation(fields: [voteId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_5d6ca6bf4ffd77c84e50a857cc0")
+
+  @@index([id], map: "IDX_fe84957ab91f7210c4f95bd906")
+}
+
+enum notify_interaction_entity_target_enum {
+  comment
+  reply   @map(" reply")
+  post
+}
+
+enum notify_interaction_entity_type_enum {
+  comment
+  reply
+  like
+}
+
+enum report_type_enum {
+  post
+  comment
+  reply
+}
+
+enum user_gender_enum {
+  male   @map("男")
+  female @map("女")
+}
+
+enum user_role_enum {
+  user
+  admin
+  banned
+}
+
+enum vote_type_enum {
+  single
+}

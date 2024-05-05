@@ -227,6 +227,15 @@ export class PostRepoService {
 
   async getList(query: GetPostListQuery, reqUser: IUser) {
     const queryBuilder = initPostDateSelect(this.postRepo)
+      .setFindOptions({
+        select: {
+          user: {
+            username: true,
+            avatar: true,
+            id: true,
+          },
+        },
+      })
       .loadRelationCountAndMap('voteItems.isVoted', 'voteItems.user', 'isVoted', (qb) =>
         qb.andWhere('isVoted.studentId = :studentId', {
           studentId: reqUser.studentId,

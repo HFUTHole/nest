@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Inject, Post, Query } from '@nestjs/common'
 
 import { UserService } from '@/modules/user/service/user.service'
 import { Roles } from '@/common/decorator/roles.decorator'
@@ -8,6 +8,7 @@ import { PaginateQuery } from '@/common/dtos/paginate.dto'
 import { EditProfileDto } from '@/modules/user/dtos/profile.dto'
 import { UserLevelService } from '@/modules/user/service/user-level.service'
 import { Role } from '@/modules/role/role.constant'
+import { UserFollowDto } from '@/modules/user/dtos/follow.dto'
 
 @Roles()
 @Controller('user')
@@ -41,5 +42,20 @@ export class UserController {
   @Get('/comments')
   getComments(@Query() query: PaginateQuery, @User() user: IUser) {
     return this.service.getComments(query, user)
+  }
+
+  @Post('/follow')
+  follow(@Body() body: UserFollowDto, @User() user: IUser) {
+    return this.service.follow(body, user)
+  }
+
+  @Delete('/follow')
+  unFollow(@Body() body: UserFollowDto, @User() user: IUser) {
+    return this.service.unFollow(body, user)
+  }
+
+  @Get('/isFollowed')
+  isFollowed(@Query() query: UserFollowDto, @User() user: IUser) {
+    return this.service.isFollowed(query, user)
   }
 }

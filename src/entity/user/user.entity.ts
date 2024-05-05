@@ -7,6 +7,7 @@ import {
   JoinTable,
   OneToOne,
   JoinColumn,
+  ManyToOne,
 } from 'typeorm'
 import { AutoIncIdEntity } from '@/common/entity/common.entity'
 import { Post } from '@/entity/post/post.entity'

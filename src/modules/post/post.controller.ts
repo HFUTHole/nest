@@ -29,7 +29,6 @@ import { Roles } from '@/common/decorator/roles.decorator'
 import { PostVoteDto } from '@/modules/post/dto/vote.dto'
 import { SearchQuery } from '@/modules/post/dto/search.dto'
 import { PostPostThrottleGuard } from '@/modules/post/guard/post-throttle.guard'
-import { PostLikeService } from '@/modules/post/service/post-like.service'
 
 @Roles()
 @Controller('post')
@@ -37,12 +36,8 @@ export class PostController {
   @Inject()
   private readonly service: PostService
 
-  @Inject()
-  private readonly likeService: PostLikeService
-
   @Get('/list')
   getList(@Query() query: GetPostListQuery, @User() user: IUser) {
-    console.log(1)
     return this.service.getList(query, user)
   }
 

@@ -17,6 +17,7 @@ export const resolvePaginationPostData = (
     if (item.user) {
       // 隐藏用户id
       item.user = {
+        id: item.user.id,
         username: item.user.username,
         avatar: item.user.avatar,
       } as User
@@ -35,6 +36,7 @@ export const resolvePaginationPostData = (
     if (item.comments.length) {
       item.comments = item.comments.map((comment) => {
         comment.user = {
+          id: comment.user.id,
           username: comment.user.username,
           avatar: comment.user.avatar,
         } as User

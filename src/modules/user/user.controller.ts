@@ -29,7 +29,7 @@ export class UserController {
     return this.service.editProfile(dto, user)
   }
 
-  @Get('post/favorite')
+  @Get('/post/favorite')
   getFavoritePosts(@Query() query: PaginateQuery, @User() user: IUser) {
     return this.service.getFavoritePosts(query, user)
   }

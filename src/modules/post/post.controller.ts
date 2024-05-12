@@ -28,6 +28,7 @@ import { GetRepliesQuery, LikeReplyDto } from '@/modules/post/dto/replies.dto'
 import { Roles } from '@/common/decorator/roles.decorator'
 import { PostVoteDto } from '@/modules/post/dto/vote.dto'
 import { SearchQuery } from '@/modules/post/dto/search.dto'
+import { GetPostTagDetailQuery, GetPostTagListQuery } from '@/modules/post/dto/tag.dto'
 
 @Roles()
 @Controller('post')
@@ -129,5 +130,15 @@ export class PostController {
   @Get('/categories')
   getCategories() {
     return this.service.getCategories()
+  }
+
+  @Get('/list/tag')
+  getTagPostList(@Query() query: GetPostTagListQuery, @User() reqUser: IUser) {
+    return this.service.getTagPostList(query, reqUser)
+  }
+
+  @Get('/tag/detail')
+  getTagDetail(@Query() query: GetPostTagDetailQuery, @User() reqUser: IUser) {
+    return this.service.getTagDetail(query, reqUser)
   }
 }

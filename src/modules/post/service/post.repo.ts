@@ -230,6 +230,9 @@ export class PostRepoService {
     reqUser: IUser,
     options: {
       follow?: boolean
+      tag?: {
+        body: string
+      }
     } = {},
   ) {
     const { follow = false } = options
@@ -275,6 +278,19 @@ export class PostRepoService {
         where: {
           user: {
             id: In(userId),
+          },
+        },
+      })
+    }
+
+    if (options.tag) {
+      queryBuilder.setFindOptions({
+        relations: {
+          tags: true,
+        },
+        where: {
+          tags: {
+            body: In([options.tag.body]),
           },
         },
       })

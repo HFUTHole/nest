@@ -22,6 +22,7 @@ import { Reply } from '@/entity/post/reply.entity'
 import { VoteItem } from '@/entity/post/VoteItem.entity'
 import { PostCategoryEntity } from '@/entity/post/category/PostCategory.entity'
 import { GetPostDetailQuery, GetPostListQuery } from '@/modules/post/dto/post.dto'
+import { Tags } from '@/entity/post/tags.entity'
 
 @ValidatorConstraint({ async: true })
 @Injectable()
@@ -34,6 +35,23 @@ export class IsPostExistConstraint implements ValidatorConstraintInterface {
 
     if (!post) {
       throw new NotFoundException('树洞不存在哦')
+    }
+
+    return true
+  }
+}
+
+@ValidatorConstraint({ async: true })
+@Injectable()
+export class IsTagExistConstraint implements ValidatorConstraintInterface {
+  @InjectRepository(Tags)
+  private readonly tagRepo: Repository<Tags>
+
+  async validate(body: string) {
+    const post = await this.tagRepo.findOneBy({ body })
+
+    if (!post) {
+      throw new NotFoundException('Tag不存在哦')
     }
 
     return true
@@ -188,3 +206,5 @@ export const IsValidPostImgs = createClassValidator(IsValidPostImgsConstraint)
 export const IsCorrectSubCategory = createClassValidator(
   IsCorrectSubCategoryExistConstraint,
 )
+
+export const IsTagExist = createClassValidator(IsTagExistConstraint)

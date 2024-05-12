@@ -20,6 +20,7 @@ import { Report } from '@/entity/report/report.entity'
 import { ConversationEntity } from '@/entity/chat/conversation.entity'
 import { UserLevelEntity } from '@/entity/user/level.entity'
 import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
+import { Tags } from '@/entity/post/tags.entity'
 
 export enum Gender {
   male = '男',
@@ -106,4 +107,7 @@ export class User extends AutoIncIdEntity {
   @OneToOne(() => UserLevelEntity, (level) => level.user, { cascade: true })
   @JoinColumn()
   level: UserLevelEntity
+
+  @OneToMany(() => Tags, (tag) => tag.collectedUsers, { cascade: true })
+  collectedTags: Tags[]
 }

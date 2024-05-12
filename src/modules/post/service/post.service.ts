@@ -4,6 +4,8 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  NotFoundException,
+  Query,
 } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { Post } from '@/entity/post/post.entity'
@@ -32,6 +34,7 @@ import {
   DeletePostDto,
   GetPostDetailQuery,
   GetPostListQuery,
+  PostListMode,
 } from '@/modules/post/dto/post.dto'
 import { Reply } from '@/entity/post/reply.entity'
 import {
@@ -68,6 +71,8 @@ import { RoleService } from '@/modules/role/role.service'
 import { UserLevelService } from '@/modules/user/service/user-level.service'
 import { Limit } from '@/constants/limit'
 import { PrismaService } from 'nestjs-prisma'
+import * as _ from 'lodash'
+import { GetPostTagDetailQuery, GetPostTagListQuery } from '@/modules/post/dto/tag.dto'
 
 @Injectable()
 export class PostService {
@@ -380,9 +385,63 @@ export class PostService {
       data.items.unshift(comment)
     }
 
+    let reply: Reply | undefined = undefined
+    let parentReply: Reply | undefined = undefined
+
+    if (dto.replyId) {
+      reply = await this.replyRepo.findOne({
+        where: {
+          id: dto.replyId,
+        },
+        relations: {
+          parentReply: true,
+          user: true,
+        },
+        select: {
+          user: {
+            username: true,
+            avatar: true,
+            id: true,
+          },
+        },
+      })
+
+      parentReply = await this.replyRepo.findOne({
+        where: {
+          id: reply?.parentReply?.id,
+        },
+        relations: {
+          parentReply: true,
+          user: true,
+        },
+        select: {
+          user: {
+            username: true,
+            avatar: true,
+            id: true,
+          },
+        },
+      })
+    }
+
     // TODO use queryBuilder to solve this problem
     ;(data as any).items = data.items.map((item) => {
       item.replies = item.replies.slice(0, 1)
+
+      if (item.id === dto.commentId) {
+        const items = [parentReply, reply].filter(Boolean)
+
+        const isReplyRepeated = [reply?.id, parentReply?.id]?.includes(
+          item.replies[0]?.id,
+        )
+        if (!isReplyRepeated) {
+          items.push(item.replies[0])
+        }
+        item.replies.unshift(...items)
+      }
+
+      item.replies = _.uniqWith(item.replies, _.isEqual)
+
       return item
     })
 
@@ -424,6 +483,8 @@ export class PostService {
       where: { id: dto.commentId },
       select: {
         user: {
+          avatar: true,
+          username: true,
           studentId: true,
           id: true,
         },
@@ -444,6 +505,8 @@ export class PostService {
         where: { id: dto.replyId },
         select: {
           user: {
+            avatar: true,
+            username: true,
             studentId: true,
             id: true,
           },
@@ -471,7 +534,11 @@ export class PostService {
       target: InteractionNotifyTargetType.comment,
     })
 
-    return createResponse('回复成功', { id: reply.id, incExperience: Limit.level.reply })
+    return createResponse('回复成功', {
+      id: reply.id,
+      incExperience: Limit.level.reply,
+      ...reply,
+    })
   }
 
   async getReplies(query: GetRepliesQuery, reqUser: IUser) {
@@ -671,5 +738,35 @@ export class PostService {
     const categories = await this.postCategoryRepo.find()
 
     return createResponse('获取列表成功', categories)
+  }
+
+  async getTagPostList(query: GetPostTagListQuery, reqUser: IUser) {
+    const getListQuery: GetPostListQuery = {
+      ...query,
+      mode: PostListMode.latest,
+    }
+
+    const list = await this.postRepoService.getList(getListQuery, reqUser, {})
+
+    return createResponse('获取Tag帖子列表成功', list)
+  }
+
+  async getTagDetail(query: GetPostTagDetailQuery, reqUser: IUser) {
+    const tag = await this.tagsRepo
+      .createQueryBuilder('tags')
+      .setFindOptions({
+        where: {
+          body: query.tag,
+        },
+      })
+      .getOne()
+
+    await this.tagsRepo
+      .createQueryBuilder()
+      .update(Tags)
+      .set({ views: () => 'views + 1' })
+      .execute()
+
+    return createResponse('获取tag详情成功', tag)
   }
 }

@@ -38,6 +38,10 @@ export class GetPostCommentDto extends PaginateQuery {
   @IsCommentExist()
   @IsOptional()
   commentId?: string
+
+  @IsReplyExist()
+  @IsOptional()
+  replyId?: string
 }
 
 export class CreateCommentDto {

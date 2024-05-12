@@ -127,6 +127,9 @@ devDependencies:
   '@types/jest':
     specifier: 29.2.4
     version: 29.2.4
+  '@types/lodash':
+    specifier: ^4.17.1
+    version: 4.17.1
   '@types/node':
     specifier: 18.11.18
     version: 18.11.18
@@ -1548,6 +1551,10 @@ packages:
     resolution: {integrity: sha512-/5hndP5dCjloafCXns6SZyESp3Ldq7YjH3zwzwczYnjxIT0Fqzk5ROSYVGfFyczIue7IUEj8hkvLbPoLQ18vQw==}
     dependencies:
       '@types/node': 18.11.18
+    dev: true
+
+  /@types/lodash@4.17.1:
+    resolution: {integrity: sha512-X+2qazGS3jxLAIz5JDXDzglAF3KpijdhFxlf/V1+hEsOUc+HnWi81L/uv/EvGuV90WY+7mPGFCUDGfQC3Gj95Q==}
     dev: true
 
   /@types/luxon@3.3.8:

@@ -10,6 +10,7 @@ import {
   IsCorrectSubCategoryExistConstraint,
   IsPostExistConstraint,
   IsReplyExistConstraint,
+  IsTagExistConstraint,
   IsValidPostImgsConstraint,
   IsVoteExistConstraint,
   IsVoteItemExistConstraint,
@@ -61,6 +62,7 @@ import { PrismaModule } from 'nestjs-prisma'
     IsVoteItemExistConstraint,
     PostPostThrottleGuard,
     IsCorrectSubCategoryExistConstraint,
+    IsTagExistConstraint,
   ],
 })
 export class PostModule implements NestModule {

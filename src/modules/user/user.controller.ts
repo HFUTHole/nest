@@ -5,10 +5,11 @@ import { Roles } from '@/common/decorator/roles.decorator'
 import { IUser } from '@/app'
 import { User } from '@/common/decorator/user.decorator'
 import { PaginateQuery } from '@/common/dtos/paginate.dto'
-import { EditProfileDto } from '@/modules/user/dtos/profile.dto'
+import { EditProfileDto, GetUserOtherProfileDto } from '@/modules/user/dtos/profile.dto'
 import { UserLevelService } from '@/modules/user/service/user-level.service'
 import { Role } from '@/modules/role/role.constant'
 import { UserFollowDto } from '@/modules/user/dtos/follow.dto'
+import { GetUserPostsQuery } from '@/modules/user/dtos/post.dto'
 
 @Roles()
 @Controller('user')
@@ -24,18 +25,22 @@ export class UserController {
     return this.service.getProfile(user)
   }
 
+  @Get('/other-profile')
+  getOtherProfile(@Query() query: GetUserOtherProfileDto) {
+    return this.service.getOtherUserProfile(query)
+  }
   @Post('/profile')
   editProfile(@Body() dto: EditProfileDto, @User() user: IUser) {
     return this.service.editProfile(dto, user)
   }
 
   @Get('/post/favorite')
-  getFavoritePosts(@Query() query: PaginateQuery, @User() user: IUser) {
+  getFavoritePosts(@Query() query: GetUserPostsQuery, @User() user: IUser) {
     return this.service.getFavoritePosts(query, user)
   }
 
   @Get('/post/list')
-  getPostList(@Query() query: PaginateQuery, @User() user: IUser) {
+  getPostList(@Query() query: GetUserPostsQuery, @User() user: IUser) {
     return this.service.getPostList(query, user)
   }
 

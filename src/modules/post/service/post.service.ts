@@ -124,6 +124,14 @@ export class PostService {
     return createResponse('获取成功', data)
   }
 
+  async getFollowList(query: GetPostListQuery, reqUser: IUser) {
+    const data = await this.postRepoService.getList(query, reqUser, {
+      follow: true,
+    })
+
+    return createResponse('获取成功', data)
+  }
+
   async delete(body: DeletePostDto, reqUser: IUser) {
     const post = await this.postRepo.findOne({
       relations: { user: true },
@@ -294,7 +302,7 @@ export class PostService {
     })
 
     return createResponse('留言成功', {
-      id: comment.id,
+      ...comment,
       incExperience: Limit.level.comment,
     })
   }

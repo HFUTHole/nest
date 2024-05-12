@@ -18,10 +18,11 @@ import { Comment } from '@/entity/post/comment.entity'
 import { PaginationTypeEnum, paginate } from 'nestjs-typeorm-paginate'
 import { AppConfig } from '@/app.config'
 import { resolvePaginationPostData, initPostDateSelect } from '@/modules/post/post.utils'
-import { EditProfileDto } from '@/modules/user/dtos/profile.dto'
+import { EditProfileDto, GetUserOtherProfileDto } from '@/modules/user/dtos/profile.dto'
 import { resolvePaginationCommentData } from '@/modules/user/user.utils'
 import { UserFollowDto } from '@/modules/user/dtos/follow.dto'
 import { PrismaService } from 'nestjs-prisma'
+import { GetUserPostsQuery } from '@/modules/user/dtos/post.dto'
 
 @Injectable()
 export class UserService {
@@ -66,6 +67,31 @@ export class UserService {
     return createResponse('获取用户信息成功', data)
   }
 
+  async getOtherUserProfile(query: GetUserOtherProfileDto) {
+    console.log(query)
+    const data = await this.userRepository.findOne({
+      relations: {
+        level: true,
+      },
+      where: {
+        id: query.userId,
+      },
+      select: {
+        id: true,
+        role: true,
+        avatar: true,
+        username: true,
+        level: {
+          level: true,
+          experience: true,
+          nextLevelRequiredExperience: true,
+        },
+      },
+    })
+
+    return createResponse('获取用户信息成功', data)
+  }
+
   async editProfile(dto: EditProfileDto, reqUser: IUser) {
     if (!Object.keys(dto).length) {
       throw new BadRequestException('参数不合法')
@@ -83,17 +109,19 @@ export class UserService {
     return createResponse('修改个人信息成功')
   }
 
-  async getFavoritePosts(query: PaginateQuery, reqUser: IUser) {
+  async getFavoritePosts(query: GetUserPostsQuery, reqUser: IUser) {
+    const isUserIdExist = query.userId
+
     const queryBuilder = initPostDateSelect(this.postRepo)
-      .where('favoriteUser.studentId = :studentId', { studentId: reqUser.studentId })
+      .where('favoriteUser.id = :userId', { userId: query.userId || reqUser.id })
       .loadRelationCountAndMap('voteItems.isVoted', 'voteItems.user', 'isVoted', (qb) =>
-        qb.andWhere('isVoted.studentId = :studentId', {
-          studentId: reqUser.studentId,
+        qb.andWhere('isVoted.id = :userId', {
+          userId: query.userId || reqUser.id,
         }),
       )
       .loadRelationCountAndMap('vote.isVoted', 'vote.user', 'isVoted', (qb) =>
-        qb.andWhere('isVoted.studentId = :studentId', {
-          studentId: reqUser.studentId,
+        qb.andWhere('isVoted.id = :userId', {
+          userId: query.userId || reqUser.id,
         }),
       )
       .orderBy('post.createAt', 'DESC')
@@ -108,17 +136,17 @@ export class UserService {
     return createResponse('获取用户点赞树洞成功', data)
   }
 
-  async getPostList(query: PaginateQuery, reqUser: IUser) {
+  async getPostList(query: GetUserPostsQuery, reqUser: IUser) {
     const queryBuilder = initPostDateSelect(this.postRepo)
-      .where('user.studentId = :studentId', { studentId: reqUser.studentId })
+      .where('user.id = :id', { id: query.userId || reqUser.id })
       .loadRelationCountAndMap('voteItems.isVoted', 'voteItems.user', 'isVoted', (qb) =>
-        qb.andWhere('isVoted.studentId = :studentId', {
-          studentId: reqUser.studentId,
+        qb.andWhere('isVoted.id = :id', {
+          id: query.userId || reqUser.id,
         }),
       )
       .loadRelationCountAndMap('vote.isVoted', 'vote.user', 'isVoted', (qb) =>
-        qb.andWhere('isVoted.studentId = :studentId', {
-          studentId: reqUser.studentId,
+        qb.andWhere('isVoted.id = :id', {
+          id: query.userId || reqUser.id,
         }),
       )
       .orderBy('post.createAt', 'DESC')

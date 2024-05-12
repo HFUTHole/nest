@@ -28,7 +28,6 @@ import { GetRepliesQuery, LikeReplyDto } from '@/modules/post/dto/replies.dto'
 import { Roles } from '@/common/decorator/roles.decorator'
 import { PostVoteDto } from '@/modules/post/dto/vote.dto'
 import { SearchQuery } from '@/modules/post/dto/search.dto'
-import { PostPostThrottleGuard } from '@/modules/post/guard/post-throttle.guard'
 
 @Roles()
 @Controller('post')
@@ -39,6 +38,11 @@ export class PostController {
   @Get('/list')
   getList(@Query() query: GetPostListQuery, @User() user: IUser) {
     return this.service.getList(query, user)
+  }
+
+  @Get('/list/follow')
+  getFollowList(@Query() query: GetPostListQuery, @User() user: IUser) {
+    return this.service.getFollowList(query, user)
   }
 
   @Get('/detail')

@@ -88,4 +88,3 @@ export const initPostDateSelect = (postRepo: Repository<Post>) =>
     .leftJoinAndSelect('vote.items', 'voteItems')
     .leftJoinAndSelect('post.comments', 'comments')
     .leftJoinAndSelect('comments.user', 'comment.user')
-    .leftJoinAndSelect('post.category', 'category')

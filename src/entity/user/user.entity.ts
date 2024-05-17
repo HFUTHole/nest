@@ -110,4 +110,11 @@ export class User extends AutoIncIdEntity {
 
   @OneToMany(() => Tags, (tag) => tag.collectedUsers, { cascade: true })
   collectedTags: Tags[]
+
+  @ManyToMany(() => User, (user) => user.following)
+  followers: User[]
+
+  @ManyToMany(() => User, (user) => user.followers, { cascade: true })
+  @JoinTable()
+  following: User[]
 }

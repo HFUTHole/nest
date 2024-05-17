@@ -17,7 +17,6 @@ import { getAvatarUrl } from '@/utils/user'
 import axios from 'axios'
 import { UserLevelEntity } from '@/entity/user/level.entity'
 import { getNextRequiredExperience } from '@/constants/level'
-import { PrismaService } from 'nestjs-prisma'
 
 @Injectable()
 export class AuthService {

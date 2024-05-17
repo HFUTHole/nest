@@ -1,10 +1,8 @@
 import {
   BadRequestException,
-  Body,
   ConflictException,
   Inject,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '@/entity/user/user.entity'
@@ -21,7 +19,6 @@ import { resolvePaginationPostData, initPostDateSelect } from '@/modules/post/po
 import { EditProfileDto, GetUserOtherProfileDto } from '@/modules/user/dtos/profile.dto'
 import { resolvePaginationCommentData } from '@/modules/user/user.utils'
 import { UserFollowDto } from '@/modules/user/dtos/follow.dto'
-import { PrismaService } from 'nestjs-prisma'
 import { GetUserPostsQuery } from '@/modules/user/dtos/post.dto'
 
 @Injectable()
@@ -38,10 +35,7 @@ export class UserService {
   @Inject()
   private readonly notifyService: NotifyService
 
-  constructor(
-    private readonly appConfig: AppConfig,
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly appConfig: AppConfig) {}
 
   async getProfile(reqUser: IUser) {
     const data = await this.userRepository.findOne({
@@ -184,24 +178,45 @@ export class UserService {
       throw new ConflictException('不能关注自己哦')
     }
 
-    // 检查是否已经关注
-    const existingFollow = await this.prisma.follows.findFirst({
+    const existingFollow = await this.userRepository.findOne({
       where: {
-        followedById: reqUser.id,
-        followingId: dto.userId,
+        id: reqUser.id,
+        following: {
+          id: dto.userId,
+        },
       },
     })
+
     if (existingFollow) {
       throw new ConflictException('已经关注过了')
     }
 
-    // 创建关注关系
-    await this.prisma.follows.create({
-      data: {
-        followedById: reqUser.id,
-        followingId: dto.userId,
+    const user = await this.userRepository.findOne({
+      relations: {
+        following: true,
+        followers: true,
+      },
+      where: {
+        id: reqUser.id,
       },
     })
+
+    if (!user.following) {
+      user.following = []
+    }
+
+    if (!user.followers) {
+      user.followers = []
+    }
+
+    user.following.push(
+      this.userRepository.create({
+        id: dto.userId,
+      }),
+    )
+
+    // 创建关注关系
+    await this.userRepository.save(user)
 
     return createResponse('关注成功')
   }
@@ -211,10 +226,13 @@ export class UserService {
       throw new ConflictException('不能取关自己哦')
     }
 
-    const existingFollow = await this.prisma.follows.findFirst({
+    const existingFollow = await this.userRepository.findOne({
+      relations: { followers: true, following: true },
       where: {
-        followedById: reqUser.id,
-        followingId: dto.userId,
+        id: reqUser.id,
+        following: {
+          id: dto.userId,
+        },
       },
     })
 
@@ -222,28 +240,26 @@ export class UserService {
       throw new ConflictException('还没有关注过哦')
     }
 
-    await this.prisma.follows.delete({
-      where: {
-        followingId_followedById: {
-          followedById: reqUser.id,
-          followingId: dto.userId,
-        },
-      },
-    })
+    const idx = existingFollow.following.findIndex((item) => item.id === dto.userId)!
+    existingFollow.following.splice(idx, 1)
+
+    await this.userRepository.save(existingFollow)
 
     return createResponse('取关成功')
   }
 
   async isFollowed(dto: UserFollowDto, reqUser: IUser) {
-    const data = await this.prisma.follows.findFirst({
+    const existingFollow = await this.userRepository.findOne({
       where: {
-        followedById: reqUser.id,
-        followingId: dto.userId,
+        id: reqUser.id,
+        following: {
+          id: dto.userId,
+        },
       },
     })
 
     return createResponse('获取是否关注成功', {
-      isFollowed: Boolean(data),
+      isFollowed: Boolean(existingFollow),
     })
   }
 }

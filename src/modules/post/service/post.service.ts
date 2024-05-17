@@ -70,7 +70,6 @@ import { PostCategoryEntity } from '@/entity/post/category/PostCategory.entity'
 import { RoleService } from '@/modules/role/role.service'
 import { UserLevelService } from '@/modules/user/service/user-level.service'
 import { Limit } from '@/constants/limit'
-import { PrismaService } from 'nestjs-prisma'
 import * as _ from 'lodash'
 import { GetPostTagDetailQuery, GetPostTagListQuery } from '@/modules/post/dto/tag.dto'
 
@@ -118,10 +117,7 @@ export class PostService {
   @Inject()
   private readonly userLevelService: UserLevelService
 
-  constructor(
-    private readonly appConfig: AppConfig,
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly appConfig: AppConfig) {}
 
   async getList(query: GetPostListQuery, reqUser: IUser) {
     const data = await this.postRepoService.getList(query, reqUser)

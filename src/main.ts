@@ -8,28 +8,6 @@ import { PostCategoryEntity } from '@/entity/post/category/PostCategory.entity'
 import { Repository } from 'typeorm'
 import { Category } from '@/constants/category'
 
-async function initPostCategories(app: INestApplication) {
-  const categoryRepo = app.get<Repository<PostCategoryEntity>>(
-    getRepositoryToken(PostCategoryEntity),
-  )
-  const categories = await categoryRepo.find({})
-
-  console.log(categories)
-  if (categories.length) {
-    return
-  }
-
-  const savedCategories = categoryRepo.create([
-    ...Category.map((item) => ({
-      name: item.name,
-      description: item.description,
-      bgUrl: item.url,
-    })),
-  ])
-
-  await categoryRepo.save(savedCategories)
-}
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
 
@@ -45,8 +23,6 @@ async function bootstrap() {
     preflightContinue: false,
     optionsSuccessStatus: 204,
   })
-
-  await initPostCategories(app)
 
   await app.listen(config.server.port)
 }

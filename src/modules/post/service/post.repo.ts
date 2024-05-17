@@ -24,7 +24,6 @@ import {
   InteractionNotifyTargetType,
   NotifyEventType,
 } from '@/common/enums/notify/notify.enum'
-import { PrismaService } from 'nestjs-prisma'
 
 // TODO 解决any类型
 @Injectable()
@@ -50,10 +49,7 @@ export class PostRepoService {
   @Inject()
   private readonly notifyService: NotifyService
 
-  constructor(
-    private readonly appConfig: AppConfig,
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly appConfig: AppConfig) {}
 
   async processLike<T extends ILikeableEntity>({
     dto,
@@ -245,11 +241,6 @@ export class PostRepoService {
             id: true,
           },
         },
-        order: {
-          comments: {
-            favoriteCounts: 'desc',
-          },
-        },
       })
       .loadRelationCountAndMap('voteItems.isVoted', 'voteItems.user', 'isVoted', (qb) =>
         qb.andWhere('isVoted.studentId = :studentId', {
@@ -268,21 +259,35 @@ export class PostRepoService {
       )
 
     if (options.follow) {
-      const user = await this.prisma.user.findFirst({
+      const user = await this.userRepo.findOne({
+        relations: {
+          following: true,
+        },
         where: {
           id: reqUser.id,
         },
-        select: {
-          followedBy: true,
-        },
       })
 
-      const userId = user.followedBy.map((item) => item.followingId)
+      const userId = user.following.map((item) => item.id)
 
       queryBuilder.setFindOptions({
         where: {
           user: {
             id: In(userId),
+          },
+        },
+        order: {
+          comments: {
+            favoriteCounts: 'desc',
+          },
+        },
+      })
+    } else {
+      // 修复
+      queryBuilder.setFindOptions({
+        order: {
+          comments: {
+            favoriteCounts: 'desc',
           },
         },
       })

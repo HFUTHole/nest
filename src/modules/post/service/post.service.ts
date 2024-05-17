@@ -172,7 +172,6 @@ export class PostService {
       .setFindOptions({
         relations: {
           user: true,
-          category: true,
         },
         where: {
           id: query.id,
@@ -242,9 +241,6 @@ export class PostService {
       tags,
       bilibili: dto.bilibili,
       title: dto.title,
-      category: {
-        id: dto.category,
-      },
     })
 
     if (dto.vote) {

@@ -22,7 +22,4 @@ export class PostCategoryEntity extends CommonEntity {
     type: 'text',
   })
   bgUrl: string
-
-  @OneToMany(() => Post, (post) => post.category)
-  posts: Post[]
 }

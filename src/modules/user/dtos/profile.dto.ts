@@ -1,7 +1,7 @@
-import { IsOptional, IsString, Length } from 'class-validator'
+import { IsNumber, IsOptional, IsString, Length } from 'class-validator'
 import { IsValidPostImgs } from '@/modules/post/dto/utils.dto'
 import { Limit } from '@/constants/limit'
-import { IsUsernameExist } from '@/modules/user/dtos/utils.dto'
+import { IsUserExist, IsUsernameExist } from '@/modules/user/dtos/utils.dto'
 
 export class EditProfileDto {
   @IsUsernameExist()
@@ -16,4 +16,10 @@ export class EditProfileDto {
   @IsString()
   @IsOptional()
   avatar?: string
+}
+
+export class GetUserOtherProfileDto {
+  @IsUserExist()
+  @IsNumber()
+  userId: number
 }

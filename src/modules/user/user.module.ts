@@ -11,9 +11,11 @@ import { Reply } from '@/entity/post/reply.entity'
 import { Comment } from '@/entity/post/comment.entity'
 import { UserLevelEntity } from '@/entity/user/level.entity'
 import { UserLevelService } from '@/modules/user/service/user-level.service'
+import { PrismaModule } from 'nestjs-prisma'
 
 @Module({
   imports: [
+    PrismaModule.forRoot(),
     TypeOrmModule.forFeature([
       User,
       Post,

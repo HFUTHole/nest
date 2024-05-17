@@ -1,7 +1,7 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '@/entity/user/user.entity'
-import { FindOneOptions, Repository } from 'typeorm'
+import { FindOneOptions, In, Repository } from 'typeorm'
 import { createResponse } from '@/utils/create'
 import { IProcessLikeOptions, ILikeableEntity } from '@/modules/post/post.types'
 import {
@@ -225,8 +225,32 @@ export class PostRepoService {
     return vote
   }
 
-  async getList(query: GetPostListQuery, reqUser: IUser) {
+  async getList(
+    query: GetPostListQuery,
+    reqUser: IUser,
+    options: {
+      follow?: boolean
+      tag?: {
+        body: string
+      }
+    } = {},
+  ) {
+    const { follow = false } = options
     const queryBuilder = initPostDateSelect(this.postRepo)
+      .setFindOptions({
+        select: {
+          user: {
+            username: true,
+            avatar: true,
+            id: true,
+          },
+        },
+        order: {
+          comments: {
+            favoriteCounts: 'desc',
+          },
+        },
+      })
       .loadRelationCountAndMap('voteItems.isVoted', 'voteItems.user', 'isVoted', (qb) =>
         qb.andWhere('isVoted.studentId = :studentId', {
           studentId: reqUser.studentId,
@@ -242,6 +266,40 @@ export class PostRepoService {
           id: reqUser.id,
         }),
       )
+
+    if (options.follow) {
+      const user = await this.prisma.user.findFirst({
+        where: {
+          id: reqUser.id,
+        },
+        select: {
+          followedBy: true,
+        },
+      })
+
+      const userId = user.followedBy.map((item) => item.followingId)
+
+      queryBuilder.setFindOptions({
+        where: {
+          user: {
+            id: In(userId),
+          },
+        },
+      })
+    }
+
+    if (options.tag) {
+      queryBuilder.setFindOptions({
+        relations: {
+          tags: true,
+        },
+        where: {
+          tags: {
+            body: In([options.tag.body]),
+          },
+        },
+      })
+    }
 
     if (query.category) {
       queryBuilder.where('category.category = :category', {

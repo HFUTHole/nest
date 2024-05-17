@@ -11,7 +11,7 @@ export const Limit = {
   reportReasonMinLength: 10,
   post: {
     maxInfoCommentBodyLength: 30,
-    titleMaxLength: 15,
+    titleMaxLength: 20,
   },
   user: {
     minUsernameLength: 1,

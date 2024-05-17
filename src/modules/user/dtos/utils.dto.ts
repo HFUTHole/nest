@@ -13,9 +13,14 @@ export class IsUserExistConstraint {
 
   async validate(studentId: number) {
     const user = await this.userRepo.findOne({
-      where: {
-        studentId,
-      },
+      where: [
+        {
+          studentId,
+        },
+        {
+          id: studentId,
+        },
+      ],
     })
 
     if (!user) {

@@ -548,7 +548,7 @@ export class PostService {
         replyUser: true,
       },
       where: {
-        id: Not(query.replyId),
+        ...(query.replyId && { id: Not(query.replyId) }),
         comment: {
           id: query.id,
         },

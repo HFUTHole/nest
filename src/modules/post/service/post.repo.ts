@@ -245,6 +245,11 @@ export class PostRepoService {
             id: true,
           },
         },
+        order: {
+          comments: {
+            favoriteCounts: 'desc',
+          },
+        },
       })
       .loadRelationCountAndMap('voteItems.isVoted', 'voteItems.user', 'isVoted', (qb) =>
         qb.andWhere('isVoted.studentId = :studentId', {

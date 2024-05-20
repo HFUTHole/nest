@@ -71,9 +71,6 @@ export class CreatePostDto {
     each: true,
     message: `每个选项最长只能是${Limit.postVoteOptionLength}个字符哦`,
   })
-  @ArrayMaxSize(Limit.postTagsMaxLength, {
-    message: `最多只能创建${Limit.postTagsMaxLength}个标签哦`,
-  })
   @IsArray()
   @IsOptional()
   tags: string[] = []

@@ -2,7 +2,7 @@ import { PostClassification } from '@/common/enums/post/category'
 
 export const Category = [
   {
-    name: PostClassification.hfutLife,
+    name: PostClassification.life,
     description: '学习已经很苦了，来看看水贴娱乐放松一下吧 🎉🎈',
     children: ['工大广场', '身边趣事', '镜头下的工大', '今天win了吗'],
     color: { primary: '#619E68', secondary: '#E3F6E0' },
@@ -15,21 +15,8 @@ export const Category = [
     url: 'https://d-ssl.dtstatic.com/uploads/blog/202308/21/5zS3lYbehO5LyGm.thumb.1000_0.jpeg_webp',
   },
   {
-    name: PostClassification.partner,
-    description: '来这找人一起约球 🏀，干饭 🍽️，学习 📚，旅游 ✈️ 多是一件美事！',
-    children: ['约球', '约饭', '娱乐', '学习', '旅游'],
-    url: 'https://d-ssl.dtstatic.com/uploads/blog/202308/21/5zS3lYbehO5LyGm.thumb.1000_0.jpeg_webp',
-  },
-  {
     name: PostClassification.littleCreature,
     description: '校园的猫猫 🐱 狗狗 🐶，蛇蛇 🐍，鼠鼠 🐭 多可爱！',
-    children: ['屯', '翠', '宣'],
-    url: 'https://d-ssl.dtstatic.com/uploads/blog/202308/21/5zS3lYbehO5LyGm.thumb.1000_0.jpeg_webp',
-  },
-  {
-    name: PostClassification.clubActivities,
-    description:
-      '闲暇时光，你是否渴望加入一个充满活力和创造力的社团？这里有各种各样的社团活动等待着你的参与，让你的大学生活更加精彩纷呈！ 😄✨',
     children: ['屯', '翠', '宣'],
     url: 'https://d-ssl.dtstatic.com/uploads/blog/202308/21/5zS3lYbehO5LyGm.thumb.1000_0.jpeg_webp',
   },

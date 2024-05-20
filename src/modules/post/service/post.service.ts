@@ -738,7 +738,11 @@ export class PostService {
       mode: PostListMode.latest,
     }
 
-    const list = await this.postRepoService.getList(getListQuery, reqUser, {})
+    const list = await this.postRepoService.getList(getListQuery, reqUser, {
+      tag: {
+        body: query.tag,
+      },
+    })
 
     return createResponse('获取Tag帖子列表成功', list)
   }

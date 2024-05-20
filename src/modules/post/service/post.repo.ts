@@ -282,15 +282,6 @@ export class PostRepoService {
           },
         },
       })
-    } else {
-      // 修复
-      queryBuilder.setFindOptions({
-        order: {
-          comments: {
-            favoriteCounts: 'desc',
-          },
-        },
-      })
     }
 
     if (options.tag) {
@@ -301,6 +292,22 @@ export class PostRepoService {
         where: {
           tags: {
             body: In([options.tag.body]),
+          },
+        },
+        order: {
+          comments: {
+            favoriteCounts: 'desc',
+          },
+        },
+      })
+    }
+
+    if (!options.tag && !options.follow) {
+      // 修复  table name "post__post_comments" specified more than once
+      queryBuilder.setFindOptions({
+        order: {
+          comments: {
+            favoriteCounts: 'desc',
           },
         },
       })

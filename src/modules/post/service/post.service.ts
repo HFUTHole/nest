@@ -594,12 +594,6 @@ export class PostService {
 
       addReplyIsLiked(replyBuilder, reqUser)
 
-      data.items.forEach((reply) => {
-        if (reply.imgs) {
-          resolveEntityImgUrl(this.appConfig, reply)
-        }
-      })
-
       // const reply = await replyBuilder.getMany()
       //
       // // 标明为从通知模块点击来的评论

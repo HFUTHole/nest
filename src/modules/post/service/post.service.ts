@@ -426,9 +426,17 @@ export class PostService {
     ;(data as any).items = data.items.map((item) => {
       item.replies = item.replies.slice(0, 1)
 
+      // comment imgs
       resolveEntityImgUrl(this.appConfig, item, {
         quality: 50,
       })
+
+      // comment replies imgs
+      data.items.forEach((reply) =>
+        resolveEntityImgUrl(this.appConfig, reply, {
+          quality: 50,
+        }),
+      )
 
       if (item.id === dto.commentId) {
         const items = [parentReply, reply].filter(Boolean)

@@ -73,6 +73,7 @@ import { UserLevelService } from '@/modules/user/service/user-level.service'
 import { Limit } from '@/constants/limit'
 import * as _ from 'lodash'
 import { GetPostTagDetailQuery, GetPostTagListQuery } from '@/modules/post/dto/tag.dto'
+import { generateImageUrl } from '@imgproxy/imgproxy-node'
 
 @Injectable()
 export class PostService {
@@ -592,6 +593,12 @@ export class PostService {
       })
 
       addReplyIsLiked(replyBuilder, reqUser)
+
+      data.items.forEach((reply) => {
+        if (reply.imgs) {
+          resolveEntityImgUrl(this.appConfig, reply)
+        }
+      })
 
       // const reply = await replyBuilder.getMany()
       //

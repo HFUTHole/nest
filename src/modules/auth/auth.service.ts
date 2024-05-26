@@ -78,7 +78,6 @@ export class AuthService {
     }
 
     const password = await encryptPassword(dto.password)
-    const hfutPassword = await encryptPassword(dto.hfutPassword)
 
     const user = this.userRepo.create({
       ...dto,

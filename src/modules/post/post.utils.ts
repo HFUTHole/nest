@@ -105,7 +105,7 @@ export const resolveEntityImgUrl = (
   options: IGenerateImageUrl['options'] = {},
 ) => {
   if (post.imgs) {
-    post.imgs.map((item) => {
+    post.imgs = post.imgs.map((item) => {
       return generateImgProxyUrl(appConfig, item, options)
     })
   }

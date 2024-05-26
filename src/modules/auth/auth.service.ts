@@ -82,7 +82,6 @@ export class AuthService {
 
     const user = this.userRepo.create({
       ...dto,
-      hfutPassword,
       password,
       gender: isHFUTPasswordVerified.gender,
       level: this.userLevelRepo.create({
@@ -118,7 +117,6 @@ export class AuthService {
       throw new BadRequestException('信息门户密码错误')
     }
 
-    user.hfutPassword = await encryptPassword(dto.hfutPassword)
     user.password = await encryptPassword(dto.password)
 
     const savedUser = await this.userRepo.save(user)

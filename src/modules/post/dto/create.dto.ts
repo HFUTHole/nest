@@ -39,7 +39,7 @@ export class CreatePostDto {
   @IsString()
   body: string
 
-  // @IsValidPostImgs()
+  @IsValidPostImgs()
   @ArrayMaxSize(Limit.postMaxImgLength, {
     message: `最多只能上传${Limit.postMaxImgLength}张图片哦`,
   })

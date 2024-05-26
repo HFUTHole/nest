@@ -20,10 +20,7 @@ import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
 import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.entity'
 import { NotifyService } from '@/modules/notify/notify.service'
 import { CreateInteractionNotifyInterface } from '@/modules/notify/interface/params.interface'
-import {
-  InteractionNotifyTargetType,
-  NotifyEventType,
-} from '@/common/enums/notify/notify.enum'
+import { NotifyEventType } from '@/common/enums/notify/notify.enum'
 
 // TODO 解决any类型
 @Injectable()
@@ -231,7 +228,7 @@ export class PostRepoService {
       }
     } = {},
   ) {
-    const { follow = false } = options
+    // TODO: isVoted bug
     const queryBuilder = initPostDateSelect(this.postRepo)
       .setFindOptions({
         select: {

@@ -8,12 +8,20 @@ import { Comment } from '@/entity/post/comment.entity'
 import { Vote } from '@/entity/post/vote.entity'
 import { User } from '@/entity/user/user.entity'
 import { Reply } from '@/entity/post/reply.entity'
+import { generateImgProxyUrl } from '@/utils/imgproxy'
+import { IGenerateImageUrl } from '@imgproxy/imgproxy-node'
 
 export const resolvePaginationPostData = (
   data: Pagination<Post, IPaginationMeta>,
   config: AppConfig,
 ) => {
   ;(data.items as any) = data.items.map((item) => {
+    if (item.imgs) {
+      item.imgs = item.imgs.map((imgUrl) => {
+        return generateImgProxyUrl(config, imgUrl)
+      })
+    }
+
     if (item.user) {
       // 隐藏用户id
       item.user = {
@@ -88,3 +96,17 @@ export const initPostDateSelect = (postRepo: Repository<Post>) =>
     .leftJoinAndSelect('vote.items', 'voteItems')
     .leftJoinAndSelect('post.comments', 'comments')
     .leftJoinAndSelect('comments.user', 'comment.user')
+
+export const resolveEntityImgUrl = (
+  appConfig: AppConfig,
+  post: {
+    imgs?: string[]
+  },
+  options: IGenerateImageUrl['options'] = {},
+) => {
+  if (post.imgs) {
+    post.imgs.map((item) => {
+      return generateImgProxyUrl(appConfig, item, options)
+    })
+  }
+}

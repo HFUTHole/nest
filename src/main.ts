@@ -7,6 +7,9 @@ import { In, Repository } from 'typeorm'
 import { getRepositoryToken } from '@nestjs/typeorm'
 import { Tags } from '@/entity/post/tags.entity'
 import { Category } from '@/constants/category'
+import { User } from '@/entity/user/user.entity'
+import { Role } from '@/modules/role/role.constant'
+import { AuthService } from '@/modules/auth/auth.service'
 
 async function initTags(app: INestApplication) {
   const tagRepo = app.get<Repository<Tags>>(getRepositoryToken(Tags))
@@ -28,6 +31,45 @@ async function initTags(app: INestApplication) {
   }
 }
 
+async function initAdmin(app: INestApplication) {
+  const config: AppConfig = app.get<AppConfig>(AppConfig)
+
+  const authService: AuthService = app.get(AuthService)
+
+  const userRepo = app.get<Repository<User>>(getRepositoryToken(User))
+
+  if (!config.user.admin) {
+    return
+  }
+
+  config.user.admin.map(async (admin) => {
+    const user = await userRepo.findOne({
+      where: {
+        studentId: admin.studentId,
+      },
+    })
+
+    if (user && user.role !== Role.Admin) {
+      user.role = Role.Admin
+      await userRepo.save(user)
+
+      console.log(admin.studentId + 'has update to admin')
+
+      return
+    } else if (!user) {
+      await authService.register({
+        studentId: admin.studentId,
+        password: admin.password,
+        username: admin.studentId.toString(),
+        hfutPassword: admin.hfutPassword,
+      })
+      console.log(admin.studentId + 'has update to admin')
+
+      return
+    }
+  })
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
 
@@ -45,6 +87,7 @@ async function bootstrap() {
   })
 
   await initTags(app)
+  await initAdmin(app)
 
   await app.listen(config.server.port)
 }

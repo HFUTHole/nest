@@ -26,6 +26,7 @@ export class AppConfig {
 
   user!: {
     avatar: string
+    admin: { studentId: number; password: string; hfutPassword: string }[]
   }
 
   image!: {

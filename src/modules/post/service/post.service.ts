@@ -56,6 +56,7 @@ import {
   addCommentIsLiked,
   addReplyIsLiked,
   isVoteExpired,
+  resolveEntityImgUrl,
   resolvePaginationPostData,
 } from '@/modules/post/post.utils'
 import { PostRepoService } from '@/modules/post/service/post.repo'
@@ -189,6 +190,10 @@ export class PostService {
       .getOne()
 
     data.vote = vote
+
+    resolveEntityImgUrl(this.appConfig, data, {
+      quality: 70,
+    })
 
     return createResponse('获取树洞详情成功', data as any)
   }
@@ -420,6 +425,10 @@ export class PostService {
     ;(data as any).items = data.items.map((item) => {
       item.replies = item.replies.slice(0, 1)
 
+      resolveEntityImgUrl(this.appConfig, item, {
+        quality: 50,
+      })
+
       if (item.id === dto.commentId) {
         const items = [parentReply, reply].filter(Boolean)
 
@@ -594,6 +603,12 @@ export class PostService {
       //   })) as Reply[]),
       // )
     }
+
+    data.items.map((item) => {
+      resolveEntityImgUrl(this.appConfig, item, {
+        quality: 50,
+      })
+    })
 
     return createResponse('获取回复成功', {
       ...data,

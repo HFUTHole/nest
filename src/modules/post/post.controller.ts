@@ -29,6 +29,7 @@ import { Roles } from '@/common/decorator/roles.decorator'
 import { PostVoteDto } from '@/modules/post/dto/vote.dto'
 import { SearchQuery } from '@/modules/post/dto/search.dto'
 import { GetPostTagDetailQuery, GetPostTagListQuery } from '@/modules/post/dto/tag.dto'
+import { PostPostThrottleGuard } from '@/modules/post/guard/post-throttle.guard'
 
 @Roles()
 @Controller('post')
@@ -51,7 +52,7 @@ export class PostController {
     return this.service.getDetail(query, user)
   }
 
-  // @UseGuards(PostPostThrottleGuard)
+  @UseGuards(PostPostThrottleGuard)
   @Post('/create')
   create(@Body() body: CreatePostDto, @User() user: IUser) {
     return this.service.create(body, user)

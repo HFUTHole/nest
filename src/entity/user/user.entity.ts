@@ -41,9 +41,6 @@ export class User extends AutoIncIdEntity {
   @Column({ comment: '密码', select: false })
   password: string
 
-  @Column({ comment: '信息门户密码', select: false })
-  hfutPassword: string
-
   @Column({
     comment: '性别',
     type: 'enum',

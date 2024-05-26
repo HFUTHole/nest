@@ -52,7 +52,7 @@ export class PostController {
     return this.service.getDetail(query, user)
   }
 
-  @UseGuards(PostPostThrottleGuard)
+  // @UseGuards(PostPostThrottleGuard)
   @Post('/create')
   create(@Body() body: CreatePostDto, @User() user: IUser) {
     return this.service.create(body, user)

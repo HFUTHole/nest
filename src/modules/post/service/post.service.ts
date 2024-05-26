@@ -432,7 +432,7 @@ export class PostService {
       })
 
       // comment replies imgs
-      data.items.forEach((reply) =>
+      item.replies.forEach((reply) =>
         resolveEntityImgUrl(this.appConfig, reply, {
           quality: 50,
         }),

@@ -92,9 +92,11 @@ export class UserService {
       throw new BadRequestException('参数不合法')
     }
 
-    const avatar = generateImgProxyUrl(this.appConfig, dto.avatar, {
-      quality: 60,
-    })
+    if (dto.avatar) {
+      dto.avatar = generateImgProxyUrl(this.appConfig, dto.avatar, {
+        quality: 60,
+      })
+    }
 
     await this.userRepository.update(
       {
@@ -102,7 +104,6 @@ export class UserService {
       },
       {
         ...dto,
-        avatar,
       },
     )
 

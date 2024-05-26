@@ -20,6 +20,7 @@ import { EditProfileDto, GetUserOtherProfileDto } from '@/modules/user/dtos/prof
 import { resolvePaginationCommentData } from '@/modules/user/user.utils'
 import { UserFollowDto } from '@/modules/user/dtos/follow.dto'
 import { GetUserPostsQuery } from '@/modules/user/dtos/post.dto'
+import { generateImgProxyUrl } from '@/utils/imgproxy'
 
 @Injectable()
 export class UserService {
@@ -91,12 +92,17 @@ export class UserService {
       throw new BadRequestException('参数不合法')
     }
 
+    const avatar = generateImgProxyUrl(this.appConfig, dto.avatar, {
+      quality: 60,
+    })
+
     await this.userRepository.update(
       {
         studentId: reqUser.studentId,
       },
       {
         ...dto,
+        avatar,
       },
     )
 

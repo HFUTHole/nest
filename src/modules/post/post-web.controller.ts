@@ -1,10 +1,8 @@
 import { Controller, Get, Inject, Query } from '@nestjs/common'
-import { PostService } from '@/modules/post/service/post.service'
 import { GetPostDetailQuery } from '@/modules/post/dto/post.dto'
-import { User } from '@/common/decorator/user.decorator'
-import { IUser } from '@/app'
 import { PostWebService } from '@/modules/post/service/post-web.service'
 import { Public } from '@/common/decorator/public.decorator'
+import { GetPostCommentDto } from '@/modules/post/dto/comment.dto'
 
 @Controller('post-web')
 export class PostWebController {
@@ -15,5 +13,11 @@ export class PostWebController {
   @Get('/detail')
   getDetail(@Query() query: GetPostDetailQuery) {
     return this.service.getDetail(query)
+  }
+
+  @Public()
+  @Get('/comment')
+  getComment(@Query() query: GetPostCommentDto) {
+    return this.service.getComment(query)
   }
 }

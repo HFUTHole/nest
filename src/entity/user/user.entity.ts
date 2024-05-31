@@ -21,6 +21,7 @@ import { ConversationEntity } from '@/entity/chat/conversation.entity'
 import { UserLevelEntity } from '@/entity/user/level.entity'
 import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
 import { Tags } from '@/entity/post/tags.entity'
+import { UsedGoodsEntity } from '@/entity/used-goods/used-goods.entity'
 
 export enum Gender {
   male = '男',
@@ -114,4 +115,11 @@ export class User extends AutoIncIdEntity {
   @ManyToMany(() => User, (user) => user.followers, { cascade: true })
   @JoinTable()
   following: User[]
+
+  @OneToMany(() => UsedGoodsEntity, (goods) => goods.creator)
+  usedGoods: UsedGoodsEntity
+
+  @ManyToMany(() => UsedGoodsEntity, (goods) => goods.collector)
+  @JoinTable()
+  collectedUsedGoods: User[]
 }

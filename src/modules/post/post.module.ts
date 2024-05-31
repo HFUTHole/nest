@@ -28,6 +28,8 @@ import { PostPostThrottleGuard } from '@/modules/post/guard/post-throttle.guard'
 import { PostCategoryEntity } from '@/entity/post/category/PostCategory.entity'
 import { UserLevelService } from '@/modules/user/service/user-level.service'
 import { UserLevelEntity } from '@/entity/user/level.entity'
+import { PostWebController } from './post-web.controller'
+import { PostWebService } from './service/post-web.service'
 
 @Module({
   imports: [
@@ -45,7 +47,7 @@ import { UserLevelEntity } from '@/entity/user/level.entity'
       UserLevelEntity,
     ]),
   ],
-  controllers: [PostController],
+  controllers: [PostController, PostWebController],
   providers: [
     PostService,
     RoleService,
@@ -61,6 +63,7 @@ import { UserLevelEntity } from '@/entity/user/level.entity'
     PostPostThrottleGuard,
     IsCorrectSubCategoryExistConstraint,
     IsTagExistConstraint,
+    PostWebService,
   ],
 })
 export class PostModule implements NestModule {

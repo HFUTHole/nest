@@ -16,6 +16,7 @@ import { ReportModule } from './modules/report/report.module'
 import { ChatModule } from './modules/chat/chat.module'
 import { RedisModule } from '@liaoliaots/nestjs-redis'
 import { ScheduleModule } from '@nestjs/schedule'
+import { UsedGoodsModule } from './modules/used-goods/used-goods.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { ScheduleModule } from '@nestjs/schedule'
     NotifyModule,
     ReportModule,
     ChatModule,
+    UsedGoodsModule,
   ],
   providers: [AppService],
   controllers: [AppController],

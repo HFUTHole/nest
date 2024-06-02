@@ -44,8 +44,6 @@ export class NotifyService {
     const creator = await this.userRepo.findOneBy({ studentId: reqUser.studentId })
     const user = await this.userRepo.findOneBy({ studentId: recipientId })
 
-    console.log(reqUser.studentId, recipientId, creator, user)
-
     const notify = this.notifyInteractionRepo.create({
       type,
       creator,

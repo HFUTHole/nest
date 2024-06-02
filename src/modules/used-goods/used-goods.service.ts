@@ -97,9 +97,14 @@ export class UsedGoodsService {
           createAt: 'desc',
         },
         where: {
-          category: {
-            name: query.category,
-          },
+          ...(query.category && {
+            category: {
+              name: query.category,
+            },
+          }),
+          ...(query.area && {
+            area: query.area,
+          }),
         },
       })
 

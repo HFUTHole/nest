@@ -1,5 +1,5 @@
 export enum SchoolAreaEnum {
-  xc = '宣',
-  txl = '屯',
-  fch = '翠'
+  xc = '宣城',
+  txl = '屯溪路',
+  fch = '翡翠湖',
 }

@@ -10,6 +10,7 @@ import { Category } from '@/constants/category'
 import { User } from '@/entity/user/user.entity'
 import { Role } from '@/modules/role/role.constant'
 import { AuthService } from '@/modules/auth/auth.service'
+import { UsedGoodsCategoryEntity } from '@/entity/used-goods/used-goods-category.entity'
 
 async function initTags(app: INestApplication) {
   const tagRepo = app.get<Repository<Tags>>(getRepositoryToken(Tags))
@@ -70,6 +71,43 @@ async function initAdmin(app: INestApplication) {
   })
 }
 
+async function initUsedGoodsCategories(app: INestApplication) {
+  const cgRepo = app.get<Repository<UsedGoodsCategoryEntity>>(
+    getRepositoryToken(UsedGoodsCategoryEntity),
+  )
+
+  const categories = [
+    '图书',
+    '数码',
+    '手机平板',
+    '电脑设备',
+    '美妆个护',
+    '电器家具',
+    '代步工具',
+    '服饰鞋帽',
+    '小零食',
+    '小玩具/手办',
+    '运动健身',
+    '寝室家具',
+    '其它',
+  ]
+
+  const _cg = await cgRepo.find()
+  const isCgEmpty = Boolean(_cg.length === 0)
+
+  if (isCgEmpty) {
+    const cgs = categories.map((item) =>
+      cgRepo.create({
+        name: item,
+      }),
+    )
+
+    const savedCgs = await cgRepo.save(cgs)
+
+    console.log('create used-goods-category success', savedCgs)
+  }
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
 
@@ -86,8 +124,9 @@ async function bootstrap() {
     optionsSuccessStatus: 204,
   })
 
-  await initTags(app)
-  await initAdmin(app)
+  await Promise.all(
+    [initTags, initAdmin, initUsedGoodsCategories].map((func) => func(app)),
+  )
 
   await app.listen(config.server.port)
 }

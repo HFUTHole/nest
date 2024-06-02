@@ -119,7 +119,7 @@ export class User extends AutoIncIdEntity {
   @OneToMany(() => UsedGoodsEntity, (goods) => goods.creator)
   usedGoods: UsedGoodsEntity
 
-  @ManyToMany(() => UsedGoodsEntity, (goods) => goods.collector)
+  @ManyToMany(() => UsedGoodsEntity, (goods) => goods.collector, { cascade: true })
   @JoinTable()
-  collectedUsedGoods: User[]
+  collectedUsedGoods: UsedGoodsEntity[]
 }

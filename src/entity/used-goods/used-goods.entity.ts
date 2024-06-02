@@ -10,6 +10,7 @@ import {
 } from 'typeorm'
 import { UsedGoodsCategoryEntity } from '@/entity/used-goods/used-goods-category.entity'
 import { User } from '@/entity/user/user.entity'
+import { UsedGoodsStatusEnum } from '@/common/enums/used-goods/use-goods-status.enum'
 
 @Entity()
 export class UsedGoodsEntity extends CommonEntity {
@@ -31,11 +32,26 @@ export class UsedGoodsEntity extends CommonEntity {
   area: string
 
   @Column({
+    comment: '点赞数',
+    default: 0,
+  })
+  collectorCounts: number
+
+  @Column({
+    comment: '商品状态',
+    type: 'enum',
+    enum: UsedGoodsStatusEnum,
+    default: UsedGoodsStatusEnum.ok,
+  })
+  status: UsedGoodsStatusEnum
+
+  @Column({
     comment: '图片',
     type: 'simple-array',
   })
   imgs: string[]
 
+  // 二手商品被多少人收藏
   @ManyToMany(() => User, (user) => user.collectedUsedGoods)
   collector: User[]
 

@@ -13,6 +13,7 @@ import { createResponse } from '@/utils/create'
 import { Post } from '@/entity/post/post.entity'
 import { Reply } from '@/entity/post/reply.entity'
 import { Comment } from '@/entity/post/comment.entity'
+import { UsedGoodsEntity } from '@/entity/used-goods/used-goods.entity'
 
 @Injectable()
 export class NotifyService {
@@ -34,11 +35,16 @@ export class NotifyService {
   @InjectRepository(User)
   private readonly userRepo: Repository<User>
 
+  @InjectRepository(UsedGoodsEntity)
+  private readonly usedGoodsRepo: Repository<UsedGoodsEntity>
+
   async createInteractionNotify(params: CreateInteractionNotifyInterface) {
     const { type, body, target, reqUser, recipientId } = params
 
     const creator = await this.userRepo.findOneBy({ studentId: reqUser.studentId })
     const user = await this.userRepo.findOneBy({ studentId: recipientId })
+
+    console.log(reqUser.studentId, recipientId, creator, user)
 
     const notify = this.notifyInteractionRepo.create({
       type,
@@ -60,8 +66,6 @@ export class NotifyService {
         },
       })
 
-      console.log(comment, params.commentId)
-
       notify.comment = comment
       notify.post = comment.post
     } else if (params.replyId) {
@@ -81,6 +85,12 @@ export class NotifyService {
       ).post
       notify.comment = reply.comment
       notify.reply = reply
+    } else if (params.usedGoodsId) {
+      notify.usedGoods = await this.usedGoodsRepo.findOne({
+        where: {
+          id: params.usedGoodsId,
+        },
+      })
     }
 
     await this.notifyInteractionRepo.save(notify)

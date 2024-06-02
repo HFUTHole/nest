@@ -11,6 +11,7 @@ import { Reply } from '@/entity/post/reply.entity'
 import { Comment } from '@/entity/post/comment.entity'
 import { UserLevelEntity } from '@/entity/user/level.entity'
 import { UserLevelService } from '@/modules/user/service/user-level.service'
+import { UsedGoodsEntity } from '@/entity/used-goods/used-goods.entity'
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UserLevelService } from '@/modules/user/service/user-level.service'
       NotifyInteractionEntity,
       NotifySystemEntity,
       UserLevelEntity,
+      UsedGoodsEntity,
     ]),
   ],
   controllers: [UserController],

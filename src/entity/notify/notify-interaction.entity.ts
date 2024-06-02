@@ -8,6 +8,7 @@ import { User } from '@/entity/user/user.entity'
 import { Post } from '@/entity/post/post.entity'
 import { Comment } from '@/entity/post/comment.entity'
 import { Reply } from '@/entity/post/reply.entity'
+import { UsedGoodsEntity } from '@/entity/used-goods/used-goods.entity'
 
 @Entity()
 export class NotifyInteractionEntity extends CommonEntity {
@@ -51,4 +52,7 @@ export class NotifyInteractionEntity extends CommonEntity {
 
   @ManyToOne(() => Reply)
   reply: Reply
+
+  @ManyToOne(() => UsedGoodsEntity)
+  usedGoods: UsedGoodsEntity
 }

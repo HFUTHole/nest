@@ -9,6 +9,7 @@ import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.enti
 import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
 import { NotifyController } from './notify.controller'
 import { IsNotifyExistConstraint } from '@/modules/notify/dtos/utils.dto'
+import { UsedGoodsEntity } from '@/entity/used-goods/used-goods.entity'
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { IsNotifyExistConstraint } from '@/modules/notify/dtos/utils.dto'
       Reply,
       NotifyInteractionEntity,
       NotifySystemEntity,
+      UsedGoodsEntity,
     ]),
   ],
   providers: [NotifyService, IsNotifyExistConstraint],

@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
+import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { UsedGoodsCreateDto } from '@/modules/used-goods/dto/create.dto'
 import { IUser } from '@/app'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -15,6 +15,11 @@ import {
 } from '@/modules/used-goods/dto/getList.dto'
 import { paginate, PaginationTypeEnum } from 'nestjs-typeorm-paginate'
 import { CollectUsedGoodsDto } from '@/modules/used-goods/dto/collect.dto'
+import { NotifyService } from '@/modules/notify/notify.service'
+import {
+  InteractionNotifyTargetType,
+  NotifyEventType,
+} from '@/common/enums/notify/notify.enum'
 
 @Injectable()
 export class UsedGoodsService {
@@ -26,6 +31,9 @@ export class UsedGoodsService {
 
   @InjectRepository(UsedGoodsCategoryEntity)
   private readonly usedGoodsCategoryRepo: Repository<UsedGoodsCategoryEntity>
+
+  @Inject()
+  private readonly notifyService: NotifyService
 
   async create(dto: UsedGoodsCreateDto, reqUser: IUser) {
     const category = await this.usedGoodsCategoryRepo.findOne({
@@ -120,6 +128,20 @@ export class UsedGoodsService {
       throw new ConflictException('这个商品已经收藏过啦~')
     }
 
+    const collectGoods = await this.usedGoodsRepo.findOne({
+      relations: {
+        creator: true,
+      },
+      where: {
+        id: dto.id,
+      },
+      select: {
+        creator: {
+          studentId: true,
+        },
+      },
+    })
+
     const user = await this.userRepo.findOne({
       relations: {
         collectedUsedGoods: true,
@@ -140,6 +162,15 @@ export class UsedGoodsService {
     )
 
     await this.userRepo.save(user)
+
+    await this.notifyService.createInteractionNotify({
+      type: NotifyEventType.collect,
+      reqUser: reqUser,
+      recipientId: collectGoods.creator.studentId,
+      target: InteractionNotifyTargetType.usedGoods,
+      usedGoodsId: dto.id,
+      body: '收藏了你的商品',
+    })
 
     return createResponse('收藏商品成功')
   }

@@ -30,6 +30,7 @@ import { UserLevelService } from '@/modules/user/service/user-level.service'
 import { UserLevelEntity } from '@/entity/user/level.entity'
 import { PostWebController } from './post-web.controller'
 import { PostWebService } from './service/post-web.service'
+import { UsedGoodsEntity } from '@/entity/used-goods/used-goods.entity'
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { PostWebService } from './service/post-web.service'
       NotifySystemEntity,
       PostCategoryEntity,
       UserLevelEntity,
+      UsedGoodsEntity,
     ]),
   ],
   controllers: [PostController, PostWebController],

@@ -13,6 +13,7 @@ export interface CreateInteractionNotifyInterface {
   postId?: number
   commentId?: string
   replyId?: string
+  usedGoodsId?: string
 }
 
 export interface CreateSystemNotifyInterface {

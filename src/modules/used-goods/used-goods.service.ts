@@ -1,4 +1,10 @@
-import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common'
+import {
+  ConflictException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { UsedGoodsCreateDto } from '@/modules/used-goods/dto/create.dto'
 import { IUser } from '@/app'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -10,6 +16,7 @@ import { createResponse } from '@/utils/create'
 import { UsedGoodsStatusEnum } from '@/common/enums/used-goods/use-goods-status.enum'
 import {
   GetCollectedUsedGoodsListQuery,
+  GetOtherUserUsedGoodsList,
   GetUsedGoodsListByCategoryQuery,
   GetUsedGoodsListQuery,
 } from '@/modules/used-goods/dto/getList.dto'
@@ -20,6 +27,8 @@ import {
   InteractionNotifyTargetType,
   NotifyEventType,
 } from '@/common/enums/notify/notify.enum'
+import { PaginateQuery } from '@/common/dtos/paginate.dto'
+import { EditUsedGoods } from '@/modules/used-goods/dto/post.dto'
 
 @Injectable()
 export class UsedGoodsService {
@@ -74,6 +83,9 @@ export class UsedGoodsService {
         order: {
           createAt: 'desc',
         },
+        where: {
+          status: UsedGoodsStatusEnum.ok,
+        },
       })
       .loadRelationCountAndMap('usedGoods.collector', 'usedGoods.collector')
 
@@ -105,6 +117,7 @@ export class UsedGoodsService {
           ...(query.area && {
             area: query.area,
           }),
+          status: UsedGoodsStatusEnum.ok,
         },
       })
 
@@ -239,5 +252,75 @@ export class UsedGoodsService {
     })
 
     return createResponse('获取收藏成功', data)
+  }
+
+  async getOtherUserGoodsList(query: GetOtherUserUsedGoodsList, user: IUser) {
+    const queryBuilder = this.usedGoodsRepo.createQueryBuilder('goods').setFindOptions({
+      where: {
+        creator: {
+          // 0确保 where 语句在不穿参时生效
+          id: query.userId || 0,
+        },
+      },
+    })
+
+    const data = await paginate(queryBuilder, {
+      ...query,
+      paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
+    })
+
+    return createResponse('获取用户发布信息商品', data)
+  }
+
+  async getUserGoodsList(query: PaginateQuery, reqUser: IUser) {
+    const queryBuilder = this.usedGoodsRepo.createQueryBuilder('goods').setFindOptions({
+      where: {
+        creator: {
+          id: reqUser.id,
+        },
+      },
+    })
+
+    const data = await paginate(queryBuilder, {
+      ...query,
+      paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
+    })
+
+    return createResponse('获取用户发布信息商品', data)
+  }
+
+  async editGoods(dto: EditUsedGoods, reqUser: IUser) {
+    const hasPermission = await this.usedGoodsRepo.findOne({
+      where: {
+        id: dto.id,
+        creator: {
+          id: reqUser.id,
+        },
+      },
+    })
+
+    if (!hasPermission) {
+      throw new ForbiddenException('这不是你的商品哦')
+    }
+
+    if (dto.imgs) {
+      hasPermission.imgs = dto.imgs
+    }
+
+    if (dto.body) {
+      hasPermission.body = dto.body
+    }
+
+    if (dto.price) {
+      hasPermission.price = dto.price
+    }
+
+    if (dto.status) {
+      hasPermission.status = dto.status
+    }
+
+    await this.usedGoodsRepo.save(hasPermission)
+
+    return createResponse('修改信息成功', hasPermission)
   }
 }

@@ -2,6 +2,7 @@ import { PaginateQuery } from '@/common/dtos/paginate.dto'
 import { IsEnum, IsOptional, IsString } from 'class-validator'
 import { IsUsedGoodsCategoryExist } from '@/modules/used-goods/dto/utils'
 import { SchoolAreaEnum } from '@/common/enums/school-area.enum'
+import { IsUserExist } from '@/modules/user/dtos/utils.dto'
 
 export class GetUsedGoodsListQuery extends PaginateQuery {}
 
@@ -16,4 +17,9 @@ export class GetUsedGoodsListByCategoryQuery extends PaginateQuery {
   @IsEnum(SchoolAreaEnum)
   @IsOptional()
   area?: SchoolAreaEnum
+}
+
+export class GetOtherUserUsedGoodsList extends PaginateQuery {
+  @IsUserExist()
+  userId: number
 }

@@ -5,10 +5,13 @@ import { IUser } from '@/app'
 import { User } from '@/common/decorator/user.decorator'
 import {
   GetCollectedUsedGoodsListQuery,
+  GetOtherUserUsedGoodsList,
   GetUsedGoodsListByCategoryQuery,
   GetUsedGoodsListQuery,
 } from '@/modules/used-goods/dto/getList.dto'
 import { CollectUsedGoodsDto } from '@/modules/used-goods/dto/collect.dto'
+import { PaginateQuery } from '@/common/dtos/paginate.dto'
+import { EditUsedGoods } from '@/modules/used-goods/dto/post.dto'
 
 @Controller('used-goods')
 export class UsedGoodsController {
@@ -46,5 +49,20 @@ export class UsedGoodsController {
   @Get('/collect/list')
   getCollectedList(@Query() query: GetCollectedUsedGoodsListQuery, @User() user: IUser) {
     return this.service.getCollectedGoodsList(query, user)
+  }
+
+  @Get('/user/other-list')
+  getOtherUserGoodsList(@Query() query: GetOtherUserUsedGoodsList, @User() user: IUser) {
+    return this.service.getOtherUserGoodsList(query, user)
+  }
+
+  @Get('/user/list')
+  getUserGoodsList(@Query() query: PaginateQuery, @User() user: IUser) {
+    return this.service.getUserGoodsList(query, user)
+  }
+
+  @Post('/edit')
+  editUsedGoods(@Body() dto: EditUsedGoods, @User() user: IUser) {
+    return this.service.editGoods(dto, user)
   }
 }

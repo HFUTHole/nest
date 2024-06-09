@@ -1,7 +1,7 @@
 import { Body, Controller, Inject, Post } from "@nestjs/common";
 import { AuthService } from "../auth.service";
 import { Public } from "@/common/decorator/public.decorator";
-import { SMSRegisterDto } from "../dto/auth.dto";
+import { SMSRegisterDto, SMSRequestDto } from "../dto/auth.dto";
 
 @Public()
 @Controller("auth/v2")
@@ -16,7 +16,7 @@ export class AuthControllerV2 {
   }
 
   @Post('/sms')
-  sendSMS(@Body() dto: SMSRegisterDto) {
+  sendSMS(@Body() dto: SMSRequestDto) {
     return this.authService.sendSMS(dto)
   }
 

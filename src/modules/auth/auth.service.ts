@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
-import { ForgetPasswordDto, LoginDto, RegisterDto, SMSRegisterDto } from '@/modules/auth/dto/auth.dto'
+import { ForgetPasswordDto, LoginDto, RegisterDto, SMSRegisterDto, SMSRequestDto } from '@/modules/auth/dto/auth.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Gender, User } from '@/entity/user/user.entity'
 import { Repository } from 'typeorm'
@@ -17,6 +17,7 @@ import { getAvatarUrl } from '@/utils/user'
 import axios from 'axios'
 import { UserLevelEntity } from '@/entity/user/level.entity'
 import { getNextRequiredExperience } from '@/constants/level'
+import { InjectRedis } from '@liaoliaots/nestjs-redis'
 import Redis from 'ioredis'
 import { Role } from '../role/role.constant'
 
@@ -41,7 +42,10 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     const user = await this.userRepo.findOne({
-      where: { studentId: dto.studentId },
+      where: [
+        { studentId: dto.studentId },
+        { phoneNumber: dto.phoneNumber }
+      ],
       select: { password: true, username: true, studentId: true, id: true },
     })
 
@@ -122,8 +126,13 @@ export class AuthService {
     }
 
     const key = `register_sms_code:${dto.phoneNumber}`
-    var verifyCode = parseInt(await this.redis.get(key))
-    if (verifyCode != dto.verifyCode) {
+    let verifyCode = parseInt(await this.redis.get(key))
+    console.log(verifyCode);
+    
+    if (verifyCode === null || isNaN(verifyCode)) {
+      throw new BadRequestException('请发送验证码!')
+    }
+    if (verifyCode !== dto.verifyCode) {
       throw new BadRequestException('验证码错误!')
     }
 
@@ -150,43 +159,52 @@ export class AuthService {
   }
 
 
-  async sendSMS(dto: SMSRegisterDto) {
+  async sendSMS(dto: SMSRequestDto) {
     const key = `register_sms_code:${dto.phoneNumber}`
-    var verifyCode = parseInt(await this.redis.get(key))
+    let verifyCode = await this.redis.get(key)
     
-    if (verifyCode != null) {
+    if (verifyCode !== null) {
       throw new BadRequestException("60s内只能发送一次")
     }
 
-    verifyCode = parseInt(Math.floor(Math.random() * 1000000).toString().padStart(6, '0'))
+    verifyCode = Math.floor(Math.random() * 1000000).toString().padStart(6, '0')
 
+    const formData = new FormData();
+    formData.append('app_id', '9RZ%-7I*k3x7fk#cZ1gvy=%#2T5XfDSSX');
+    formData.append('phone_number', dto.phoneNumber);
+    formData.append('verify_code', verifyCode);
+    formData.append('expire_time', '5');
+      
     try {
       // 设置 Redis 中的验证码，并设置过期时间为 60 秒
       await this.redis.set(key, verifyCode, 'EX', 60);
       //todo 常量加入配置
-      await axios({
+      const response = await axios({
         method: 'POST',
-        url : 'https://api.xfs.lnyynet.com/verify-sms/sendVerifyCode',
-        params: {
-          app_id: '9RZ%-7I*k3x7fk#cZ1gvy=%#2T5XfDSSX',
-          phone_number: dto.phoneNumber,
-          verify_code: verifyCode,
-          expire_time: 60
+        url: 'http://api.xfs.lnyynet.com/verify-sms/sendVerifyCode',
+        data: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data', // 设置正确的 Content-Type
         }
-      })
+      });
+      if (response.data.code != 200) {
+        await this.redis.del(key);
+        console.error('Axios request failed:', response.data)
+      }
     } catch (error) {
       if (axios.isAxiosError(error)) {
         // 处理 Axios 错误
-        await this.redis.delete(key);
+        await this.redis.del(key);
         console.error('Axios request failed:', error.message);
         throw new BadRequestException('发送验证码失败');
       } else {
         // 处理其他类型的错误
-        await this.redis.delete(key);
+        await this.redis.del(key);
         console.error('An error occurred:', error);
         throw new BadRequestException('发送验证码时发生未知错误');
       }
     }
+    return createResponse('发送成功')
   }
 
   async forget(dto: ForgetPasswordDto) {
@@ -243,8 +261,5 @@ export class AuthService {
   signToken(user: User) {
     return this.jwtService.sign({ id: user.id, studentId: user.studentId })
   }
-}
-function InjectRedis(): (target: typeof AuthService, propertyKey: undefined, parameterIndex: 0) => void {
-  throw new Error('Function not implemented.')
 }
 

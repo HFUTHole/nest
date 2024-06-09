@@ -32,7 +32,7 @@ export enum Gender {
 @Entity()
 export class User extends AutoIncIdEntity {
   @Index()
-  @Column({ comment: '学号', select: false })
+  @Column({ comment: '学号', select: false, nullable: true })
   studentId: number
 
   @Index()
@@ -52,7 +52,7 @@ export class User extends AutoIncIdEntity {
 
   @Index()
   @Column({ comment: '手机号', select: false })
-  phoneNumber: number
+  phoneNumber: string
 
   @Column({
     comment: '角色权限',

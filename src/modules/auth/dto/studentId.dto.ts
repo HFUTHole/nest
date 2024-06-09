@@ -2,7 +2,7 @@ import { IsNotEmpty, IsNumber, IsString, Length, Max, Min } from 'class-validato
 
 export class StudentIdDto {
   @IsNotEmpty()
-  @IsNumber({ allowInfinity: false, allowNaN: false })
+  @IsNumber({ allowInfinity: false, allowNaN: true })
   @Min(1900000000, { message: '学号格式错误' })
   @Max(2099000000, { message: '学号格式错误' })
   studentId: number

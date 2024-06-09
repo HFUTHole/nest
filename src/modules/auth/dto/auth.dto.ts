@@ -18,6 +18,22 @@ export class RegisterDto extends AuthDto {
   hfutPassword: string
 }
 
+
+export class SMSRegisterDto extends AuthDto {
+  @IsUsernameExist()
+  @Length(Limit.user.minUsernameLength, Limit.user.maxUsernameLength, {
+    message: `用户名长度只能为${Limit.user.minUsernameLength}-${Limit.user.maxUsernameLength}`,
+  })
+  @IsString()
+  username: string
+
+  
+  phoneNumber: number
+
+
+  verifyCode: number
+}
+
 export class ForgetPasswordDto extends StudentIdDto {
   @IsString()
   @Length(6, 30)

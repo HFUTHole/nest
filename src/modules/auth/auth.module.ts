@@ -18,6 +18,7 @@ import { Reply } from '@/entity/post/reply.entity'
 import { Comment } from '@/entity/post/comment.entity'
 import { UserLevelEntity } from '@/entity/user/level.entity'
 import { UsedGoodsEntity } from '@/entity/used-goods/used-goods.entity'
+import { AuthControllerV2 } from './controller/v2.controller'
 
 @Module({
   imports: [
@@ -43,7 +44,7 @@ import { UsedGoodsEntity } from '@/entity/used-goods/used-goods.entity'
       inject: [AppConfig],
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, AuthControllerV2],
   providers: [
     AuthService,
     UserService,

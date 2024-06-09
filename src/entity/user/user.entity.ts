@@ -50,6 +50,10 @@ export class User extends AutoIncIdEntity {
   })
   gender: Gender
 
+  @Index()
+  @Column({ comment: '手机号', select: false })
+  phoneNumber: number
+
   @Column({
     comment: '角色权限',
     type: 'enum',

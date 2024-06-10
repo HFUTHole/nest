@@ -15,6 +15,16 @@ import { NotifyInteractionEntity } from '@/entity/notify/notify-interaction.enti
 import { NotifySystemEntity } from '@/entity/notify/notify-system.entity'
 import { Comment } from '@/entity/post/comment.entity'
 import { Reply } from '@/entity/post/reply.entity'
+import { UsedGoodsCommentService } from '@/modules/used-goods/comment.service'
+import { PostService } from '@/modules/post/service/post.service'
+import { Tags } from '@/entity/post/tags.entity'
+import { Vote } from '@/entity/post/vote.entity'
+import { VoteItem } from '@/entity/post/VoteItem.entity'
+import { PostCategoryEntity } from '@/entity/post/category/PostCategory.entity'
+import { PostRepoService } from '@/modules/post/service/post.repo'
+import { RoleService } from '@/modules/role/role.service'
+import { UserLevelService } from '@/modules/user/service/user-level.service'
+import { UserLevelEntity } from '@/entity/user/level.entity'
 
 @Module({
   imports: [
@@ -27,6 +37,11 @@ import { Reply } from '@/entity/post/reply.entity'
       NotifySystemEntity,
       Comment,
       Reply,
+      Tags,
+      Vote,
+      VoteItem,
+      PostCategoryEntity,
+      UserLevelEntity,
     ]),
   ],
   controllers: [UsedGoodsController],
@@ -35,6 +50,11 @@ import { Reply } from '@/entity/post/reply.entity'
     IsUsedGoodsCategoryExistConstraint,
     IsUsedGoodsExistConstraint,
     NotifyService,
+    UsedGoodsCommentService,
+    PostService,
+    PostRepoService,
+    RoleService,
+    UserLevelService,
   ],
 })
 export class UsedGoodsModule {}

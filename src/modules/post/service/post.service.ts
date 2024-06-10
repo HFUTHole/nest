@@ -74,6 +74,8 @@ import { Limit } from '@/constants/limit'
 import * as _ from 'lodash'
 import { GetPostTagDetailQuery, GetPostTagListQuery } from '@/modules/post/dto/tag.dto'
 import { generateImageUrl } from '@imgproxy/imgproxy-node'
+import { UsedGoodsEntity } from '@/entity/used-goods/used-goods.entity'
+import { GoodsCreateCommentDto } from '@/modules/used-goods/dto/comment.dto'
 
 @Injectable()
 export class PostService {
@@ -281,14 +283,46 @@ export class PostService {
       select: { user: { studentId: true } },
       where: { id: dto.id },
     })
-    const user = await this.userRepo.findOneBy({ studentId: reqUser.studentId })
+
+    const comment = await this._createComment(dto, reqUser, {
+      post,
+    })
+
+    return createResponse('留言成功', {
+      ...comment,
+      incExperience: Limit.level.comment,
+    })
+  }
+
+  async _createComment(
+    dto: Omit<CreateCommentDto | GoodsCreateCommentDto, 'id'> & { id?: string | number },
+    reqUser: IUser,
+    options: {
+      post?: Post
+      goods?: UsedGoodsEntity
+    },
+  ) {
+    const user = await this.userRepo.findOneBy({
+      studentId: reqUser.studentId,
+    })
 
     const comment = this.commentRepo.create({
       body: dto.body,
-      post,
       user,
       imgs: dto.imgs,
     })
+
+    if (options.post) {
+      comment.post = options.post
+    }
+
+    if (options.goods) {
+      comment.goods = options.goods
+    }
+
+    const recipientId = options.post
+      ? options.post.user.studentId
+      : options.goods.creator.studentId
 
     const savedComment = await this.commentRepo.save(comment)
     await this.userLevelService.incExperience({
@@ -298,16 +332,13 @@ export class PostService {
     await this.notifyService.createInteractionNotify({
       type: NotifyEventType.comment,
       reqUser,
-      body: `${user.username} 评论了你的帖子：${ellipsisBody(dto.body, 30)}`,
-      recipientId: post.user.studentId,
+      body: `${ellipsisBody(dto.body, 30)}`,
+      recipientId,
       commentId: savedComment.id as string,
       target: InteractionNotifyTargetType.post,
     })
 
-    return createResponse('留言成功', {
-      ...comment,
-      incExperience: Limit.level.comment,
-    })
+    return comment
   }
 
   async getComment(dto: GetPostCommentDto, reqUser: IUser) {

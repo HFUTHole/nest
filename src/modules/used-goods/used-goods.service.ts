@@ -29,6 +29,7 @@ import {
 } from '@/common/enums/notify/notify.enum'
 import { PaginateQuery } from '@/common/dtos/paginate.dto'
 import { EditUsedGoods } from '@/modules/used-goods/dto/post.dto'
+import { GetUsedGoodsDetailQuery } from '@/modules/used-goods/dto/detail.dto'
 
 @Injectable()
 export class UsedGoodsService {
@@ -75,7 +76,7 @@ export class UsedGoodsService {
 
   async getList(query: GetUsedGoodsListQuery, reqUser: IUser) {
     const queryBuilder = this.usedGoodsRepo
-      .createQueryBuilder('usedGoods')
+      .createQueryBuilder('goods')
       .setFindOptions({
         relations: {
           creator: true,
@@ -87,8 +88,11 @@ export class UsedGoodsService {
           status: UsedGoodsStatusEnum.ok,
         },
       })
-      .loadRelationCountAndMap('usedGoods.collector', 'usedGoods.collector')
-
+      .loadRelationCountAndMap(
+        'goods.collectorCounts',
+        'goods.collector',
+        'collectorCounts',
+      )
     const data = await paginate(queryBuilder, {
       ...query,
       paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
@@ -97,9 +101,44 @@ export class UsedGoodsService {
     return createResponse('获取成功', data)
   }
 
+  async getDetail(query: GetUsedGoodsDetailQuery, reqUser: IUser) {
+    const queryBuilder = this.usedGoodsRepo.createQueryBuilder('goods').setFindOptions({
+      relations: {
+        creator: true,
+        category: true,
+      },
+      where: {
+        id: query.id,
+        status: UsedGoodsStatusEnum.ok,
+      },
+    })
+
+    queryBuilder
+      .leftJoin('goods.collector', 'collector')
+      .loadRelationCountAndMap(
+        'goods.isCollected',
+        'goods.collector',
+        'isCollected',
+        (qb) =>
+          qb.andWhere('isCollected.id = :id', {
+            id: reqUser.id,
+          }),
+      )
+      .loadRelationCountAndMap(
+        'goods.collectorCounts',
+        'goods.collector',
+        'collectorCounts',
+      )
+      .loadRelationCountAndMap('goods.commentsCount', 'goods.comments')
+
+    const data = await queryBuilder.getOne()
+
+    return createResponse('获取成功', data)
+  }
+
   async getListByCategory(query: GetUsedGoodsListByCategoryQuery, reqUser: IUser) {
     const queryBuilder = this.usedGoodsRepo
-      .createQueryBuilder('usedGoods')
+      .createQueryBuilder('goods')
       .setFindOptions({
         relations: {
           creator: true,
@@ -120,6 +159,11 @@ export class UsedGoodsService {
           status: UsedGoodsStatusEnum.ok,
         },
       })
+      .loadRelationCountAndMap(
+        'goods.collectorCounts',
+        'goods.collector',
+        'collectorCounts',
+      )
 
     const data = await paginate(queryBuilder, {
       ...query,
@@ -235,16 +279,23 @@ export class UsedGoodsService {
   }
 
   async getCollectedGoodsList(query: GetCollectedUsedGoodsListQuery, reqUser: IUser) {
-    const queryBuilder = this.usedGoodsRepo.createQueryBuilder('goods').setFindOptions({
-      relations: {
-        creator: true,
-      },
-      where: {
-        collector: {
-          id: reqUser.id,
+    const queryBuilder = this.usedGoodsRepo
+      .createQueryBuilder('goods')
+      .setFindOptions({
+        relations: {
+          creator: true,
         },
-      },
-    })
+        where: {
+          collector: {
+            id: reqUser.id,
+          },
+        },
+      })
+      .loadRelationCountAndMap(
+        'goods.collectorCounts',
+        'goods.collector',
+        'collectorCounts',
+      )
 
     const data = await paginate(queryBuilder, {
       ...query,
@@ -273,13 +324,20 @@ export class UsedGoodsService {
   }
 
   async getUserGoodsList(query: PaginateQuery, reqUser: IUser) {
-    const queryBuilder = this.usedGoodsRepo.createQueryBuilder('goods').setFindOptions({
-      where: {
-        creator: {
-          id: reqUser.id,
+    const queryBuilder = this.usedGoodsRepo
+      .createQueryBuilder('goods')
+      .setFindOptions({
+        where: {
+          creator: {
+            id: reqUser.id,
+          },
         },
-      },
-    })
+      })
+      .loadRelationCountAndMap(
+        'goods.collectorCounts',
+        'goods.collector',
+        'collectorCounts',
+      )
 
     const data = await paginate(queryBuilder, {
       ...query,

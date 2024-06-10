@@ -6,11 +6,13 @@ import {
   JoinColumn,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   OneToOne,
 } from 'typeorm'
 import { UsedGoodsCategoryEntity } from '@/entity/used-goods/used-goods-category.entity'
 import { User } from '@/entity/user/user.entity'
 import { UsedGoodsStatusEnum } from '@/common/enums/used-goods/use-goods-status.enum'
+import { Comment } from '@/entity/post/comment.entity'
 
 @Entity()
 export class UsedGoodsEntity extends CommonEntity {
@@ -19,6 +21,12 @@ export class UsedGoodsEntity extends CommonEntity {
   })
   @Column('text', { comment: '商品内容' })
   body: string
+
+  @Column({
+    comment: '浏览量',
+    default: 0,
+  })
+  viewsCount: number
 
   @Column({
     comment: '价格',
@@ -63,4 +71,12 @@ export class UsedGoodsEntity extends CommonEntity {
 
   @ManyToOne(() => User, (user) => user.usedGoods, { cascade: true })
   creator: User
+
+  @OneToMany(() => Comment, (comment) => comment.goods)
+  comments: Comment[]
+
+  // virtual column
+  readonly isCollected: boolean
+
+  readonly commentsCount: number
 }

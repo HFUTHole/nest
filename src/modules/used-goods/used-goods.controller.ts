@@ -12,11 +12,21 @@ import {
 import { CollectUsedGoodsDto } from '@/modules/used-goods/dto/collect.dto'
 import { PaginateQuery } from '@/common/dtos/paginate.dto'
 import { EditUsedGoods } from '@/modules/used-goods/dto/post.dto'
+import { GetUsedGoodsDetailQuery } from '@/modules/used-goods/dto/detail.dto'
+import { CreateCommentDto, GetPostCommentDto } from '@/modules/post/dto/comment.dto'
+import { UsedGoodsCommentService } from '@/modules/used-goods/comment.service'
+import {
+  GoodsCreateCommentDto,
+  GoodsGetCommentDto,
+} from '@/modules/used-goods/dto/comment.dto'
 
 @Controller('used-goods')
 export class UsedGoodsController {
   @Inject()
   private readonly service: UsedGoodsService
+
+  @Inject()
+  private readonly commentService: UsedGoodsCommentService
 
   @Post('/create')
   create(@Body() dto: UsedGoodsCreateDto, @User() user: IUser) {
@@ -26,6 +36,11 @@ export class UsedGoodsController {
   @Get('/list')
   getList(@Query() query: GetUsedGoodsListQuery, @User() user: IUser) {
     return this.service.getList(query, user)
+  }
+
+  @Get('/detail')
+  getDetail(@Query() query: GetUsedGoodsDetailQuery, @User() user: IUser) {
+    return this.service.getDetail(query, user)
   }
 
   @Get('/list/category')
@@ -64,5 +79,17 @@ export class UsedGoodsController {
   @Post('/edit')
   editUsedGoods(@Body() dto: EditUsedGoods, @User() user: IUser) {
     return this.service.editGoods(dto, user)
+  }
+
+  // comment
+
+  @Post('/comment')
+  comment(@Body() body: GoodsCreateCommentDto, @User() user: IUser) {
+    return this.commentService.createComment(body, user)
+  }
+
+  @Get('/comment')
+  getComment(@Query() query: GoodsGetCommentDto, @User() user: IUser) {
+    return this.commentService.getComment(query, user)
   }
 }

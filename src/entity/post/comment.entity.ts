@@ -13,6 +13,7 @@ import { Post } from '@/entity/post/post.entity'
 import { User } from '@/entity/user/user.entity'
 import { Reply } from '@/entity/post/reply.entity'
 import { Report } from '@/entity/report/report.entity'
+import { UsedGoodsEntity } from '@/entity/used-goods/used-goods.entity'
 
 @Entity()
 export class Comment extends CommonEntity {
@@ -22,8 +23,12 @@ export class Comment extends CommonEntity {
   @Column('text', { comment: '留言内容' })
   body: string
 
+  // Post 和 Goods二选一
   @ManyToOne(() => Post, (post) => post.comments, { cascade: true })
   post: Post
+
+  @ManyToOne(() => UsedGoodsEntity, (goods) => goods.comments, { cascade: true })
+  goods: UsedGoodsEntity
 
   @ManyToOne(() => User, (user) => user.comments, { cascade: true })
   user: User

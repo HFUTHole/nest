@@ -77,7 +77,7 @@ async function initUsedGoodsCategories(app: INestApplication) {
   )
 
   const categories = [
-    '图书',
+    '图书/教科书',
     '数码',
     '手机平板',
     '电脑设备',

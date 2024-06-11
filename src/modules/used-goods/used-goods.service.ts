@@ -30,6 +30,8 @@ import {
 import { PaginateQuery } from '@/common/dtos/paginate.dto'
 import { EditUsedGoods } from '@/modules/used-goods/dto/post.dto'
 import { GetUsedGoodsDetailQuery } from '@/modules/used-goods/dto/detail.dto'
+import { resolveEntityImgUrl } from '@/modules/post/post.utils'
+import { AppConfig } from '@/app.config'
 
 @Injectable()
 export class UsedGoodsService {
@@ -44,6 +46,8 @@ export class UsedGoodsService {
 
   @Inject()
   private readonly notifyService: NotifyService
+
+  constructor(private readonly appConfig: AppConfig) {}
 
   async create(dto: UsedGoodsCreateDto, reqUser: IUser) {
     const category = await this.usedGoodsCategoryRepo.findOne({
@@ -98,6 +102,12 @@ export class UsedGoodsService {
       paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
     })
 
+    data.items.map((item) => {
+      resolveEntityImgUrl(this.appConfig, item, {
+        quality: 40,
+      })
+    })
+
     return createResponse('获取成功', data)
   }
 
@@ -132,6 +142,10 @@ export class UsedGoodsService {
       .loadRelationCountAndMap('goods.commentsCount', 'goods.comments')
 
     const data = await queryBuilder.getOne()
+
+    resolveEntityImgUrl(this.appConfig, data, {
+      quality: 70,
+    })
 
     return createResponse('获取成功', data)
   }
@@ -168,6 +182,12 @@ export class UsedGoodsService {
     const data = await paginate(queryBuilder, {
       ...query,
       paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
+    })
+
+    data.items.map((item) => {
+      resolveEntityImgUrl(this.appConfig, item, {
+        quality: 40,
+      })
     })
 
     return createResponse('获取成功', data)
@@ -302,6 +322,12 @@ export class UsedGoodsService {
       paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
     })
 
+    data.items.map((item) => {
+      resolveEntityImgUrl(this.appConfig, item, {
+        quality: 40,
+      })
+    })
+
     return createResponse('获取收藏成功', data)
   }
 
@@ -318,6 +344,12 @@ export class UsedGoodsService {
     const data = await paginate(queryBuilder, {
       ...query,
       paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
+    })
+
+    data.items.map((item) => {
+      resolveEntityImgUrl(this.appConfig, item, {
+        quality: 40,
+      })
     })
 
     return createResponse('获取用户发布信息商品', data)

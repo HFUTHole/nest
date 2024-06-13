@@ -119,7 +119,6 @@ export class UsedGoodsService {
       },
       where: {
         id: query.id,
-        status: UsedGoodsStatusEnum.ok,
       },
     })
 
@@ -310,6 +309,9 @@ export class UsedGoodsService {
             id: reqUser.id,
           },
         },
+        order: {
+          createAt: 'desc',
+        },
       })
       .loadRelationCountAndMap(
         'goods.collectorCounts',
@@ -363,6 +365,9 @@ export class UsedGoodsService {
           creator: {
             id: reqUser.id,
           },
+        },
+        order: {
+          createAt: 'desc',
         },
       })
       .loadRelationCountAndMap(

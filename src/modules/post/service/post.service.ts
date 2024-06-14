@@ -381,6 +381,7 @@ export class PostService {
         },
         select: {
           user: {
+            id: true,
             username: true,
             avatar: true,
           },

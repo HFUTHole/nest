@@ -11,6 +11,7 @@ import { User } from '@/entity/user/user.entity'
 import { Role } from '@/modules/role/role.constant'
 import { AuthService } from '@/modules/auth/auth.service'
 import { UsedGoodsCategoryEntity } from '@/entity/used-goods/used-goods-category.entity'
+import * as _ from 'lodash'
 
 async function initTags(app: INestApplication) {
   const tagRepo = app.get<Repository<Tags>>(getRepositoryToken(Tags))
@@ -95,12 +96,16 @@ async function initUsedGoodsCategories(app: INestApplication) {
   const _cg = await cgRepo.find()
   const isCgEmpty = Boolean(_cg.length === 0)
 
-  if (isCgEmpty) {
-    const cgs = categories.map((item) =>
-      cgRepo.create({
-        name: item,
-      }),
-    )
+  const _cgNames = _cg.map((item) => item.name).sort()
+
+  if (isCgEmpty || !_.isEqual(_cgNames, categories.sort())) {
+    const cgs = categories
+      .map((item) =>
+        cgRepo.create({
+          name: item,
+        }),
+      )
+      .filter((item) => !_cgNames.includes(item.name))
 
     const savedCgs = await cgRepo.save(cgs)
 

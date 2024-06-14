@@ -349,6 +349,7 @@ export class PostService {
       },
       select: {
         user: {
+          id: true,
           studentId: true,
         },
       },

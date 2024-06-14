@@ -106,7 +106,9 @@ export const resolveEntityImgUrl = (
 ) => {
   if (post.imgs) {
     post.imgs = post.imgs.map((item) => {
-      return generateImgProxyUrl(appConfig, item, options)
+      return item.startsWith('https')
+        ? item
+        : generateImgProxyUrl(appConfig, item, options)
     })
   }
 }

@@ -1,6 +1,8 @@
 import { Controller, Get } from '@nestjs/common'
 import { createResponse } from '@/utils/create'
+import { Public } from '@/common/decorator/public.decorator'
 
+@Public()
 @Controller('app')
 export class AppController {
   @Get('/version')

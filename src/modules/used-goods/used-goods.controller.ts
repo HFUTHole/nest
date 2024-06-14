@@ -8,6 +8,7 @@ import {
   GetOtherUserUsedGoodsList,
   GetUsedGoodsListByCategoryQuery,
   GetUsedGoodsListQuery,
+  GetUserUsedGoodsListQuery,
 } from '@/modules/used-goods/dto/getList.dto'
 import { CollectUsedGoodsDto } from '@/modules/used-goods/dto/collect.dto'
 import { PaginateQuery } from '@/common/dtos/paginate.dto'
@@ -19,6 +20,7 @@ import {
   GoodsCreateCommentDto,
   GoodsGetCommentDto,
 } from '@/modules/used-goods/dto/comment.dto'
+import { UsedGoodsSearchQuery } from '@/modules/used-goods/dto/search.dto'
 
 @Controller('used-goods')
 export class UsedGoodsController {
@@ -72,7 +74,7 @@ export class UsedGoodsController {
   }
 
   @Get('/user/list')
-  getUserGoodsList(@Query() query: PaginateQuery, @User() user: IUser) {
+  getUserGoodsList(@Query() query: GetUserUsedGoodsListQuery, @User() user: IUser) {
     return this.service.getUserGoodsList(query, user)
   }
 
@@ -90,6 +92,12 @@ export class UsedGoodsController {
 
   @Get('/comment')
   getComment(@Query() query: GoodsGetCommentDto, @User() user: IUser) {
+    console.log(query)
     return this.commentService.getComment(query, user)
+  }
+
+  @Get('/search')
+  search(@Query() query: UsedGoodsSearchQuery, @User() user: IUser) {
+    return this.service.search(query, user)
   }
 }

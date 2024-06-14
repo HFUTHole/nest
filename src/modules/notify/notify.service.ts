@@ -52,6 +52,8 @@ export class NotifyService {
       body,
     })
 
+    console.log(params)
+
     if (params.postId) {
       notify.post = this.postRepo.create({
         id: params.postId,
@@ -83,7 +85,9 @@ export class NotifyService {
       ).post
       notify.comment = reply.comment
       notify.reply = reply
-    } else if (params.usedGoodsId) {
+    }
+
+    if (params.usedGoodsId) {
       notify.usedGoods = await this.usedGoodsRepo.findOne({
         where: {
           id: params.usedGoodsId,
@@ -227,6 +231,7 @@ export class NotifyService {
           post: true,
           comment: true,
           reply: true,
+          usedGoods: true,
         },
         where: {
           user: { studentId: reqUser.studentId },

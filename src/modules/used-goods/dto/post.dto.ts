@@ -1,4 +1,7 @@
-import { IsUsedGoodsExist } from '@/modules/used-goods/dto/utils'
+import {
+  IsUsedGoodsCategoryExist,
+  IsUsedGoodsExist,
+} from '@/modules/used-goods/dto/utils'
 import {
   ArrayMaxSize,
   IsEnum,
@@ -8,6 +11,7 @@ import {
   Length,
 } from 'class-validator'
 import { UsedGoodsStatusEnum } from '@/common/enums/used-goods/use-goods-status.enum'
+import { SchoolAreaEnum } from '@/common/enums/school-area.enum'
 
 export class EditUsedGoods {
   @IsUsedGoodsExist()
@@ -30,4 +34,13 @@ export class EditUsedGoods {
   @IsEnum(UsedGoodsStatusEnum)
   @IsOptional()
   status?: UsedGoodsStatusEnum
+
+  @IsUsedGoodsCategoryExist()
+  @IsString()
+  @IsOptional()
+  category?: string
+
+  @IsEnum(SchoolAreaEnum)
+  @IsOptional()
+  area?: SchoolAreaEnum
 }

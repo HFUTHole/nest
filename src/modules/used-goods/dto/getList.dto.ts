@@ -19,7 +19,12 @@ export class GetUsedGoodsListByCategoryQuery extends PaginateQuery {
   area?: SchoolAreaEnum
 }
 
-export class GetOtherUserUsedGoodsList extends PaginateQuery {
+export class GetUserUsedGoodsListQuery extends PaginateQuery {
+  @IsEnum(['posted', 'offline'])
+  type: 'posted' | 'offline' = 'posted'
+}
+
+export class GetOtherUserUsedGoodsList extends GetCollectedUsedGoodsListQuery {
   @IsUserExist()
   userId: number
 }

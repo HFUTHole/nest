@@ -335,7 +335,8 @@ export class PostService {
       body: `${ellipsisBody(dto.body, 30)}`,
       recipientId,
       commentId: savedComment.id as string,
-      target: InteractionNotifyTargetType.post,
+      target: InteractionNotifyTargetType.usedGoods,
+      usedGoodsId: options.goods.id,
     })
 
     return comment
@@ -814,7 +815,7 @@ export class PostService {
 
     await this.tagsRepo
       .createQueryBuilder()
-      .update(Tags)
+      .update(tag)
       .set({ views: () => 'views + 1' })
       .execute()
 

@@ -163,12 +163,20 @@ export class UserService {
   }
 
   async getComments(query: PaginateQuery, reqUser: IUser) {
-    const queryBuilder = this.commentRepo
-      .createQueryBuilder('comment')
-      .leftJoinAndSelect('comment.user', 'user')
-      .leftJoinAndSelect('comment.post', 'post')
-      .where('user.studentId = :studentId', { studentId: reqUser.studentId })
-      .orderBy('comment.createAt', 'DESC')
+    const queryBuilder = this.commentRepo.createQueryBuilder('comment').setFindOptions({
+      relations: {
+        user: true,
+        post: true,
+      },
+      where: {
+        user: {
+          id: reqUser.id,
+        },
+      },
+      order: {
+        createAt: 'desc',
+      },
+    })
 
     const data = await paginate(queryBuilder, {
       ...query,

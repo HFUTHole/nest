@@ -14,10 +14,5 @@ export const resolvePaginationCommentData = (
       username: item.user.username,
       avatar: item.user.avatar,
     } as User
-
-    item.post = {
-      id: item.post.id,
-      imgs: item.post.imgs,
-    } as Post
   })
 }

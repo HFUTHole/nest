@@ -6,6 +6,7 @@ import { UsedGoodsEntity } from '@/entity/used-goods/used-goods.entity'
 export class UsedGoodsCategoryEntity extends CommonEntity {
   @Column({
     comment: '分类名',
+    unique: true,
   })
   name: string
 

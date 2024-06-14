@@ -26,7 +26,7 @@ export class UsedGoodsEntity extends CommonEntity {
     comment: '浏览量',
     default: 0,
   })
-  viewsCount: number
+  views: number
 
   @Column({
     comment: '价格',

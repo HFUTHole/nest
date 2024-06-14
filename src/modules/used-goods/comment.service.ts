@@ -38,6 +38,7 @@ import { paginate } from 'nestjs-typeorm-paginate'
 import * as _ from 'lodash'
 import { AppConfig } from '@/app.config'
 import { GetUsedGoodsDetailQuery } from '@/modules/used-goods/dto/detail.dto'
+import { UsedGoodsSearchQuery } from '@/modules/used-goods/dto/search.dto'
 
 @Injectable()
 export class UsedGoodsCommentService {

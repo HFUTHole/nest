@@ -8,8 +8,10 @@ import {
   Min,
 } from 'class-validator'
 import { SchoolAreaEnum } from '@/common/enums/school-area.enum'
+import { IsUsedGoodsCategoryExist } from '@/modules/used-goods/dto/utils'
 
 export class UsedGoodsCreateDto {
+  @IsUsedGoodsCategoryExist()
   @IsString()
   category: string
 

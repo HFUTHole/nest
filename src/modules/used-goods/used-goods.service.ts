@@ -9,7 +9,7 @@ import { UsedGoodsCreateDto } from '@/modules/used-goods/dto/create.dto'
 import { IUser } from '@/app'
 import { InjectRepository } from '@nestjs/typeorm'
 import { UsedGoodsEntity } from '@/entity/used-goods/used-goods.entity'
-import { Repository } from 'typeorm'
+import { Like, Repository } from 'typeorm'
 import { User } from '@/entity/user/user.entity'
 import { UsedGoodsCategoryEntity } from '@/entity/used-goods/used-goods-category.entity'
 import { createResponse } from '@/utils/create'
@@ -19,6 +19,7 @@ import {
   GetOtherUserUsedGoodsList,
   GetUsedGoodsListByCategoryQuery,
   GetUsedGoodsListQuery,
+  GetUserUsedGoodsListQuery,
 } from '@/modules/used-goods/dto/getList.dto'
 import { paginate, PaginationTypeEnum } from 'nestjs-typeorm-paginate'
 import { CollectUsedGoodsDto } from '@/modules/used-goods/dto/collect.dto'
@@ -27,11 +28,13 @@ import {
   InteractionNotifyTargetType,
   NotifyEventType,
 } from '@/common/enums/notify/notify.enum'
-import { PaginateQuery } from '@/common/dtos/paginate.dto'
 import { EditUsedGoods } from '@/modules/used-goods/dto/post.dto'
 import { GetUsedGoodsDetailQuery } from '@/modules/used-goods/dto/detail.dto'
 import { resolveEntityImgUrl } from '@/modules/post/post.utils'
 import { AppConfig } from '@/app.config'
+import { UsedGoodsSearchQuery } from '@/modules/used-goods/dto/search.dto'
+import { isNullable } from '@/utils/is'
+import { SchoolAreaEnum } from '@/common/enums/school-area.enum'
 
 @Injectable()
 export class UsedGoodsService {
@@ -142,6 +145,12 @@ export class UsedGoodsService {
 
     const data = await queryBuilder.getOne()
 
+    await this.usedGoodsRepo
+      .createQueryBuilder('goods')
+      .update(data)
+      .set({ views: () => 'views + 1' })
+      .execute()
+
     resolveEntityImgUrl(this.appConfig, data, {
       quality: 70,
     })
@@ -166,9 +175,10 @@ export class UsedGoodsService {
               name: query.category,
             },
           }),
-          ...(query.area && {
-            area: query.area,
-          }),
+          ...(query.area &&
+            query.area !== SchoolAreaEnum.all && {
+              area: query.area,
+            }),
           status: UsedGoodsStatusEnum.ok,
         },
       })
@@ -357,7 +367,7 @@ export class UsedGoodsService {
     return createResponse('获取用户发布信息商品', data)
   }
 
-  async getUserGoodsList(query: PaginateQuery, reqUser: IUser) {
+  async getUserGoodsList(query: GetUserUsedGoodsListQuery, reqUser: IUser) {
     const queryBuilder = this.usedGoodsRepo
       .createQueryBuilder('goods')
       .setFindOptions({
@@ -365,6 +375,10 @@ export class UsedGoodsService {
           creator: {
             id: reqUser.id,
           },
+          status:
+            query.type === 'posted'
+              ? UsedGoodsStatusEnum.ok
+              : UsedGoodsStatusEnum.offline,
         },
         order: {
           createAt: 'desc',
@@ -398,6 +412,19 @@ export class UsedGoodsService {
       throw new ForbiddenException('这不是你的商品哦')
     }
 
+    if (dto.area) {
+      hasPermission.area = dto.area
+    }
+
+    if (dto.category) {
+      const category = await this.usedGoodsCategoryRepo.findOne({
+        where: {
+          name: dto.category,
+        },
+      })
+      hasPermission.category = category!
+    }
+
     if (dto.imgs) {
       hasPermission.imgs = dto.imgs
     }
@@ -410,12 +437,43 @@ export class UsedGoodsService {
       hasPermission.price = dto.price
     }
 
-    if (dto.status) {
+    if (!isNullable(dto.status)) {
       hasPermission.status = dto.status
     }
 
     await this.usedGoodsRepo.save(hasPermission)
 
     return createResponse('修改信息成功', hasPermission)
+  }
+
+  async search(query: UsedGoodsSearchQuery, reqUser: IUser) {
+    const queryBuilder = this.usedGoodsRepo.createQueryBuilder('goods').setFindOptions({
+      relations: {
+        creator: true,
+      },
+      where: {
+        body: Like(`%${query.keywords}%`),
+        status: UsedGoodsStatusEnum.ok,
+        ...(query.area && query.area !== SchoolAreaEnum.all && { area: query.area }),
+      },
+    })
+    queryBuilder.addOrderBy('goods.price', 'DESC')
+
+    if (query.price && query.price !== 'latest') {
+      queryBuilder.addOrderBy('goods.price', query.price.toUpperCase() as 'ASC' | 'DESC')
+    }
+
+    const data = await paginate(queryBuilder, {
+      ...query,
+      paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
+    })
+
+    data.items.forEach((goods) => {
+      resolveEntityImgUrl(this.appConfig, goods, {
+        quality: 0.7,
+      })
+    })
+
+    return createResponse('搜索成功', data)
   }
 }

@@ -336,7 +336,8 @@ export class PostService {
       recipientId,
       commentId: savedComment.id as string,
       target: InteractionNotifyTargetType.usedGoods,
-      usedGoodsId: options.goods.id,
+      usedGoodsId: options?.goods?.id,
+      postId: options?.post?.id!,
     })
 
     return comment

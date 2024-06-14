@@ -38,7 +38,9 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     })
 
     if (!user) {
-      throw new NotFoundException('用户不存在')
+      throw new NotFoundException(
+        '用户不存在，小肥书不是使用信息门户账号登录，需要注册一下哦~',
+      )
     }
 
     return true

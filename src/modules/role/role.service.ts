@@ -12,6 +12,9 @@ export class RoleService {
   private readonly userRepo: Repository<User>
 
   async isAdmin(id: number) {
+    if (isNaN(id)) {
+      return false
+    }
     const user = await this.findUser(id)
     return user.role === Role.Admin
   }

@@ -290,6 +290,7 @@ export class UserService {
     })
   }
 
+  // TODO: 增加isFollowed属性
   async getFollowingList(query: UserFollowListQuery, reqUser: IUser) {
     // TODO 解决查询self-relation following followers
     const data = await this.userRepository

@@ -300,7 +300,7 @@ export class UserService {
           following: query.type === 'following',
         },
         where: {
-          id: reqUser.id,
+          id: query.userId || reqUser.id,
         },
       })
       .getOne()

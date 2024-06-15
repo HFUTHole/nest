@@ -13,12 +13,12 @@ import { createResponse } from '@/utils/create'
 import { PaginateQuery } from '@/common/dtos/paginate.dto'
 import { Post } from '@/entity/post/post.entity'
 import { Comment } from '@/entity/post/comment.entity'
-import { PaginationTypeEnum, paginate } from 'nestjs-typeorm-paginate'
+import { paginate, PaginationTypeEnum } from 'nestjs-typeorm-paginate'
 import { AppConfig } from '@/app.config'
-import { resolvePaginationPostData, initPostDateSelect } from '@/modules/post/post.utils'
+import { initPostDateSelect, resolvePaginationPostData } from '@/modules/post/post.utils'
 import { EditProfileDto, GetUserOtherProfileDto } from '@/modules/user/dtos/profile.dto'
 import { resolvePaginationCommentData } from '@/modules/user/user.utils'
-import { UserFollowDto } from '@/modules/user/dtos/follow.dto'
+import { UserFollowDto, UserFollowListQuery } from '@/modules/user/dtos/follow.dto'
 import { GetUserPostsQuery } from '@/modules/user/dtos/post.dto'
 import { generateImgProxyUrl } from '@/utils/imgproxy'
 
@@ -39,50 +39,62 @@ export class UserService {
   constructor(private readonly appConfig: AppConfig) {}
 
   async getProfile(reqUser: IUser) {
-    const data = await this.userRepository.findOne({
-      relations: {
-        level: true,
-      },
-      where: {
-        studentId: reqUser.studentId,
-      },
-      select: {
-        id: true,
-        role: true,
-        avatar: true,
-        username: true,
-        level: {
+    const data = await this.userRepository
+      .createQueryBuilder('user')
+      .setFindOptions({
+        relations: {
           level: true,
-          experience: true,
-          nextLevelRequiredExperience: true,
         },
-      },
-    })
+        where: {
+          studentId: reqUser.studentId,
+        },
+        select: {
+          id: true,
+          role: true,
+          avatar: true,
+          username: true,
+          level: {
+            level: true,
+            experience: true,
+            nextLevelRequiredExperience: true,
+          },
+        },
+      })
+      .loadRelationCountAndMap('user.posts', 'user.posts')
+      .loadRelationCountAndMap('user.followers', 'user.followers')
+      .loadRelationCountAndMap('user.following', 'user.following')
+      .getOne()
 
     return createResponse('获取用户信息成功', data)
   }
 
   async getOtherUserProfile(query: GetUserOtherProfileDto) {
     console.log(query)
-    const data = await this.userRepository.findOne({
-      relations: {
-        level: true,
-      },
-      where: {
-        id: query.userId,
-      },
-      select: {
-        id: true,
-        role: true,
-        avatar: true,
-        username: true,
-        level: {
+    const data = await this.userRepository
+      .createQueryBuilder('user')
+      .setFindOptions({
+        relations: {
           level: true,
-          experience: true,
-          nextLevelRequiredExperience: true,
         },
-      },
-    })
+        where: {
+          id: query.userId,
+        },
+        select: {
+          id: true,
+          role: true,
+          avatar: true,
+          username: true,
+          level: {
+            level: true,
+            experience: true,
+            nextLevelRequiredExperience: true,
+          },
+        },
+      })
+      .loadRelationCountAndMap('user.posts', 'user.posts')
+      .loadRelationCountAndMap('user.followers', 'user.followers')
+      .loadRelationCountAndMap('user.following', 'user.following')
+      .getOne()
 
     return createResponse('获取用户信息成功', data)
   }
@@ -111,8 +123,6 @@ export class UserService {
   }
 
   async getFavoritePosts(query: GetUserPostsQuery, reqUser: IUser) {
-    const isUserIdExist = query.userId
-
     const queryBuilder = initPostDateSelect(this.postRepo)
       .where('favoriteUser.id = :userId', { userId: query.userId || reqUser.id })
       .loadRelationCountAndMap('voteItems.isVoted', 'voteItems.user', 'isVoted', (qb) =>
@@ -131,6 +141,8 @@ export class UserService {
       ...query,
       paginationType: PaginationTypeEnum.TAKE_AND_SKIP,
     })
+
+    console.log(data.items)
 
     resolvePaginationPostData(data, this.appConfig)
 
@@ -276,5 +288,23 @@ export class UserService {
     return createResponse('获取是否关注成功', {
       isFollowed: Boolean(existingFollow),
     })
+  }
+
+  async getFollowingList(query: UserFollowListQuery, reqUser: IUser) {
+    // TODO 解决查询self-relation following followers
+    const data = await this.userRepository
+      .createQueryBuilder('user')
+      .setFindOptions({
+        relations: {
+          followers: query.type === 'followers',
+          following: query.type === 'following',
+        },
+        where: {
+          id: reqUser.id,
+        },
+      })
+      .getOne()
+
+    return createResponse('获取关注列表成功', data)
   }
 }

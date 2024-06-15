@@ -122,4 +122,6 @@ export class User extends AutoIncIdEntity {
   @ManyToMany(() => UsedGoodsEntity, (goods) => goods.collector, { cascade: true })
   @JoinTable()
   collectedUsedGoods: UsedGoodsEntity[]
+
+  readonly followingCounts?: number
 }

@@ -8,7 +8,7 @@ import { PaginateQuery } from '@/common/dtos/paginate.dto'
 import { EditProfileDto, GetUserOtherProfileDto } from '@/modules/user/dtos/profile.dto'
 import { UserLevelService } from '@/modules/user/service/user-level.service'
 import { Role } from '@/modules/role/role.constant'
-import { UserFollowDto } from '@/modules/user/dtos/follow.dto'
+import { UserFollowDto, UserFollowListQuery } from '@/modules/user/dtos/follow.dto'
 import { GetUserPostsQuery } from '@/modules/user/dtos/post.dto'
 
 @Roles()
@@ -29,6 +29,7 @@ export class UserController {
   getOtherProfile(@Query() query: GetUserOtherProfileDto) {
     return this.service.getOtherUserProfile(query)
   }
+
   @Post('/profile')
   editProfile(@Body() dto: EditProfileDto, @User() user: IUser) {
     return this.service.editProfile(dto, user)
@@ -62,5 +63,10 @@ export class UserController {
   @Get('/isFollowed')
   isFollowed(@Query() query: UserFollowDto, @User() user: IUser) {
     return this.service.isFollowed(query, user)
+  }
+
+  @Get('/following/list')
+  getFollowingList(@Query() query: UserFollowListQuery, @User() user: IUser) {
+    return this.service.getFollowingList(query, user)
   }
 }

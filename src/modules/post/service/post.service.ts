@@ -4,8 +4,6 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
-  NotFoundException,
-  Query,
 } from '@nestjs/common'
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm'
 import { Post } from '@/entity/post/post.entity'
@@ -73,7 +71,6 @@ import { UserLevelService } from '@/modules/user/service/user-level.service'
 import { Limit } from '@/constants/limit'
 import * as _ from 'lodash'
 import { GetPostTagDetailQuery, GetPostTagListQuery } from '@/modules/post/dto/tag.dto'
-import { generateImageUrl } from '@imgproxy/imgproxy-node'
 import { UsedGoodsEntity } from '@/entity/used-goods/used-goods.entity'
 import { GoodsCreateCommentDto } from '@/modules/used-goods/dto/comment.dto'
 
@@ -335,7 +332,9 @@ export class PostService {
       body: `${ellipsisBody(dto.body, 30)}`,
       recipientId,
       commentId: savedComment.id as string,
-      target: InteractionNotifyTargetType.usedGoods,
+      target: options?.post
+        ? InteractionNotifyTargetType.post
+        : InteractionNotifyTargetType.usedGoods,
       usedGoodsId: options?.goods?.id,
       postId: options?.post?.id!,
     })

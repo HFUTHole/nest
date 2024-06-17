@@ -31,6 +31,8 @@ import { UserLevelEntity } from '@/entity/user/level.entity'
 import { PostWebController } from './post-web.controller'
 import { PostWebService } from './service/post-web.service'
 import { UsedGoodsEntity } from '@/entity/used-goods/used-goods.entity'
+import { PostImgController } from './post-img.controller'
+import { PostImgService } from './service/post-img.service'
 
 @Module({
   imports: [
@@ -49,7 +51,7 @@ import { UsedGoodsEntity } from '@/entity/used-goods/used-goods.entity'
       UsedGoodsEntity,
     ]),
   ],
-  controllers: [PostController, PostWebController],
+  controllers: [PostController, PostWebController, PostImgController],
   providers: [
     PostService,
     RoleService,
@@ -66,6 +68,7 @@ import { UsedGoodsEntity } from '@/entity/used-goods/used-goods.entity'
     IsCorrectSubCategoryExistConstraint,
     IsTagExistConstraint,
     PostWebService,
+    PostImgService,
   ],
 })
 export class PostModule implements NestModule {

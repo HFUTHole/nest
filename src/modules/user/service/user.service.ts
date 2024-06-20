@@ -53,6 +53,7 @@ export class UserService {
           role: true,
           avatar: true,
           username: true,
+          desc: true,
           level: {
             level: true,
             experience: true,
@@ -69,7 +70,6 @@ export class UserService {
   }
 
   async getOtherUserProfile(query: GetUserOtherProfileDto) {
-    console.log(query)
     const data = await this.userRepository
       .createQueryBuilder('user')
       .setFindOptions({
@@ -84,6 +84,7 @@ export class UserService {
           role: true,
           avatar: true,
           username: true,
+          desc: true,
           level: {
             level: true,
             experience: true,
@@ -112,7 +113,7 @@ export class UserService {
 
     await this.userRepository.update(
       {
-        studentId: reqUser.studentId,
+        id: reqUser.id,
       },
       {
         ...dto,

@@ -134,23 +134,23 @@ export class AuthService {
   }
 
   async verifyHFUTPassword(studentId: number, password: string) {
-    // const url = `${this.appConfig.hfut.url}/login/verify`
-    //
-    // try {
-    //   await axios({
-    //     method: 'GET',
-    //     url,
-    //     params: {
-    //       username: studentId,
-    //       password,
-    //     },
-    //   })
-    // } catch (error) {
-    //   // if (studentId.toString().startsWith('2023')) {
-    //   //   throw new BadRequestException('新生还没有开放信息门户哦，等导员通知吧！')
-    //   // }
-    //   throw new BadRequestException('信息门户密码错误')
-    // }
+    const url = `${this.appConfig.hfut.url}/login/verify`
+
+    try {
+      await axios({
+        method: 'GET',
+        url,
+        params: {
+          username: studentId,
+          password,
+        },
+      })
+    } catch (error) {
+      // if (studentId.toString().startsWith('2023')) {
+      //   throw new BadRequestException('新生还没有开放信息门户哦，等导员通知吧！')
+      // }
+      throw new BadRequestException('信息门户密码错误')
+    }
 
     return {
       gender: Gender.male,

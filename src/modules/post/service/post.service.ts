@@ -136,18 +136,28 @@ export class PostService {
 
   async delete(body: DeletePostDto, reqUser: IUser) {
     const post = await this.postRepo.findOne({
-      relations: { user: true },
-      where: { id: body.id },
-      select: { user: { studentId: true } },
+      relations: {
+        user: true,
+      },
+      where: {
+        id: body.id,
+      },
+      select: {
+        id: true,
+        user: { id: true },
+        isHidden: true,
+      },
     })
 
     const isAdmin = await this.roleService.isAdmin(reqUser.studentId)
 
-    if (post.user.studentId !== reqUser.studentId || !isAdmin) {
+    if (post.user.id !== reqUser.id || !isAdmin) {
       throw new ForbiddenException('这不是你的树洞哦')
     }
 
-    await this.postRepo.delete({ id: post.id })
+    post.isHidden = true
+
+    await this.postRepo.save(post)
 
     return createResponse('删除成功')
   }
@@ -523,9 +533,12 @@ export class PostService {
 
   async replyComment(dto: CreateCommentReplyDto, reqUser: IUser) {
     const comment = await this.commentRepo.findOne({
-      relations: { user: true },
+      relations: { user: true, post: true },
       where: { id: dto.commentId },
       select: {
+        post: {
+          id: true,
+        },
         user: {
           avatar: true,
           username: true,
@@ -575,7 +588,12 @@ export class PostService {
         ? reply.parentReply.user.studentId
         : comment.user.studentId,
       replyId: savedReply.id as string,
-      target: InteractionNotifyTargetType.comment,
+      usedGoodsId: dto?.goodsId,
+      postId: comment?.post?.id,
+      target:
+        dto.type === 'goods'
+          ? InteractionNotifyTargetType.usedGoods
+          : InteractionNotifyTargetType.comment,
     })
 
     return createResponse('回复成功', {

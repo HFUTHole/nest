@@ -20,6 +20,7 @@ import {
   PostDetailCommentOrderMode,
 } from '@/modules/post/post.constant'
 import { Limit } from '@/constants/limit'
+import { IsUsedGoodsExist } from '@/modules/used-goods/dto/utils'
 
 export class GetPostCommentDto extends PaginateQuery {
   @IsPostExist()
@@ -86,6 +87,14 @@ export class CreateCommentReplyDto {
   @IsArray()
   @IsOptional()
   imgs?: string[] = []
+
+  @IsEnum(['post', 'goods'])
+  @IsOptional()
+  type: 'post' | 'goods' = 'post'
+
+  @IsUsedGoodsExist()
+  @IsOptional()
+  goodsId?: string
 }
 
 export class IsCommentIdExistDto {

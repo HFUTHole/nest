@@ -66,6 +66,13 @@ export class User extends AutoIncIdEntity {
   @OneToMany(() => Post, (post) => post.user, { cascade: true })
   posts: Post[]
 
+  @Column({
+    type: 'text',
+    comment: '个性签名',
+    default: '还没有简介哦',
+  })
+  desc: string
+
   @OneToMany(() => Comment, (comment) => comment.user)
   comments: Comment[]
 

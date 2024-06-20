@@ -16,6 +16,13 @@ export class EditProfileDto {
   @IsString()
   @IsOptional()
   avatar?: string
+
+  @Length(1, 300, {
+    message: '最多只能输入300个字符哦',
+  })
+  @IsString()
+  @IsOptional()
+  desc?: string
 }
 
 export class GetUserOtherProfileDto {

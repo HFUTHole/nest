@@ -231,6 +231,9 @@ export class PostRepoService {
     // TODO: isVoted bug
     const queryBuilder = initPostDateSelect(this.postRepo)
       .setFindOptions({
+        where: {
+          isHidden: false,
+        },
         select: {
           user: {
             username: true,

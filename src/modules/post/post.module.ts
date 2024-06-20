@@ -62,7 +62,7 @@ import { UsedGoodsEntity } from '@/entity/used-goods/used-goods.entity'
     IsValidPostImgsConstraint,
     IsReplyExistConstraint,
     IsVoteItemExistConstraint,
-    PostPostThrottleGuard,
+    // PostPostThrottleGuard,
     IsCorrectSubCategoryExistConstraint,
     IsTagExistConstraint,
     PostWebService,

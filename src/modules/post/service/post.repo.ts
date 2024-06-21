@@ -234,13 +234,6 @@ export class PostRepoService {
         where: {
           isHidden: false,
         },
-        select: {
-          user: {
-            username: true,
-            avatar: true,
-            id: true,
-          },
-        },
       })
       .loadRelationCountAndMap('voteItems.isVoted', 'voteItems.user', 'isVoted', (qb) =>
         qb.andWhere('isVoted.studentId = :studentId', {
@@ -324,7 +317,7 @@ export class PostRepoService {
         .addSelect(`LOG10(RAND(post.id)) * RAND() * 100`, 'score')
         .orderBy('score', 'DESC')
     } else if (query.mode === PostListMode.latest) {
-      queryBuilder.orderBy('post.createAt', 'DESC')
+      queryBuilder.orderBy('post.updateAt', 'DESC')
     }
 
     const data = await paginate(queryBuilder, {

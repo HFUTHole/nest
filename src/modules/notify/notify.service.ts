@@ -52,13 +52,13 @@ export class NotifyService {
       body,
     })
 
-    console.log(params)
-
     if (params.postId) {
       notify.post = this.postRepo.create({
         id: params.postId,
       })
-    } else if (params.commentId) {
+    }
+
+    if (params.commentId) {
       const comment = await this.commentRepo.findOne({
         relations: { post: true },
         where: {
@@ -68,7 +68,9 @@ export class NotifyService {
 
       notify.comment = comment
       notify.post = comment.post
-    } else if (params.replyId) {
+    }
+
+    if (params.replyId) {
       const reply = await this.replyRepo.findOne({
         relations: { comment: true },
         where: {
@@ -83,6 +85,7 @@ export class NotifyService {
           },
         })
       ).post
+
       notify.comment = reply.comment
       notify.reply = reply
     }
@@ -94,6 +97,8 @@ export class NotifyService {
         },
       })
     }
+
+    console.log(params)
 
     await this.notifyInteractionRepo.save(notify)
 

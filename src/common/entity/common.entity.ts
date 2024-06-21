@@ -66,7 +66,7 @@ export class AutoIncIdEntity {
     type: 'timestamp',
     comment: '更新时间',
     name: 'update_at',
-    select: false,
+    select: true,
   })
   @Timestamp()
   updateAt: Date

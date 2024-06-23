@@ -624,7 +624,7 @@ export class PostRepoService {
         take: query.limit,
         skip: query.limit * (query.page - 1),
         order: {
-          createAt: 'desc',
+          updateAt: 'desc',
         },
       })
       .loadRelationCountAndMap('post.isLiked', 'post.favoriteUsers', 'isLiked', (qb) =>

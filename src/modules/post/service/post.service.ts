@@ -151,7 +151,7 @@ export class PostService {
 
     const isAdmin = await this.roleService.isAdmin(reqUser.studentId)
 
-    if (post.user.id !== reqUser.id || !isAdmin) {
+    if (post.user.id !== reqUser.id && !isAdmin) {
       throw new ForbiddenException('这不是你的树洞哦')
     }
 
@@ -179,6 +179,7 @@ export class PostService {
       .setFindOptions({
         relations: {
           user: true,
+          tags: true,
         },
         where: {
           id: query.id,

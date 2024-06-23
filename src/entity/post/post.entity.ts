@@ -49,7 +49,7 @@ export class Post extends AutoIncIdEntity {
   @ManyToOne(() => User, (user) => user.posts)
   user: User
 
-  @ManyToMany(() => Tags, (tags) => tags.posts, { eager: true, cascade: true })
+  @ManyToMany(() => Tags, (tags) => tags.posts, { cascade: true })
   @JoinTable()
   tags: Tags[]
 

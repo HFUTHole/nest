@@ -14,7 +14,6 @@ import { NotifyModule } from './modules/notify/notify.module'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { ReportModule } from './modules/report/report.module'
 import { ChatModule } from './modules/chat/chat.module'
-import { RedisModule } from '@liaoliaots/nestjs-redis'
 import { ScheduleModule } from '@nestjs/schedule'
 import { UsedGoodsModule } from './modules/used-goods/used-goods.module'
 

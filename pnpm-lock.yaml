@@ -65,6 +65,9 @@ dependencies:
   ioredis:
     specifier: ^5.2.4
     version: 5.3.2
+  lodash:
+    specifier: ^4.17.21
+    version: 4.17.21
   mysql2:
     specifier: ^2.3.3
     version: 2.3.3
@@ -72,8 +75,8 @@ dependencies:
     specifier: ^2.4.6
     version: 2.9.3(@nestjs/common@9.4.3)(axios@1.6.7)(reflect-metadata@0.1.14)(rxjs@7.8.1)(typescript@4.9.5)
   nest-winston:
-    specifier: ^1.8.0
-    version: 1.9.4(@nestjs/common@9.4.3)(winston@3.12.0)
+    specifier: 1.8.0
+    version: 1.8.0(@nestjs/common@9.4.3)(winston@3.8.2)
   nestjs-typeorm-paginate:
     specifier: ^4.0.3
     version: 4.0.4(@nestjs/common@9.4.3)(typeorm@0.3.20)
@@ -102,11 +105,11 @@ dependencies:
     specifier: ^0.3.11
     version: 0.3.20(ioredis@5.3.2)(mysql2@2.3.3)(pg@8.11.3)(ts-node@10.9.2)
   winston:
-    specifier: ^3.8.2
-    version: 3.12.0
+    specifier: 3.8.2
+    version: 3.8.2
   winston-daily-rotate-file:
-    specifier: ^4.7.1
-    version: 4.7.1(winston@3.12.0)
+    specifier: 4.7.1
+    version: 4.7.1(winston@3.8.2)
 
 devDependencies:
   '@nestjs/cli':
@@ -585,8 +588,6 @@ packages:
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
     engines: {node: '>=0.1.90'}
     requiresBuild: true
-    dev: true
-    optional: true
 
   /@colors/colors@1.6.0:
     resolution: {integrity: sha512-Ir+AOibqzrIsL6ajt3Rz3LskB7OiMVHqltZmspbW/TJuTVuyOMirVqAkjfY6JISiLHgyNqicAC8AyHHGzNd/dA==}
@@ -4504,7 +4505,6 @@ packages:
 
   /lodash@4.17.21:
     resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
-    dev: true
 
   /log-symbols@4.1.0:
     resolution: {integrity: sha512-8XPvpAA8uyhfteu8pIvQxpJZ7SYYdpUivZpGy6sFsBuKRY/7rQGavedeB8aK+Zkyq6upMFVL/9AW6vOYzfRyLg==}
@@ -4834,15 +4834,15 @@ packages:
       - typescript
     dev: false
 
-  /nest-winston@1.9.4(@nestjs/common@9.4.3)(winston@3.12.0):
-    resolution: {integrity: sha512-ilEmHuuYSAI6aMNR120fLBl42EdY13QI9WRggHdEizt9M7qZlmXJwpbemVWKW/tqRmULjSx/otKNQ3GMQbfoUQ==}
+  /nest-winston@1.8.0(@nestjs/common@9.4.3)(winston@3.8.2):
+    resolution: {integrity: sha512-DyoNrly6DXjNG2ZPXSD2+w+pgEE8u0y0iwsaLZsufFLIKB/YNgP7zIXV5JxIqns0e5QzLlxdHhO2hx+1W8dvCw==}
     peerDependencies:
-      '@nestjs/common': ^5.0.0 || ^6.6.0 || ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0
+      '@nestjs/common': ^5.0.0 || ^6.6.0 || ^7.0.0 || ^8.0.0 || ^9.0.0
       winston: ^3.0.0
     dependencies:
       '@nestjs/common': 9.4.3(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.1.14)(rxjs@7.8.1)
       fast-safe-stringify: 2.1.1
-      winston: 3.12.0
+      winston: 3.8.2
     dev: false
 
   /nestjs-typeorm-paginate@4.0.4(@nestjs/common@9.4.3)(typeorm@0.3.20):
@@ -6509,7 +6509,7 @@ packages:
       execa: 4.1.0
     dev: true
 
-  /winston-daily-rotate-file@4.7.1(winston@3.12.0):
+  /winston-daily-rotate-file@4.7.1(winston@3.8.2):
     resolution: {integrity: sha512-7LGPiYGBPNyGHLn9z33i96zx/bd71pjBn9tqQzO3I4Tayv94WPmBNwKC7CO1wPHdP9uvu+Md/1nr6VSH9h0iaA==}
     engines: {node: '>=8'}
     peerDependencies:
@@ -6518,7 +6518,7 @@ packages:
       file-stream-rotator: 0.6.1
       object-hash: 2.2.0
       triple-beam: 1.4.1
-      winston: 3.12.0
+      winston: 3.8.2
       winston-transport: 4.7.0
     dev: false
 
@@ -6531,11 +6531,11 @@ packages:
       triple-beam: 1.4.1
     dev: false
 
-  /winston@3.12.0:
-    resolution: {integrity: sha512-OwbxKaOlESDi01mC9rkM0dQqQt2I8DAUMRLZ/HpbwvDXm85IryEHgoogy5fziQy38PntgZsLlhAYHz//UPHZ5w==}
+  /winston@3.8.2:
+    resolution: {integrity: sha512-MsE1gRx1m5jdTTO9Ld/vND4krP2To+lgDoMEHGGa4HIlAUyXJtfc7CxQcGXVyz2IBpw5hbFkj2b/AtUdQwyRew==}
     engines: {node: '>= 12.0.0'}
     dependencies:
-      '@colors/colors': 1.6.0
+      '@colors/colors': 1.5.0
       '@dabh/diagnostics': 2.0.3
       async: 3.2.5
       is-stream: 2.0.1

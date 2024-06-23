@@ -41,9 +41,10 @@
     "date-fns": "^2.30.0",
     "imgproxy": "^1.2.0",
     "ioredis": "^5.2.4",
+    "lodash": "^4.17.21",
     "mysql2": "^2.3.3",
     "nest-typed-config": "^2.4.6",
-    "nest-winston": "^1.8.0",
+    "nest-winston": "1.8.0",
     "nestjs-typeorm-paginate": "^4.0.3",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
@@ -53,8 +54,8 @@
     "rxjs": "^7.2.0",
     "simple-flakeid": "^0.0.5",
     "typeorm": "^0.3.11",
-    "winston": "^3.8.2",
-    "winston-daily-rotate-file": "^4.7.1"
+    "winston": "3.8.2",
+    "winston-daily-rotate-file": "4.7.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",

@@ -33,15 +33,9 @@ import { PostCategoryEntity } from '@/entity/post/category/PostCategory.entity'
               maxSize: '30m',
               level: 'info',
             }),
-            new DailyRotateFile({
-              filename: 'logs/%DATE%.error',
-              datePattern: 'YYYY-MM-DD',
-              maxSize: '30m',
-              level: 'error',
-            }),
             new winston.transports.Stream({
-              stream: process.stderr,
-              level: 'debug',
+              stream: process.stdout,
+              level: 'info',
             }),
           ],
         }

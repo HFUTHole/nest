@@ -16,8 +16,8 @@ export const snowflake = new SnowflakeIdv1({
 })
 
 @Entity()
+@Index(['id'])
 export class CommonEntity {
-  @Index()
   @PrimaryGeneratedColumn('uuid')
   id: string
 
@@ -49,9 +49,9 @@ export class CommonEntity {
 }
 
 @Entity()
+@Index(['id'])
 export class AutoIncIdEntity {
   @PrimaryGeneratedColumn()
-  @Index()
   id: number
 
   @CreateDateColumn({

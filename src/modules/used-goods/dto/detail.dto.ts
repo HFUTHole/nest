@@ -6,3 +6,9 @@ export class GetUsedGoodsDetailQuery {
   @IsString()
   id: string
 }
+
+export class HiddenUsedGoodsQuery {
+  @IsUsedGoodsExist()
+  @IsString()
+  id: string
+}

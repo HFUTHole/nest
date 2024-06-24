@@ -16,6 +16,7 @@ import { Tags } from '@/entity/post/tags.entity'
 import { Vote } from '@/entity/post/vote.entity'
 import { Report } from '@/entity/report/report.entity'
 import { PostCategoryEntity } from '@/entity/post/category/PostCategory.entity'
+import { Timestamp } from '@/common/decorator/timestamp.decorator'
 
 @Entity()
 export class Post extends AutoIncIdEntity {
@@ -75,4 +76,19 @@ export class Post extends AutoIncIdEntity {
   readonly isLiked?: number
 
   readonly commentCounts?: number
+
+  @Column({
+    comment: '更新时间',
+    type: 'date',
+    nullable: true,
+    default: null,
+  })
+  @Timestamp()
+  updateTime: Date
+
+  @Column({
+    comment: 'IP归属地',
+    default: '',
+  })
+  ip_location: string
 }

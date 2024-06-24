@@ -45,6 +45,7 @@
     "mysql2": "^2.3.3",
     "nest-typed-config": "^2.4.6",
     "nest-winston": "1.8.0",
+    "nestjs-real-ip": "1.0.3",
     "nestjs-typeorm-paginate": "^4.0.3",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",

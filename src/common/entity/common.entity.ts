@@ -46,6 +46,14 @@ export class CommonEntity {
   })
   @Timestamp()
   deleteAt: Date
+
+  @Column('boolean', {
+    default: false,
+    name: 'is_hidden',
+    comment: '是否隐藏',
+    select: false,
+  })
+  isHidden: boolean
 }
 
 @Entity()

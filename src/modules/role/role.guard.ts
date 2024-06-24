@@ -51,7 +51,7 @@ export class RolesGuard implements CanActivate {
     }
 
     if (!requiredRoles.includes(Role.Banned) && user.role === Role.Banned) {
-      throw new BadRequestException('你已被关进小黑屋，什么都不能干了哦')
+      throw new BadRequestException('你已被关进小黑屋，不能做这个操作了哦~')
     }
 
     const hasRole = requiredRoles.some((role) => user.role === role)

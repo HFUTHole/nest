@@ -10,6 +10,7 @@ import { User } from '@/entity/user/user.entity'
 import { Reply } from '@/entity/post/reply.entity'
 import { generateImgProxyUrl } from '@/utils/imgproxy'
 import { IGenerateImageUrl } from '@imgproxy/imgproxy-node'
+import axios from 'axios'
 
 export const resolvePaginationPostData = (
   data: Pagination<Post, IPaginationMeta>,
@@ -111,4 +112,55 @@ export const resolveEntityImgUrl = (
         : generateImgProxyUrl(appConfig, item, options)
     })
   }
+}
+
+interface IPData {
+  ip: string
+  dec: string
+  country: string
+  countryCode: string
+  province: string
+  city: string
+  districts: string
+  idc: string
+  isp: string
+  net: string
+  zipcode: string
+  areacode: string
+  protocol: string
+  location: string
+  myip: string
+  time: string
+}
+
+export const getIpAddress = async (ip: string) => {
+  console.log('get IP address: ', ip)
+  // 中国 安徽 宣城 联通
+  const result = await axios<{ data: IPData }>({
+    method: 'GET',
+    url: 'https://api.mir6.com/api/ip',
+    params: {
+      ip,
+      type: 'json',
+    },
+  })
+
+  const data = result.data.data
+
+  const meta = {
+    country: data.country || '',
+    province: data.province?.replace('省', '') || '',
+    city: data.city.replace('市', ''),
+    ip_location: '未知',
+  }
+
+  if (meta.country === '中国') {
+    if ((meta.province === '安徽' && meta.city === '宣城') || meta.city === '合肥') {
+      meta.ip_location = `${meta.province}${meta.city}`
+    } else {
+      meta.ip_location = meta.province
+    }
+  }
+
+  return meta
 }

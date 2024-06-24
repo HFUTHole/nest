@@ -62,7 +62,7 @@ export class UsedGoodsCommentService {
 
   constructor(private readonly appConfig: AppConfig) {}
 
-  async createComment(dto: GoodsCreateCommentDto, reqUser: IUser) {
+  async createComment(dto: GoodsCreateCommentDto, reqUser: IUser, ip: string) {
     const goods = await this.goodsRepo.findOne({
       relations: { creator: true },
       select: { creator: { studentId: true, id: true, username: true } },
@@ -71,6 +71,7 @@ export class UsedGoodsCommentService {
 
     const comment = await this.postService._createComment(dto, reqUser, {
       goods,
+      ip,
     })
 
     return createResponse('留言成功', {

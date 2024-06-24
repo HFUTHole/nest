@@ -649,17 +649,8 @@ export class PostRepoService {
       queryBuilder.andWhere('user.id IN (:...userId)', { userId: [0, ...userId] })
     }
 
-    if (options.tag) {
-      queryBuilder.setFindOptions({
-        relations: {
-          tags: true,
-        },
-        where: {
-          tags: {
-            body: In([options.tag.body]),
-          },
-        },
-      })
+    if (options.tag?.body?.length) {
+      queryBuilder.andWhere('tags.body = :body', { body: options.tag.body })
     }
 
     const [data, totalItems] = await queryBuilder.getManyAndCount()

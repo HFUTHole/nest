@@ -49,6 +49,12 @@ export class Comment extends CommonEntity {
   })
   imgs: string[]
 
+  @Column({
+    comment: 'IP归属地',
+    default: '',
+  })
+  ip_location: string
+
   @ManyToMany(() => User, (user) => user.favoriteComment)
   favoriteUsers: User[]
 

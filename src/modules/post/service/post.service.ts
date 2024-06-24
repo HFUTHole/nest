@@ -53,6 +53,7 @@ import { SearchQuery } from '@/modules/post/dto/search.dto'
 import {
   addCommentIsLiked,
   addReplyIsLiked,
+  getIpAddress,
   isVoteExpired,
   resolveEntityImgUrl,
   resolvePaginationPostData,
@@ -73,6 +74,7 @@ import * as _ from 'lodash'
 import { GetPostTagDetailQuery, GetPostTagListQuery } from '@/modules/post/dto/tag.dto'
 import { UsedGoodsEntity } from '@/entity/used-goods/used-goods.entity'
 import { GoodsCreateCommentDto } from '@/modules/used-goods/dto/comment.dto'
+import axios from 'axios'
 
 @Injectable()
 export class PostService {
@@ -235,7 +237,7 @@ export class PostService {
     })
   }
 
-  async create(dto: CreatePostDto, reqUser: IUser) {
+  async create(dto: CreatePostDto, reqUser: IUser, ip: string) {
     const user = await this.userRepo.findOne({
       where: { studentId: reqUser.studentId },
     })
@@ -246,6 +248,8 @@ export class PostService {
       }),
     )
 
+    const ipAddr = await getIpAddress(ip)
+
     const post = this.postRepo.create({
       user,
       body: dto.body,
@@ -253,6 +257,7 @@ export class PostService {
       tags,
       bilibili: dto.bilibili,
       title: dto.title,
+      ip_location: ipAddr.ip_location,
     })
 
     if (dto.vote) {
@@ -285,20 +290,23 @@ export class PostService {
     })
   }
 
-  async createComment(dto: CreateCommentDto, reqUser: IUser) {
+  async createComment(dto: CreateCommentDto, reqUser: IUser, ip: string) {
     const post = await this.postRepo.findOne({
       relations: { user: true },
       select: { user: { studentId: true } },
       where: { id: dto.id },
     })
 
+    const shouldIncreaseExp = dto.body.length >= 15
+
     const comment = await this._createComment(dto, reqUser, {
       post,
+      ip,
     })
 
     return createResponse('留言成功', {
       ...comment,
-      incExperience: Limit.level.comment,
+      incExperience: shouldIncreaseExp ? Limit.level.comment : 0,
     })
   }
 
@@ -308,15 +316,19 @@ export class PostService {
     options: {
       post?: Post
       goods?: UsedGoodsEntity
+      ip: string
     },
   ) {
     const user = await this.userRepo.findOneBy({
       studentId: reqUser.studentId,
     })
 
+    const ip = await getIpAddress(options.ip)
+
     const comment = this.commentRepo.create({
       body: dto.body,
       user,
+      ip_location: ip.ip_location,
       imgs: dto.imgs,
     })
 
@@ -333,10 +345,12 @@ export class PostService {
       : options.goods.creator.studentId
 
     const savedComment = await this.commentRepo.save(comment)
-    await this.userLevelService.incExperience({
-      increment: Limit.level.comment,
-      studentId: reqUser.studentId,
-    })
+    if (dto.body.length >= 5) {
+      await this.userLevelService.incExperience({
+        increment: Limit.level.comment,
+        studentId: reqUser.studentId,
+      })
+    }
     await this.notifyService.createInteractionNotify({
       type: NotifyEventType.comment,
       reqUser,
@@ -370,19 +384,16 @@ export class PostService {
     const isFavoriteOrder = dto.order === PostDetailCommentOrderMode.favorite
 
     const order: FindOptionsOrder<Comment> = {
-      ...(isFavoriteOrder ? { favoriteCounts: 'DESC' } : { createAt: 'DESC' }),
+      ...(isFavoriteOrder
+        ? { favoriteCounts: 'DESC', createAt: 'desc' }
+        : { createAt: 'DESC' }),
     }
 
     const commentQuery = this.commentRepo
       .createQueryBuilder('comment')
       .setFindOptions({
         relations: { user: true, replies: { user: true, replyUser: true } },
-        order: {
-          ...order,
-          replies: {
-            favoriteCounts: 'DESC',
-          },
-        },
+        order,
         where: {
           post: { id: dto.id },
           ...(dto.mode === PostDetailCommentMode.author && {
@@ -532,7 +543,7 @@ export class PostService {
     })
   }
 
-  async replyComment(dto: CreateCommentReplyDto, reqUser: IUser) {
+  async replyComment(dto: CreateCommentReplyDto, reqUser: IUser, ip: string) {
     const comment = await this.commentRepo.findOne({
       relations: { user: true, post: true },
       where: { id: dto.commentId },
@@ -573,6 +584,10 @@ export class PostService {
       reply.replyUser = parentReply.user
       reply.parentReply = parentReply
     }
+
+    const ipAddr = await getIpAddress(ip)
+
+    reply.ip_location = ipAddr.ip_location
 
     const savedReply = await this.replyRepo.save(reply)
 

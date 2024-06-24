@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  Query,
 } from '@nestjs/common'
 import { UsedGoodsCreateDto } from '@/modules/used-goods/dto/create.dto'
 import { IUser } from '@/app'
@@ -29,7 +30,10 @@ import {
   NotifyEventType,
 } from '@/common/enums/notify/notify.enum'
 import { EditUsedGoods } from '@/modules/used-goods/dto/post.dto'
-import { GetUsedGoodsDetailQuery } from '@/modules/used-goods/dto/detail.dto'
+import {
+  GetUsedGoodsDetailQuery,
+  HiddenUsedGoodsQuery,
+} from '@/modules/used-goods/dto/detail.dto'
 import { resolveEntityImgUrl } from '@/modules/post/post.utils'
 import { AppConfig } from '@/app.config'
 import { UsedGoodsSearchQuery } from '@/modules/used-goods/dto/search.dto'
@@ -93,6 +97,7 @@ export class UsedGoodsService {
         },
         where: {
           status: UsedGoodsStatusEnum.ok,
+          isHidden: false,
         },
       })
       .loadRelationCountAndMap(
@@ -475,5 +480,19 @@ export class UsedGoodsService {
     })
 
     return createResponse('搜索成功', data)
+  }
+
+  async hidden(query: HiddenUsedGoodsQuery, reqUser: IUser) {
+    const goods = await this.usedGoodsRepo.findOne({
+      where: {
+        id: query.id,
+      },
+    })
+
+    goods.isHidden = true
+
+    await this.usedGoodsRepo.save(goods)
+
+    return createResponse('隐藏成功')
   }
 }

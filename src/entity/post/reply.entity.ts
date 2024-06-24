@@ -27,6 +27,12 @@ export class Reply extends CommonEntity {
   })
   imgs: string[]
 
+  @Column({
+    comment: 'IP归属地',
+    default: '',
+  })
+  ip_location: string
+
   @ManyToOne(() => User, (user) => user.replies, { cascade: true })
   user: User
 

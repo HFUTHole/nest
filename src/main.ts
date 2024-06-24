@@ -12,6 +12,7 @@ import { Role } from '@/modules/role/role.constant'
 import { AuthService } from '@/modules/auth/auth.service'
 import { UsedGoodsCategoryEntity } from '@/entity/used-goods/used-goods-category.entity'
 import * as _ from 'lodash'
+import { NestExpressApplication } from '@nestjs/platform-express'
 
 async function initTags(app: INestApplication) {
   const tagRepo = app.get<Repository<Tags>>(getRepositoryToken(Tags))
@@ -114,7 +115,7 @@ async function initUsedGoodsCategories(app: INestApplication) {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule)
 
   const config: AppConfig = app.get<AppConfig>(AppConfig)
 

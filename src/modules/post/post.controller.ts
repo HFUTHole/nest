@@ -4,9 +4,10 @@ import {
   Delete,
   Get,
   Inject,
+  Ip,
   Post,
   Query,
-  UseGuards,
+  Req,
 } from '@nestjs/common'
 import { PostService } from '@/modules/post/service/post.service'
 import { CreatePostDto } from '@/modules/post/dto/create.dto'
@@ -29,8 +30,8 @@ import { Roles } from '@/common/decorator/roles.decorator'
 import { PostVoteDto } from '@/modules/post/dto/vote.dto'
 import { SearchQuery } from '@/modules/post/dto/search.dto'
 import { GetPostTagDetailQuery, GetPostTagListQuery } from '@/modules/post/dto/tag.dto'
-import { PostPostThrottleGuard } from '@/modules/post/guard/post-throttle.guard'
-import { Public } from '@/common/decorator/public.decorator'
+import { Role } from '@/modules/role/role.constant'
+import { RealIp } from 'nestjs-real-ip'
 
 @Roles()
 @Controller('post')
@@ -38,6 +39,7 @@ export class PostController {
   @Inject()
   private readonly service: PostService
 
+  @Roles([Role.Admin, Role.User, Role.Banned])
   @Get('/list')
   getList(@Query() query: GetPostListQuery, @User() user: IUser) {
     return this.service.getList(query, user)
@@ -48,6 +50,7 @@ export class PostController {
     return this.service.getFollowList(query, user)
   }
 
+  @Roles([Role.Admin, Role.User, Role.Banned])
   @Get('/detail')
   getDetail(@Query() query: GetPostDetailQuery, @User() user: IUser) {
     return this.service.getDetail(query, user)
@@ -55,8 +58,8 @@ export class PostController {
 
   // @UseGuards(PostPostThrottleGuard)
   @Post('/create')
-  create(@Body() body: CreatePostDto, @User() user: IUser) {
-    return this.service.create(body, user)
+  create(@Body() body: CreatePostDto, @User() user: IUser, @RealIp() ip: string) {
+    return this.service.create(body, user, ip)
   }
 
   @Delete('/delete')
@@ -85,8 +88,15 @@ export class PostController {
   }
 
   @Post('/comment')
-  comment(@Body() body: CreateCommentDto, @User() user: IUser) {
-    return this.service.createComment(body, user)
+  comment(
+    @Body() body: CreateCommentDto,
+    @User() user: IUser,
+    @RealIp() ip: string,
+    @Req() request: Request,
+  ) {
+    console.log('X-Real-IP:', request.headers['x-real-ip'])
+    console.log('X-Forwarded-For:', request.headers['x-forwarded-for'])
+    return this.service.createComment(body, user, ip)
   }
 
   @Get('/comment')
@@ -105,8 +115,12 @@ export class PostController {
   }
 
   @Post('/comment/reply')
-  replyComment(@Body() dto: CreateCommentReplyDto, @User() user: IUser) {
-    return this.service.replyComment(dto, user)
+  replyComment(
+    @Body() dto: CreateCommentReplyDto,
+    @User() user: IUser,
+    @RealIp() ip: string,
+  ) {
+    return this.service.replyComment(dto, user, ip)
   }
 
   @Get('/comment/replies')
